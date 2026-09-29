@@ -71,6 +71,13 @@ three fields to the new version, then open a follow-up PR to
 ## Database Migrations
 Migrations are in `/server/src/db/schema.ts`. They run automatically on startup. The migration system handles "duplicate column" errors gracefully for idempotency.
 
+## Attribution
+Do not attribute work to Claude anywhere in the repo or on GitHub. No
+`Co-Authored-By: Claude` or session-link trailers in commit messages, no
+"Generated with Claude Code" lines in PR descriptions, and no Claude footers
+on issue, PR, review or discussion comments. Everything should read as coming
+from the maintainer.
+
 ## Key Patterns
 - Client uses `camelCase`, server/database uses `snake_case`
 - Media type: client uses `'tv'`, server uses `'show'` - conversion happens in routes
