@@ -178,6 +178,7 @@
     "typeOrSelect": "Type or select Plex user…"
   },
   "preview": {
+    "allProtected": "Every match is protected, so this rule won’t delete anything.",
     "alreadyPending": "Pending",
     "calculating": "Calculating…",
     "chipEmpty": "Add a condition to preview",
@@ -186,15 +187,19 @@
     "emptyHint": "Add conditions to see a preview",
     "failed": "Preview failed",
     "itemsWouldMatch": "items would match",
+    "matchesBySize": "Matches by size:",
     "matchWord_one": "match",
     "matchWord_other": "match",
+    "nextPage": "Next page",
     "openAria": "Open live preview",
     "openItem": "Open in a new tab",
+    "pageRange": "{{first}}–{{last}} of {{total}}",
+    "previousPage": "Previous page",
     "protected": "Protected",
     "queue": "Queue",
     "reclaimableSuffix": "{{size}} reclaimable",
-    "title": "Live Preview",
-    "topMatches": "Top matches by size:"
+    "showProtected": "Show protected",
+    "title": "Live Preview"
   },
   "requester": {
     "noData": "No requester data yet — run a library sync with Seerr connected.",

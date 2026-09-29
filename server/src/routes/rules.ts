@@ -1013,6 +1013,11 @@ router.post('/:id/run', async (req: Request, res: Response) => {
 const PreviewRuleSchema = z.object({
   mediaType: z.enum(['all', 'movie', 'show', 'tv']).optional(),
   libraryKeys: z.array(z.string().min(1)).max(100).optional(),
+  // Paging through the matched samples (largest first).
+  sampleOffset: z.number().int().min(0).optional(),
+  sampleLimit: z.number().int().min(1).max(50).optional(),
+  // Rules never act on protected items; callers can leave them out of samples.
+  includeProtectedSamples: z.boolean().optional(),
   // v2
   version: z.literal(2).optional(),
   root: ConditionNodeSchema.optional(),
@@ -1031,9 +1036,18 @@ const PreviewRuleSchema = z.object({
 
 router.post('/preview', validateBody(PreviewRuleSchema), async (req: Request, res: Response) => {
   try {
-    const { mediaType, libraryKeys } = req.body as {
+    const {
+      mediaType,
+      libraryKeys,
+      sampleOffset = 0,
+      sampleLimit = 10,
+      includeProtectedSamples = true,
+    } = req.body as {
       mediaType?: string;
       libraryKeys?: string[];
+      sampleOffset?: number;
+      sampleLimit?: number;
+      includeProtectedSamples?: boolean;
     };
 
     // Build v2 tree from payload
@@ -1098,16 +1112,19 @@ router.post('/preview', validateBody(PreviewRuleSchema), async (req: Request, re
     const totalBytes = matching.reduce((sum, i) => sum + (i.file_size || 0), 0);
     const storageFreedGB = totalBytes / (1024 * 1024 * 1024);
 
-    // Top 10 by file size
-    const samples = [...matching]
+    // One page of matches, largest first, so the whole match list can be
+    // browsed. sampleTotal is the size of the list being paged.
+    const sampleable = includeProtectedSamples ? matching : matching.filter((i) => !i.is_protected);
+    const samples = [...sampleable]
       .sort((a, b) => (b.file_size || 0) - (a.file_size || 0))
-      .slice(0, 10)
+      .slice(sampleOffset, sampleOffset + sampleLimit)
       .map((item) => ({
         id: item.id,
         title: item.title,
         size: item.file_size || 0,
         rating: item.rating_imdb ?? item.rating_tmdb ?? null,
         posterUrl: toThumbnailUrl(item.poster_url) || null,
+        isProtected: Boolean(item.is_protected),
         reason: describeMatchReason(v2.root as ConditionNode),
       }));
 
@@ -1122,6 +1139,7 @@ router.post('/preview', validateBody(PreviewRuleSchema), async (req: Request, re
         totalSize: totalBytes,
         totalSizeFormatted: formatBytes(totalBytes),
         samples,
+        sampleTotal: sampleable.length,
       },
     });
   } catch (error) {

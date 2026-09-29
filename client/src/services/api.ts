@@ -218,8 +218,11 @@ export interface RulePreviewResult {
     title: string;
     size: number;
     rating: number | null;
+    posterUrl?: string | null;
+    isProtected?: boolean;
     reason?: string;
   }>;
+  sampleTotal?: number;
   // legacy shape retained for template preview callers
   matchCount?: number;
   totalSize?: number;
@@ -246,6 +249,11 @@ export interface RulePreviewV2Body {
   mediaType?: 'all' | 'movie' | 'show' | 'tv';
   /** Restrict the preview to these Plex library keys. Empty/omitted = all. */
   libraryKeys?: string[];
+  /** Page through the matched samples, largest first. */
+  sampleOffset?: number;
+  sampleLimit?: number;
+  /** Leave protected items out of the samples (counts are unaffected). */
+  includeProtectedSamples?: boolean;
 }
 
 export interface PlexLibrarySummary {

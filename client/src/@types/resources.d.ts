@@ -1178,6 +1178,7 @@ export default interface Resources {
       "typeOrSelect": "Type or select Plex user…"
     },
     "preview": {
+      "allProtected": "Every match is protected, so this rule won’t delete anything.",
       "alreadyPending": "Pending",
       "calculating": "Calculating…",
       "chipEmpty": "Add a condition to preview",
@@ -1188,13 +1189,17 @@ export default interface Resources {
       "itemsWouldMatch": "items would match",
       "matchWord_one": "match",
       "matchWord_other": "match",
+      "matchesBySize": "Matches by size:",
+      "nextPage": "Next page",
       "openAria": "Open live preview",
       "openItem": "Open in a new tab",
+      "pageRange": "{{first}}–{{last}} of {{total}}",
+      "previousPage": "Previous page",
       "protected": "Protected",
       "queue": "Queue",
       "reclaimableSuffix": "{{size}} reclaimable",
-      "title": "Live Preview",
-      "topMatches": "Top matches by size:"
+      "showProtected": "Show protected",
+      "title": "Live Preview"
     },
     "requester": {
       "noData": "No requester data yet — run a library sync with Seerr connected.",

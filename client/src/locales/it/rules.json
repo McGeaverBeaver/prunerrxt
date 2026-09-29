@@ -180,6 +180,7 @@
     "typeOrSelect": "Digita o seleziona un utente Plex…"
   },
   "preview": {
+    "allProtected": "Tutte le corrispondenze sono protette, quindi questa regola non eliminerà nulla.",
     "alreadyPending": "In attesa",
     "calculating": "Calcolo in corso…",
     "chipEmpty": "Aggiungi una condizione per l'anteprima",
@@ -188,16 +189,20 @@
     "emptyHint": "Aggiungi condizioni per vedere un'anteprima",
     "failed": "Anteprima non riuscita",
     "itemsWouldMatch": "elementi corrisponderebbero",
+    "matchesBySize": "Corrispondenze per dimensione:",
     "matchWord_one": "corrispondenza",
     "matchWord_many": "corrispondenze",
     "matchWord_other": "corrispondenze",
+    "nextPage": "Pagina successiva",
     "openAria": "Apri anteprima dal vivo",
     "openItem": "",
+    "pageRange": "{{first}}–{{last}} di {{total}}",
+    "previousPage": "Pagina precedente",
     "protected": "Protetto",
     "queue": "Coda",
     "reclaimableSuffix": "{{size}} recuperabili",
-    "title": "Anteprima dal vivo",
-    "topMatches": "Migliori corrispondenze per dimensione:"
+    "showProtected": "Mostra protetti",
+    "title": "Anteprima dal vivo"
   },
   "requester": {
     "noData": "Ancora nessun dato sui richiedenti — esegui una sincronizzazione della libreria con Seerr collegato.",

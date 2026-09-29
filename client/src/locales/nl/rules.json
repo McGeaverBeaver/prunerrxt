@@ -178,6 +178,7 @@
     "typeOrSelect": "Typ of selecteer een Plex-gebruiker…"
   },
   "preview": {
+    "allProtected": "Alle overeenkomsten zijn beschermd, dus deze regel verwijdert niets.",
     "alreadyPending": "In afwachting",
     "calculating": "Berekenen…",
     "chipEmpty": "Voeg een voorwaarde toe voor een voorbeeld",
@@ -186,15 +187,19 @@
     "emptyHint": "Voeg voorwaarden toe om een voorbeeld te zien",
     "failed": "Voorbeeld mislukt",
     "itemsWouldMatch": "items zouden overeenkomen",
+    "matchesBySize": "Overeenkomsten op grootte:",
     "matchWord_one": "overeenkomst",
     "matchWord_other": "overeenkomsten",
+    "nextPage": "Volgende pagina",
     "openAria": "Live-voorbeeld openen",
     "openItem": "",
+    "pageRange": "{{first}}–{{last}} van {{total}}",
+    "previousPage": "Vorige pagina",
     "protected": "Beschermd",
     "queue": "Wachtrij",
     "reclaimableSuffix": "{{size}} terug te winnen",
-    "title": "Live-voorbeeld",
-    "topMatches": "Beste overeenkomsten op grootte:"
+    "showProtected": "Beschermde tonen",
+    "title": "Live-voorbeeld"
   },
   "requester": {
     "noData": "Nog geen aanvragergegevens — voer een bibliotheeksynchronisatie uit met Seerr verbonden.",

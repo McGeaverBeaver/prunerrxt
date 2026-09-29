@@ -180,6 +180,7 @@
     "typeOrSelect": "Escribe o selecciona un usuario de Plex…"
   },
   "preview": {
+    "allProtected": "Todas las coincidencias están protegidas, así que esta regla no eliminará nada.",
     "alreadyPending": "Pendiente",
     "calculating": "Calculando…",
     "chipEmpty": "Añade una condición para previsualizar",
@@ -188,16 +189,20 @@
     "emptyHint": "Añade condiciones para ver una vista previa",
     "failed": "La vista previa falló",
     "itemsWouldMatch": "elementos coincidirían",
+    "matchesBySize": "Coincidencias por tamaño:",
     "matchWord_one": "coincide",
     "matchWord_many": "coinciden",
     "matchWord_other": "coinciden",
+    "nextPage": "Página siguiente",
     "openAria": "Abrir vista previa en vivo",
     "openItem": "",
+    "pageRange": "{{first}}–{{last}} de {{total}}",
+    "previousPage": "Página anterior",
     "protected": "Protegido",
     "queue": "Cola",
     "reclaimableSuffix": "{{size}} recuperables",
-    "title": "Vista previa en vivo",
-    "topMatches": "Coincidencias principales por tamaño:"
+    "showProtected": "Mostrar protegidos",
+    "title": "Vista previa en vivo"
   },
   "requester": {
     "noData": "Aún no hay datos de solicitantes — ejecuta una sincronización de la biblioteca con Seerr conectado.",

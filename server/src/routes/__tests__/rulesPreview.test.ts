@@ -68,6 +68,8 @@ interface PreviewData {
   wouldQueue: number;
   wouldSkipProtected: number;
   alreadyPending: number;
+  samples: Array<{ id: number; title: string; size: number; isProtected: boolean }>;
+  sampleTotal: number;
 }
 
 async function preview(body: unknown): Promise<PreviewData> {
@@ -174,5 +176,41 @@ describe('POST /api/rules/preview', () => {
 
     const empty = await preview({ ...NEVER_WATCHED_180D, libraryKeys: [] });
     expect(empty.totalMatches).toBe(3);
+  });
+
+  it('pages through samples largest first and can leave protected items out', async () => {
+    const db = getDatabase();
+    const setSizeAndProtection = db.prepare('UPDATE media_items SET file_size = ?, is_protected = ? WHERE id = ?');
+    for (let i = 0; i < 12; i++) {
+      const item = seedMovie(`protected-${i}`, 'monitored', 400);
+      setSizeAndProtection.run(1_000_000 + i, 1, item.id);
+    }
+    for (let i = 0; i < 15; i++) {
+      const item = seedMovie(`free-${i}`, 'monitored', 400);
+      setSizeAndProtection.run(1_000 + i, 0, item.id);
+    }
+
+    // Default: every match, protected ones flagged, first page of ten.
+    const all = await preview(NEVER_WATCHED_180D);
+    expect(all.sampleTotal).toBe(27);
+    expect(all.samples).toHaveLength(10);
+    expect(all.samples.every((s) => s.isProtected)).toBe(true);
+    const sizes = all.samples.map((s) => s.size);
+    expect(sizes).toEqual([...sizes].sort((a, b) => b - a));
+
+    // Protected left out, second page holds the remaining five.
+    const unprotected = await preview({
+      ...NEVER_WATCHED_180D,
+      includeProtectedSamples: false,
+      sampleOffset: 10,
+      sampleLimit: 10,
+    });
+    expect(unprotected.sampleTotal).toBe(15);
+    expect(unprotected.samples).toHaveLength(5);
+    expect(unprotected.samples.every((s) => !s.isProtected && s.title.startsWith('free-'))).toBe(true);
+
+    // Headline counts are unaffected by the sample filter.
+    expect(unprotected.totalMatches).toBe(27);
+    expect(unprotected.wouldSkipProtected).toBe(12);
   });
 });
