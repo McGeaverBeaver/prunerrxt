@@ -63,6 +63,8 @@
     "title": "Recommandé pour le nettoyage"
   },
   "services": {
+    "directHistory": "Historique de visionnage depuis {{name}} lui-même",
+    "directHistoryName": "{{name}} direct",
     "overseerr": "Gestion des demandes",
     "plex": "Serveur multimédia pour les données de la bibliothèque",
     "radarr": "Gestion et suppression des films",

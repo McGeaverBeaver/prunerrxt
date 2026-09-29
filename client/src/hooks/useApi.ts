@@ -14,6 +14,7 @@ import {
   telemetryApi,
   announcementsApi,
 } from '@/services/api';
+import { mediaServerName } from '@/lib/mediaServer';
 import type {
   EpisodeDeletionRequest,
   LibraryFilters,
@@ -408,6 +409,12 @@ export function useSettings() {
     queryKey: queryKeys.settings,
     queryFn: settingsApi.get,
   });
+}
+
+/** Display name of the configured media server (Plex, Jellyfin or Emby). */
+export function useMediaServerName(): string {
+  const { data: settings } = useSettings();
+  return mediaServerName(settings?.mediaServerType);
 }
 
 export function useSaveSettings() {

@@ -60,7 +60,7 @@
     "clearSearch": "Cancella ricerca",
     "filtersDesc": "Prova a modificare i filtri di tipo o stato per visualizzare altri elementi.",
     "filtersTitle": "Nessun elemento corrisponde ai filtri",
-    "libraryDesc": "Sincronizza la tua libreria per importare i contenuti multimediali da Plex e iniziare a gestire la tua collezione.",
+    "libraryDesc": "Sincronizza la tua libreria per importare i contenuti multimediali da {{name}} e iniziare a gestire la tua collezione.",
     "libraryTitle": "La tua libreria è vuota",
     "searchDesc": "Nessun contenuto multimediale corrispondente a \"{{search}}\" è stato trovato. Prova un altro termine di ricerca o cancella i filtri.",
     "searchTitle": "Nessun risultato trovato",

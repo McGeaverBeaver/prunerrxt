@@ -63,6 +63,8 @@
     "title": "Consigliati per la pulizia"
   },
   "services": {
+    "directHistory": "Cronologia di visione direttamente da {{name}}",
+    "directHistoryName": "{{name}} diretto",
     "overseerr": "Gestione delle richieste",
     "plex": "Media server per i dati della libreria",
     "radarr": "Gestione ed eliminazione dei film",

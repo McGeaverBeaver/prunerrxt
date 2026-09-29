@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { cn } from '@/lib/utils';
+import { MEDIA_SERVER_NAMES } from '@/lib/mediaServer';
 import type { MediaServerType, ServiceConnection } from '@/types';
 
 import { MediaServerLogo } from '../components/MediaServerLogo';
@@ -536,12 +537,6 @@ function MediaServerPicker({
     </div>
   );
 }
-
-const MEDIA_SERVER_NAMES: Record<MediaServerType, string> = {
-  plex: 'Plex',
-  jellyfin: 'Jellyfin',
-  emby: 'Emby',
-};
 
 /* -------------------------------------------------------------------------- */
 /* Connection card                                                             */

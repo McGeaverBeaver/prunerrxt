@@ -216,7 +216,7 @@ export default interface Resources {
     },
     "timeline": {
       "action": {
-        "addedToPlex": "Added to Plex",
+        "addedToPlex": "Added to {{name}}",
         "collectionProtected": "Collection protected",
         "collectionUnprotected": "Collection unprotected",
         "episodesDeleted_one": "{{count}} episode deleted",
@@ -323,6 +323,8 @@ export default interface Resources {
       "title": "Recommended for Cleanup"
     },
     "services": {
+      "directHistory": "Watch history from {{name}} itself",
+      "directHistoryName": "{{name}} direct",
       "overseerr": "Request management",
       "plex": "Media server for library data",
       "radarr": "Movie management and deletion",
@@ -642,7 +644,7 @@ export default interface Resources {
       "clearSearch": "Clear Search",
       "filtersDesc": "Try adjusting your type or status filters to see more items.",
       "filtersTitle": "No items match filters",
-      "libraryDesc": "Sync your library to import media from Plex and start managing your collection.",
+      "libraryDesc": "Sync your library to import media from {{name}} and start managing your collection.",
       "libraryTitle": "Your library is empty",
       "searchDesc": "No media matching \"{{search}}\" was found. Try a different search term or clear filters.",
       "searchTitle": "No results found",

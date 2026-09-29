@@ -60,6 +60,8 @@
     "title": "Zur Bereinigung empfohlen"
   },
   "services": {
+    "directHistory": "Wiedergabeverlauf direkt aus {{name}}",
+    "directHistoryName": "{{name}} direkt",
     "overseerr": "Anfragenverwaltung",
     "plex": "Medienserver für Bibliotheksdaten",
     "radarr": "Filmverwaltung und -löschung",

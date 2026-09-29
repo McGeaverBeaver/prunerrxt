@@ -60,7 +60,7 @@
     "clearSearch": "Borrar búsqueda",
     "filtersDesc": "Prueba a ajustar los filtros de tipo o estado para ver más elementos.",
     "filtersTitle": "Ningún elemento coincide con los filtros",
-    "libraryDesc": "Sincroniza tu biblioteca para importar contenido de Plex y empezar a gestionar tu colección.",
+    "libraryDesc": "Sincroniza tu biblioteca para importar contenido de {{name}} y empezar a gestionar tu colección.",
     "libraryTitle": "Tu biblioteca está vacía",
     "searchDesc": "No se encontró contenido que coincida con \"{{search}}\". Prueba otro término de búsqueda o borra los filtros.",
     "searchTitle": "No se encontraron resultados",

@@ -51,7 +51,7 @@
   },
   "timeline": {
     "action": {
-      "addedToPlex": "Toegevoegd aan Plex",
+      "addedToPlex": "Toegevoegd aan {{name}}",
       "collectionProtected": "Collectie beschermd",
       "collectionUnprotected": "Bescherming collectie opgeheven",
       "episodesDeleted_one": "",
