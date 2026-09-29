@@ -70,6 +70,7 @@ interface PreviewData {
   alreadyPending: number;
   samples: Array<{ id: number; title: string; size: number; isProtected: boolean }>;
   sampleTotal: number;
+  totalSize: number;
 }
 
 async function preview(body: unknown): Promise<PreviewData> {
@@ -212,5 +213,18 @@ describe('POST /api/rules/preview', () => {
     // Headline counts are unaffected by the sample filter.
     expect(unprotected.totalMatches).toBe(27);
     expect(unprotected.wouldSkipProtected).toBe(12);
+  });
+
+  it('counts only unprotected matches as reclaimable', async () => {
+    const db = getDatabase();
+    const setSizeAndProtection = db.prepare('UPDATE media_items SET file_size = ?, is_protected = ? WHERE id = ?');
+    setSizeAndProtection.run(5_000, 1, seedMovie('kept', 'monitored', 400).id);
+    setSizeAndProtection.run(300, 0, seedMovie('gone-1', 'monitored', 400).id);
+    setSizeAndProtection.run(200, 0, seedMovie('gone-2', 'monitored', 400).id);
+
+    const data = await preview(NEVER_WATCHED_180D);
+
+    expect(data.totalMatches).toBe(3);
+    expect(data.totalSize).toBe(500);
   });
 });

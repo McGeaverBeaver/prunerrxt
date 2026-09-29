@@ -1109,7 +1109,11 @@ router.post('/preview', validateBody(PreviewRuleSchema), async (req: Request, re
     const wouldSkipProtected = matching.filter((i) => i.is_protected).length;
     const wouldQueue = matching.length - wouldSkipProtected;
 
-    const totalBytes = matching.reduce((sum, i) => sum + (i.file_size || 0), 0);
+    // Reclaimable space counts only what the rule would actually delete —
+    // protected items are skipped, so their size is never freed.
+    const totalBytes = matching
+      .filter((i) => !i.is_protected)
+      .reduce((sum, i) => sum + (i.file_size || 0), 0);
     const storageFreedGB = totalBytes / (1024 * 1024 * 1024);
 
     // One page of matches, largest first, so the whole match list can be
