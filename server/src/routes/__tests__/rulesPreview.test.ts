@@ -227,4 +227,29 @@ describe('POST /api/rules/preview', () => {
     expect(data.totalMatches).toBe(3);
     expect(data.totalSize).toBe(500);
   });
+
+  describe('GET /api/rules/suggestions', () => {
+    beforeEach(() => {
+      getDatabase().prepare('DELETE FROM media_items').run();
+    });
+
+    it('leaves protected items out of the counts and sizes', async () => {
+      const setSizeAndProtection = getDatabase().prepare(
+        'UPDATE media_items SET file_size = ?, is_protected = ? WHERE id = ?'
+      );
+      setSizeAndProtection.run(5_000, 1, seedMovie('kept', 'monitored', 400).id);
+      setSizeAndProtection.run(300, 0, seedMovie('gone-1', 'monitored', 400).id);
+      setSizeAndProtection.run(200, 0, seedMovie('gone-2', 'monitored', 400).id);
+
+      const res = await fetch(`${baseUrl}/suggestions`);
+      const json = (await res.json()) as {
+        success: boolean;
+        data: { suggestions: Array<{ id: string; matchCount: number; totalSize: number }> };
+      };
+      expect(json.success).toBe(true);
+
+      const neverWatched = json.data.suggestions.find((s) => s.id === 'never-watched');
+      expect(neverWatched).toMatchObject({ matchCount: 2, totalSize: 500 });
+    });
+  });
 });

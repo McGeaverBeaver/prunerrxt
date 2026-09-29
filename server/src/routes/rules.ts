@@ -327,8 +327,11 @@ router.get('/suggestions', async (_req: Request, res: Response) => {
   try {
     const mediaItemsRepo = await import('../db/repositories/mediaItems');
     // Suggestions estimate how much a proposed rule would reclaim, so they must
-    // ignore tombstones for the same reason /preview does.
-    const items = mediaItemsRepo.default.fetchAll({ excludeDeleted: true });
+    // ignore tombstones for the same reason /preview does, and protected items,
+    // which a rule never deletes.
+    const items = mediaItemsRepo.default
+      .fetchAll({ excludeDeleted: true })
+      .filter((item) => !item.is_protected);
 
     const now = new Date();
     const suggestions: Array<{
