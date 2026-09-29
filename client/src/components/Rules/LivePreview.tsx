@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion, useMotionValue, useTransform, animate, useReducedMotion } from 'framer-motion';
-import { Eye, AlertCircle, Film, Shield, HardDrive, Clock } from 'lucide-react';
+import { Eye, AlertCircle, Film, Shield, HardDrive, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/common/Card';
+import { Toggle } from '@/components/Settings/components/Toggle';
 import { rulesApi } from '@/services/api';
 import { formatBytes } from '@/lib/utils';
 import { libraryItemPath } from '@/lib/links';
@@ -46,7 +47,42 @@ interface PreviewData {
   /** Matches already sitting in the deletion queue — not new work. */
   alreadyPending?: number;
   storageFreedGB?: number;
-  samples?: Array<{ id: number; title: string; size: number; rating: number | null; posterUrl?: string | null }>;
+  samples?: Array<{
+    id: number;
+    title: string;
+    size: number;
+    rating: number | null;
+    posterUrl?: string | null;
+    isProtected?: boolean;
+  }>;
+  /** Size of the list the samples are paged from. */
+  sampleTotal?: number;
+}
+
+const SAMPLE_LIMIT = 10;
+const SHOW_PROTECTED_KEY = 'rules-preview-show-protected';
+
+/**
+ * Whether the top-matches list includes protected items. Rules never act on
+ * protected items, so they're hidden by default; the choice is remembered.
+ */
+function useShowProtected(): [boolean, (value: boolean) => void] {
+  const [show, setShow] = useState(() => {
+    try {
+      return localStorage.getItem(SHOW_PROTECTED_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const update = (value: boolean) => {
+    setShow(value);
+    try {
+      localStorage.setItem(SHOW_PROTECTED_KEY, String(value));
+    } catch {
+      /* storage unavailable — keep the in-memory choice */
+    }
+  };
+  return [show, update];
 }
 
 /**
@@ -61,6 +97,16 @@ export function LivePreview({ root, mediaType = 'all', libraryKeys, enabled = tr
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [isPending, setIsPending] = useState(false);
+  // Paging through the matches, and whether protected ones are listed. Either
+  // changing only refreshes the match list, so the stats stay on screen.
+  const [page, setPage] = useState(0);
+  const [showProtected, setShowProtected] = useShowProtected();
+  const [isPaging, setIsPaging] = useState(false);
+  const listOnlyRef = useRef(false);
+  // What the current match list was computed for. The page only resets when
+  // this actually changes — the debounce also fires on mount and whenever the
+  // editor re-renders, and those must not throw the user back to page one.
+  const queryKeyRef = useRef(previewQueryKey(root, mediaType, libraryKeys));
 
   // Generation counter to discard stale responses — if the user edits rapidly
   // we must ignore older in-flight results that arrive after newer ones.
@@ -71,6 +117,11 @@ export function LivePreview({ root, mediaType = 'all', libraryKeys, enabled = tr
       setDebouncedRoot(root);
       setDebouncedMediaType(mediaType);
       setDebouncedLibraryKeys(libraryKeys);
+      const key = previewQueryKey(root, mediaType, libraryKeys);
+      if (key !== queryKeyRef.current) {
+        queryKeyRef.current = key;
+        setPage(0);
+      }
     }, DEBOUNCE_MS);
     return () => clearTimeout(handle);
   }, [root, mediaType, libraryKeys]);
@@ -79,7 +130,10 @@ export function LivePreview({ root, mediaType = 'all', libraryKeys, enabled = tr
     if (!enabled) return;
     if (!hasAnyCondition(debouncedRoot)) return;
     const myGen = ++generation.current;
-    setIsPending(true);
+    const listOnly = listOnlyRef.current;
+    listOnlyRef.current = false;
+    if (listOnly) setIsPaging(true);
+    else setIsPending(true);
     setError(null);
     rulesApi
       .previewV2({
@@ -89,18 +143,34 @@ export function LivePreview({ root, mediaType = 'all', libraryKeys, enabled = tr
         ...(debouncedLibraryKeys && debouncedLibraryKeys.length > 0
           ? { libraryKeys: debouncedLibraryKeys }
           : {}),
+        sampleOffset: page * SAMPLE_LIMIT,
+        sampleLimit: SAMPLE_LIMIT,
+        includeProtectedSamples: showProtected,
       })
       .then((data) => {
         if (myGen !== generation.current) return; // stale
         setPreview(data);
         setIsPending(false);
+        setIsPaging(false);
       })
       .catch((err: Error) => {
         if (myGen !== generation.current) return; // stale
         setError(err);
         setIsPending(false);
+        setIsPaging(false);
       });
-  }, [debouncedRoot, debouncedMediaType, debouncedLibraryKeys, enabled]);
+  }, [debouncedRoot, debouncedMediaType, debouncedLibraryKeys, enabled, page, showProtected]);
+
+  const handlePageChange = (next: number) => {
+    listOnlyRef.current = true;
+    setPage(next);
+  };
+
+  const handleShowProtectedChange = (value: boolean) => {
+    listOnlyRef.current = true;
+    setShowProtected(value);
+    setPage(0);
+  };
 
   // Surface a compact summary to any consumer (mobile chip etc.). We fire on
   // every state change so the chip stays in sync with whatever the panel
@@ -132,7 +202,14 @@ export function LivePreview({ root, mediaType = 'all', libraryKeys, enabled = tr
         ) : error ? (
           <PreviewError message={error.message} />
         ) : preview ? (
-          <PreviewStats preview={preview} />
+          <PreviewStats
+            preview={preview}
+            page={page}
+            onPageChange={handlePageChange}
+            showProtected={showProtected}
+            onShowProtectedChange={handleShowProtectedChange}
+            isPaging={isPaging}
+          />
         ) : (
           <EmptyPreview />
         )}
@@ -174,7 +251,21 @@ function PreviewError({ message }: { message: string }) {
   );
 }
 
-function PreviewStats({ preview }: { preview: PreviewData }) {
+function PreviewStats({
+  preview,
+  page,
+  onPageChange,
+  showProtected,
+  onShowProtectedChange,
+  isPaging,
+}: {
+  preview: PreviewData;
+  page: number;
+  onPageChange: (page: number) => void;
+  showProtected: boolean;
+  onShowProtectedChange: (value: boolean) => void;
+  isPaging: boolean;
+}) {
   const { t } = useTranslation('rules');
   const total = preview.totalMatches ?? 0;
   const queue = preview.wouldQueue ?? 0;
@@ -182,6 +273,12 @@ function PreviewStats({ preview }: { preview: PreviewData }) {
   const pending = preview.alreadyPending ?? 0;
   const freedGB = preview.storageFreedGB ?? 0;
   const samples = preview.samples ?? [];
+  const sampleTotal = preview.sampleTotal ?? samples.length;
+  const pageCount = Math.max(1, Math.ceil(sampleTotal / SAMPLE_LIMIT));
+  const firstShown = page * SAMPLE_LIMIT + 1;
+  const lastShown = page * SAMPLE_LIMIT + samples.length;
+  // Everything that matched is protected and those are hidden.
+  const allHidden = !showProtected && sampleTotal === 0 && total > 0;
 
   return (
     <div className="flex flex-col flex-1 min-h-0 gap-4">
@@ -218,11 +315,31 @@ function PreviewStats({ preview }: { preview: PreviewData }) {
         )}
       </div>
 
-      {samples.length > 0 && (
+      {total > 0 && (
         <div className="flex flex-col flex-1 min-h-0">
-          <p className="text-xs text-surface-500 mb-2 shrink-0">{t('preview.topMatches', 'Top matches by size:')}</p>
-          <div className="space-y-2 overflow-y-auto flex-1 min-h-0">
-            {samples.slice(0, 10).map((item) => (
+          <div className="flex items-center justify-between gap-2 mb-2 shrink-0">
+            <p className="text-xs text-surface-500">{t('preview.matchesBySize', 'Matches by size:')}</p>
+            {skipped > 0 && (
+              <label className="flex items-center gap-2 text-xs text-surface-400">
+                {t('preview.showProtected', 'Show protected')}
+                <Toggle
+                  checked={showProtected}
+                  onChange={onShowProtectedChange}
+                  label={t('preview.showProtected', 'Show protected')}
+                />
+              </label>
+            )}
+          </div>
+          {allHidden && (
+            <p className="text-xs text-surface-500 py-2">
+              {t('preview.allProtected', 'Every match is protected, so this rule won’t delete anything.')}
+            </p>
+          )}
+          <div
+            className={`space-y-2 overflow-y-auto flex-1 min-h-0 transition-opacity ${isPaging ? 'opacity-50' : ''}`}
+            aria-busy={isPaging}
+          >
+            {samples.map((item) => (
               // Opened in a new tab: the preview lives inside the rule builder,
               // so navigating in place would throw away the rule being edited.
               <Link
@@ -245,7 +362,15 @@ function PreviewStats({ preview }: { preview: PreviewData }) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-surface-200 truncate">{item.title}</p>
+                  <p className="text-surface-200 truncate flex items-center gap-1.5">
+                    {item.isProtected && (
+                      <Shield
+                        className="w-3.5 h-3.5 text-accent-text flex-shrink-0"
+                        aria-label={t('preview.protected', 'Protected')}
+                      />
+                    )}
+                    <span className="truncate">{item.title}</span>
+                  </p>
                   <p className="text-xs text-surface-500">
                     {formatBytes(item.size)}
                     {item.rating !== null && ` • ${item.rating.toFixed(1)}`}
@@ -254,6 +379,35 @@ function PreviewStats({ preview }: { preview: PreviewData }) {
               </Link>
             ))}
           </div>
+          {pageCount > 1 && (
+            <div className="flex items-center justify-between gap-2 pt-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => onPageChange(page - 1)}
+                disabled={page === 0 || isPaging}
+                aria-label={t('preview.previousPage', 'Previous page')}
+                className="p-1.5 rounded-lg text-surface-400 hover:text-surface-100 hover:bg-surface-700 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-xs text-surface-400 tabular-nums">
+                {t('preview.pageRange', '{{first}}–{{last}} of {{total}}', {
+                  first: firstShown,
+                  last: lastShown,
+                  total: sampleTotal,
+                })}
+              </span>
+              <button
+                type="button"
+                onClick={() => onPageChange(page + 1)}
+                disabled={page >= pageCount - 1 || isPaging}
+                aria-label={t('preview.nextPage', 'Next page')}
+                className="p-1.5 rounded-lg text-surface-400 hover:text-surface-100 hover:bg-surface-700 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -314,6 +468,14 @@ function CountUp({ value }: { value: number }) {
 function formatStorageGB(gb: number): string {
   if (gb >= 1000) return `${(gb / 1000).toFixed(2)} TB`;
   return `${gb.toFixed(2)} GB`;
+}
+
+function previewQueryKey(
+  root: ConditionNode,
+  mediaType: string,
+  libraryKeys: string[] | undefined
+): string {
+  return JSON.stringify([stripUiIds(root), mediaType, libraryKeys ?? []]);
 }
 
 function hasAnyCondition(node: ConditionNode): boolean {
