@@ -60,6 +60,8 @@
     "title": "Recommended for Cleanup"
   },
   "services": {
+    "directHistory": "Watch history from {{name}} itself",
+    "directHistoryName": "{{name}} direct",
     "overseerr": "Request management",
     "plex": "Media server for library data",
     "radarr": "Movie management and deletion",

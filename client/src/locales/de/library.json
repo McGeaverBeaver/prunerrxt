@@ -57,7 +57,7 @@
     "clearSearch": "Suche löschen",
     "filtersDesc": "Passe deine Typ- oder Statusfilter an, um mehr Elemente anzuzeigen.",
     "filtersTitle": "Keine Elemente entsprechen den Filtern",
-    "libraryDesc": "Synchronisiere deine Bibliothek, um Medien aus Plex zu importieren und deine Sammlung zu verwalten.",
+    "libraryDesc": "Synchronisiere deine Bibliothek, um Medien aus {{name}} zu importieren und deine Sammlung zu verwalten.",
     "libraryTitle": "Deine Bibliothek ist leer",
     "searchDesc": "Es wurden keine Medien gefunden, die \"{{search}}\" entsprechen. Versuche einen anderen Suchbegriff oder setze die Filter zurück.",
     "searchTitle": "Keine Ergebnisse gefunden",

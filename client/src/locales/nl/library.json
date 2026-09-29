@@ -57,7 +57,7 @@
     "clearSearch": "Zoekopdracht wissen",
     "filtersDesc": "Probeer je type- of statusfilters aan te passen om meer items te zien.",
     "filtersTitle": "Geen items komen overeen met de filters",
-    "libraryDesc": "Synchroniseer je bibliotheek om media uit Plex te importeren en je collectie te beheren.",
+    "libraryDesc": "Synchroniseer je bibliotheek om media uit {{name}} te importeren en je collectie te beheren.",
     "libraryTitle": "Je bibliotheek is leeg",
     "searchDesc": "Geen media gevonden die overeenkomt met \"{{search}}\". Probeer een andere zoekterm of wis de filters.",
     "searchTitle": "Geen resultaten gevonden",

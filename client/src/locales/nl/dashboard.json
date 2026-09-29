@@ -60,6 +60,8 @@
     "title": "Aanbevolen voor opschonen"
   },
   "services": {
+    "directHistory": "Kijkgeschiedenis rechtstreeks uit {{name}}",
+    "directHistoryName": "{{name}} direct",
     "overseerr": "Aanvraagbeheer",
     "plex": "Mediaserver voor bibliotheekgegevens",
     "radarr": "Filmbeheer en -verwijdering",

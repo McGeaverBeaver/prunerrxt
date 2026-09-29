@@ -14,18 +14,13 @@ import {
 import { useToast } from '@/components/common/Toast';
 import { Button } from '@/components/common/Button';
 import { cn } from '@/lib/utils';
+import { MEDIA_SERVER_NAMES } from '@/lib/mediaServer';
 import type { MediaServerType, Settings as SettingsType } from '@/types';
 
 import { SETTINGS_NAV, matchesQuery, type NavCategory } from './settingsNav';
 import { useSettingsDraft } from './useSettingsDraft';
 import type { ActiveMediaServer, CategoryId, PanelProps, ServiceKeyType, TestResult } from './types';
 import { StatusDot, type StatusDotState } from './components/StatusDot';
-
-const MEDIA_SERVER_NAMES: Record<MediaServerType, string> = {
-  plex: 'Plex',
-  jellyfin: 'Jellyfin',
-  emby: 'Emby',
-};
 
 /** Jellyfin and Emby share one settings namespace; Plex has its own. */
 function configKeyFor(type: MediaServerType): 'plex' | 'jellyfin' {

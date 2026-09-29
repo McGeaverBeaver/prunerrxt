@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -22,7 +22,7 @@ import {
 import MediaTable from './MediaTable';
 import MediaCard from './MediaCard';
 import { DeletionOptionsModal, type DeletionOptions } from './DeletionOptionsModal';
-import { useLibrary, useBulkMarkForDeletion, useBulkProtect, useSettings } from '@/hooks/useApi';
+import { useLibrary, useBulkMarkForDeletion, useBulkProtect, useMediaServerName, useSettings } from '@/hooks/useApi';
 import { libraryApi } from '@/services/api';
 import { useToast } from '@/components/common/Toast';
 import { cn, formatBytes } from '@/lib/utils';
@@ -218,7 +218,11 @@ export default function Library() {
   const [openCardMenuId, setOpenCardMenuId] = useState<string | null>(null);
 
   // Selection state (no explicit "selection mode" - just start selecting)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Selected items keyed by id. Selection survives paging, so the item itself
+  // is kept alongside its id — the summary can then total items on other
+  // pages, not just the ones currently on screen.
+  const [selected, setSelected] = useState<Map<string, MediaItem>>(new Map());
+  const selectedIds = useMemo(() => new Set(selected.keys()), [selected]);
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
 
   // Deletion modal state
@@ -245,7 +249,7 @@ export default function Library() {
   const selectable = status !== 'deleted';
   useEffect(() => {
     if (!selectable) {
-      setSelectedIds(new Set());
+      setSelected(new Map());
       setLastSelectedId(null);
     }
   }, [selectable]);
@@ -280,11 +284,11 @@ export default function Library() {
       if (lastIndex !== -1 && currentIndex !== -1) {
         const start = Math.min(lastIndex, currentIndex);
         const end = Math.max(lastIndex, currentIndex);
-        const rangeIds = itemIds.slice(start, end + 1);
+        const rangeItems = data.items.slice(start, end + 1);
 
-        setSelectedIds(prev => {
-          const next = new Set(prev);
-          rangeIds.forEach(rangeId => next.add(rangeId));
+        setSelected(prev => {
+          const next = new Map(prev);
+          rangeItems.forEach(item => next.set(item.id, item));
           return next;
         });
         return;
@@ -292,12 +296,13 @@ export default function Library() {
     }
 
     // Regular click: toggle single item
-    setSelectedIds(prev => {
-      const next = new Set(prev);
+    const item = data?.items.find(i => i.id === id);
+    setSelected(prev => {
+      const next = new Map(prev);
       if (next.has(id)) {
         next.delete(id);
-      } else {
-        next.add(id);
+      } else if (item) {
+        next.set(id, item);
       }
       return next;
     });
@@ -306,27 +311,27 @@ export default function Library() {
 
   const handleSelectAll = () => {
     if (!data?.items) return;
-    const allIds = data.items.map(item => item.id);
-    const allSelected = allIds.every(id => selectedIds.has(id));
+    const pageItems = data.items;
+    const allSelected = pageItems.every(item => selected.has(item.id));
     if (allSelected) {
       // Deselect all on current page
-      setSelectedIds(prev => {
-        const next = new Set(prev);
-        allIds.forEach(id => next.delete(id));
+      setSelected(prev => {
+        const next = new Map(prev);
+        pageItems.forEach(item => next.delete(item.id));
         return next;
       });
     } else {
       // Select all on current page
-      setSelectedIds(prev => {
-        const next = new Set(prev);
-        allIds.forEach(id => next.add(id));
+      setSelected(prev => {
+        const next = new Map(prev);
+        pageItems.forEach(item => next.set(item.id, item));
         return next;
       });
     }
   };
 
   const handleClearSelection = () => {
-    setSelectedIds(new Set());
+    setSelected(new Map());
     setLastSelectedId(null);
   };
 
@@ -412,8 +417,10 @@ export default function Library() {
 
   const hasSelection = selectedIds.size > 0;
 
-  // Calculate selected items info
-  const selectedItems = data?.items.filter(item => selectedIds.has(item.id)) || [];
+  // Calculate selected items info across every page, preferring the current
+  // page's copy of an item so a refetch (e.g. after protecting) is reflected.
+  const pageItemsById = new Map(data?.items.map(item => [item.id, item]));
+  const selectedItems = Array.from(selected.values()).map(item => pageItemsById.get(item.id) ?? item);
   const selectedSize = selectedItems.reduce((acc, item) => acc + item.size, 0);
   const allSelectedProtected = selectedItems.length > 0 && selectedItems.every(item => item.isProtected);
 
@@ -1104,6 +1111,7 @@ function EmptyLibraryState({
   onSync,
 }: EmptyLibraryStateProps) {
   const { t } = useTranslation('library');
+  const mediaServer = useMediaServerName();
   const hasFilters = mediaType !== 'all' || status !== 'all';
 
   // Search active but no results
@@ -1142,7 +1150,7 @@ function EmptyLibraryState({
       <EmptyState
         icon={LibraryIcon}
         title={t('empty.libraryTitle', 'Your library is empty')}
-        description={t('empty.libraryDesc', 'Sync your library to import media from Plex and start managing your collection.')}
+        description={t('empty.libraryDesc', 'Sync your library to import media from {{name}} and start managing your collection.', { name: mediaServer })}
         action={{ label: t('empty.syncLibrary', 'Sync Library'), onClick: onSync }}
       />
     </div>

@@ -57,7 +57,7 @@
     "clearSearch": "Clear Search",
     "filtersDesc": "Try adjusting your type or status filters to see more items.",
     "filtersTitle": "No items match filters",
-    "libraryDesc": "Sync your library to import media from Plex and start managing your collection.",
+    "libraryDesc": "Sync your library to import media from {{name}} and start managing your collection.",
     "libraryTitle": "Your library is empty",
     "searchDesc": "No media matching \"{{search}}\" was found. Try a different search term or clear filters.",
     "searchTitle": "No results found",

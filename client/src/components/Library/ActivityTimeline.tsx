@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import { cn, formatBytes, formatRelativeTime, formatDate } from '@/lib/utils';
 import { Badge } from '@/components/common/Badge';
+import { useMediaServerName } from '@/hooks/useApi';
 import {
   buildEpisodeHistoryEntries,
   episodeCount,
@@ -103,7 +104,9 @@ function formatAction(entry: TimelineEntry): string {
     rule_matched: i18n.t('timeline.action.ruleMatched', 'Matched by rule'),
     scanned: i18n.t('timeline.action.scanned', 'Library scan'),
     [SYNTHETIC_FIRST_SCANNED]: i18n.t('timeline.action.firstScanned', 'First scanned by Prunerr'),
-    [SYNTHETIC_ADDED_TO_PLEX]: i18n.t('timeline.action.addedToPlex', 'Added to Plex'),
+    [SYNTHETIC_ADDED_TO_PLEX]: i18n.t('timeline.action.addedToPlex', 'Added to {{name}}', {
+      name: String(entry.metadata?.['mediaServer'] ?? 'Plex'),
+    }),
   };
 
   // Episode-level rows carry their own count, so their labels are pluralised.
@@ -149,6 +152,7 @@ function ActivityTimelineImpl({
   sonarrHistory,
 }: ActivityTimelineProps) {
   const { t } = useTranslation('library');
+  const mediaServer = useMediaServerName();
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -195,7 +199,7 @@ function ActivityTimelineImpl({
       targetType: null,
       targetId: null,
       targetTitle: null,
-      metadata: null,
+      metadata: { mediaServer },
       createdAt: addedAt,
     });
   }

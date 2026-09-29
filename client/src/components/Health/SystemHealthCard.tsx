@@ -2,7 +2,7 @@ import { Activity, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { CONNECTIONS_SETTINGS_PATH, serviceHomeUrl } from '@/lib/links';
-import { useSettings } from '@/hooks/useApi';
+import { useMediaServerName, useSettings } from '@/hooks/useApi';
 import { ServiceStatusIndicator } from './ServiceStatusIndicator';
 import type { ServiceHealthStatus } from '@/types';
 
@@ -17,6 +17,10 @@ export function SystemHealthCard({ services, overall, loading, isFetching }: Sys
   const { t } = useTranslation('health');
   // Service URLs so each row links to the service it reports on.
   const { data: settings } = useSettings();
+  // Health reports the media server under its historical 'plex' key whatever
+  // backend is in use, so label that row with the configured server's name.
+  const mediaServer = useMediaServerName();
+  const displayName = (service: string) => (service === 'plex' ? mediaServer : service);
   const overallConfig = {
     healthy: {
       color: 'text-emerald-text',
@@ -40,7 +44,7 @@ export function SystemHealthCard({ services, overall, loading, isFetching }: Sys
   // Sort services: configured first, then alphabetically
   const sortedServices = [...services].sort((a, b) => {
     if (a.configured !== b.configured) return a.configured ? -1 : 1;
-    return a.service.localeCompare(b.service);
+    return displayName(a.service).localeCompare(displayName(b.service));
   });
 
   return (
@@ -75,7 +79,7 @@ export function SystemHealthCard({ services, overall, loading, isFetching }: Sys
           {sortedServices.map((service) => (
             <ServiceStatusIndicator
               key={service.service}
-              name={service.service}
+              name={displayName(service.service)}
               configured={service.configured}
               connected={service.connected}
               error={service.error}

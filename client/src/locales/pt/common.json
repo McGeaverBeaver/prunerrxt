@@ -53,7 +53,7 @@
   },
   "timeline": {
     "action": {
-      "addedToPlex": "Adicionado ao Plex",
+      "addedToPlex": "Adicionado ao {{name}}",
       "collectionProtected": "Coleção protegida",
       "collectionUnprotected": "Coleção desprotegida",
       "episodesDeleted_one": "",

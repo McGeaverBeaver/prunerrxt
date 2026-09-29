@@ -25,7 +25,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useStats, useRecentActivity, useUpcomingDeletions, useRecommendations, useMarkForDeletion, useUnraidStats, useHealthStatus, useStorageHistory } from '@/hooks/useApi';
+import { useStats, useRecentActivity, useUpcomingDeletions, useRecommendations, useMarkForDeletion, useUnraidStats, useHealthStatus, useStorageHistory, useSettings } from '@/hooks/useApi';
 import { SystemHealthCard } from '@/components/Health/SystemHealthCard';
 import { ScheduleCadenceCard } from '@/components/Health/ScheduleCadenceCard';
 import { WelcomeCard } from './WelcomeCard';
@@ -33,6 +33,7 @@ import type { ActivityLogEntry, Recommendation, UnraidDisk, StorageSnapshot } fr
 import { formatBytes, formatRelativeTime, cn } from '@/lib/utils';
 import { activityTargetPath, libraryItemPath } from '@/lib/links';
 import { formatActivity } from '@/lib/activityFormatter';
+import { mediaServerName } from '@/lib/mediaServer';
 import { arrayStateLabel } from '@/lib/unraidStatus';
 import { Badge } from '@/components/common/Badge';
 import { MaybeLink } from '@/components/common/MaybeLink';
@@ -52,6 +53,9 @@ export default function Dashboard() {
   const markForDeletion = useMarkForDeletion();
   const { addToast } = useToast();
   const { t } = useTranslation('dashboard');
+  const { data: settings } = useSettings();
+  const mediaServer = mediaServerName(settings?.mediaServerType);
+  const isPlexBackend = (settings?.mediaServerType ?? 'plex') === 'plex';
 
   const hasArrService = Boolean(
     healthStatus?.services?.some((s) => (s.service === 'sonarr' || s.service === 'radarr') && s.configured)
@@ -82,15 +86,35 @@ export default function Dashboard() {
       overseerr: { required: false, description: t('services.overseerr', 'Request management') },
     };
 
-    const services = healthStatus.services.map(s => ({
-      name: s.service.charAt(0).toUpperCase() + s.service.slice(1),
-      configured: s.configured,
-      required: serviceMap[s.service]?.required ?? false,
-      description: serviceMap[s.service]?.description ?? '',
-    }));
+    // Tautulli and Tracearr only resolve Plex item ids, so they can't serve
+    // watch history for a Jellyfin or Emby library.
+    const plexOnly = new Set(['tautulli', 'tracearr']);
+    const services = healthStatus.services
+      .filter(s => isPlexBackend || !plexOnly.has(s.service))
+      .map(s => ({
+        key: s.service,
+        // Health reports the media server as 'plex' whatever backend is in use.
+        name: s.service === 'plex' ? mediaServer : s.service.charAt(0).toUpperCase() + s.service.slice(1),
+        configured: s.configured,
+        required: serviceMap[s.service]?.required ?? false,
+        description: serviceMap[s.service]?.description ?? '',
+      }));
+
+    // Reading history straight from the media server satisfies the watch
+    // history requirement just as Tautulli or Tracearr do.
+    const mediaServerConfigured = healthStatus.services.some(s => s.service === 'plex' && s.configured);
+    const watchProvider = settings?.watchHistory?.provider;
+    services.push({
+      key: 'mediaServerHistory',
+      name: t('services.directHistoryName', '{{name}} direct', { name: mediaServer }),
+      configured: mediaServerConfigured && (watchProvider === 'plex' || watchProvider === 'mediaServer'),
+      required: 'watchHistory',
+      description: t('services.directHistory', 'Watch history from {{name}} itself', { name: mediaServer }),
+    });
 
     // Add Unraid separately (it's not in health status, uses separate API)
     services.push({
+      key: 'unraid',
       name: 'Unraid',
       configured: unraidStats?.configured ?? false,
       required: false,
@@ -103,23 +127,16 @@ export default function Dashboard() {
   const serviceStatus = getServiceStatus();
 
   // Check if required services are configured:
-  // - Plex is always required
-  // - At least one watch history provider (Tautulli OR Tracearr) is required
+  // - The media server is always required
+  // - At least one watch history provider (media server direct, Tautulli or Tracearr) is required
   // - At least one of Sonarr or Radarr is required
   const checkRequiredServices = () => {
     if (!serviceStatus) return true; // Assume configured while loading
 
-    const plex = serviceStatus.find(s => s.name.toLowerCase() === 'plex');
-    const tautulli = serviceStatus.find(s => s.name.toLowerCase() === 'tautulli');
-    const tracearr = serviceStatus.find(s => s.name.toLowerCase() === 'tracearr');
-    const sonarr = serviceStatus.find(s => s.name.toLowerCase() === 'sonarr');
-    const radarr = serviceStatus.find(s => s.name.toLowerCase() === 'radarr');
+    const configured = (required: boolean | 'arr' | 'watchHistory') =>
+      serviceStatus.filter(s => s.required === required).some(s => s.configured);
 
-    const plexConfigured = plex?.configured ?? false;
-    const hasWatchHistoryProvider = (tautulli?.configured ?? false) || (tracearr?.configured ?? false);
-    const hasArrService = (sonarr?.configured ?? false) || (radarr?.configured ?? false);
-
-    return plexConfigured && hasWatchHistoryProvider && hasArrService;
+    return configured(true) && configured('watchHistory') && configured('arr');
   };
 
   const requiredServicesConfigured = checkRequiredServices();
