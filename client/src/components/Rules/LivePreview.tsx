@@ -103,6 +103,10 @@ export function LivePreview({ root, mediaType = 'all', libraryKeys, enabled = tr
   const [showProtected, setShowProtected] = useShowProtected();
   const [isPaging, setIsPaging] = useState(false);
   const listOnlyRef = useRef(false);
+  // What the current match list was computed for. The page only resets when
+  // this actually changes — the debounce also fires on mount and whenever the
+  // editor re-renders, and those must not throw the user back to page one.
+  const queryKeyRef = useRef(previewQueryKey(root, mediaType, libraryKeys));
 
   // Generation counter to discard stale responses — if the user edits rapidly
   // we must ignore older in-flight results that arrive after newer ones.
@@ -113,7 +117,11 @@ export function LivePreview({ root, mediaType = 'all', libraryKeys, enabled = tr
       setDebouncedRoot(root);
       setDebouncedMediaType(mediaType);
       setDebouncedLibraryKeys(libraryKeys);
-      setPage(0);
+      const key = previewQueryKey(root, mediaType, libraryKeys);
+      if (key !== queryKeyRef.current) {
+        queryKeyRef.current = key;
+        setPage(0);
+      }
     }, DEBOUNCE_MS);
     return () => clearTimeout(handle);
   }, [root, mediaType, libraryKeys]);
@@ -460,6 +468,14 @@ function CountUp({ value }: { value: number }) {
 function formatStorageGB(gb: number): string {
   if (gb >= 1000) return `${(gb / 1000).toFixed(2)} TB`;
   return `${gb.toFixed(2)} GB`;
+}
+
+function previewQueryKey(
+  root: ConditionNode,
+  mediaType: string,
+  libraryKeys: string[] | undefined
+): string {
+  return JSON.stringify([stripUiIds(root), mediaType, libraryKeys ?? []]);
 }
 
 function hasAnyCondition(node: ConditionNode): boolean {

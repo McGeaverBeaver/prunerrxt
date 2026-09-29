@@ -92,4 +92,43 @@ describe('LivePreview matches list', () => {
     );
     expect(await screen.findByText('Protected 1')).toBeInTheDocument();
   });
+
+  it('stays on the chosen page when the editor re-renders with the same rule', async () => {
+    const { rerender } = renderPreview();
+    await screen.findByText('Free 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    await screen.findByText('Free 11');
+
+    // A fresh but identical tree, as the editor produces on re-render, then
+    // outlast the debounce that used to reset the page.
+    rerender(
+      <MemoryRouter>
+        <LivePreview root={structuredClone(ROOT)} />
+      </MemoryRouter>
+    );
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    expect(screen.getByText('Free 11')).toBeInTheDocument();
+    expect(previewV2).toHaveBeenLastCalledWith(expect.objectContaining({ sampleOffset: 10 }));
+  });
+
+  it('returns to the first page when the rule changes', async () => {
+    const { rerender } = renderPreview();
+    await screen.findByText('Free 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    await screen.findByText('Free 11');
+
+    const edited = {
+      ...ROOT,
+      children: [{ kind: 'condition', field: 'play_count', operator: 'equals', value: 1 }],
+    } as ConditionNode;
+    rerender(
+      <MemoryRouter>
+        <LivePreview root={edited} />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Free 1', {}, { timeout: 2000 })).toBeInTheDocument();
+    expect(previewV2).toHaveBeenLastCalledWith(expect.objectContaining({ sampleOffset: 0 }));
+  });
 });
