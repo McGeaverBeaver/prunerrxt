@@ -59,10 +59,6 @@ services:
       - SMTP_FROM=
       - NOTIFICATION_EMAIL=
 
-      # Anonymous install count — a random ID and the version, once a day.
-      # Nothing else. Set to false to disable entirely; see docs/telemetry.md.
-      # - TELEMETRY_ENABLED=false
-
       # Login & access (optional; docs/authentication.md). Off by default.
       # Single sign-on via Authentik or any OpenID Connect provider, roles from
       # groups, and/or a local account. The MCP connector needs AUTH_ENABLED=true.

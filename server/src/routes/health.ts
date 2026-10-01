@@ -5,8 +5,7 @@ import logger from '../utils/logger';
 import { getAppVersion } from '../utils/version';
 import { getSystemHealth } from '../services/systemHealth';
 
-// APP_VERSION at Docker build time, package.json otherwise. Shared with the
-// telemetry heartbeat so both report the same string.
+// APP_VERSION at Docker build time, package.json otherwise.
 const appVersion = getAppVersion();
 
 const router = Router();

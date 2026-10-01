@@ -11,8 +11,6 @@ import {
   healthApi,
   scanApi,
   webhooksApi,
-  telemetryApi,
-  announcementsApi,
   authSettingsApi,
   mcpApi,
 } from '@/services/api';
@@ -522,51 +520,6 @@ export function useTriggerScan() {
   });
 }
 
-// Telemetry Hooks
-export function useTelemetry() {
-  return useQuery({
-    queryKey: ['telemetry'],
-    queryFn: telemetryApi.get,
-    // A first-run notice that flickers in on every refetch would be worse than
-    // no notice at all.
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  });
-}
-
-export function useUpdateTelemetry() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (body: { enabled?: boolean; noticeSeen?: boolean }) => telemetryApi.update(body),
-    onSuccess: (state) => {
-      queryClient.setQueryData(['telemetry'], state);
-    },
-  });
-}
-
-// Announcements Hooks
-export function useAnnouncements() {
-  return useQuery({
-    queryKey: ['announcements'],
-    queryFn: announcementsApi.get,
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  });
-}
-
-export function useRefreshAnnouncements() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: announcementsApi.refresh,
-    onSuccess: (state) => {
-      queryClient.setQueryData(['announcements'], state);
-    },
-  });
-}
-
-// Version Hook
 export function useVersion() {
   return useQuery({
     queryKey: ['version'],

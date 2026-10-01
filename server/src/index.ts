@@ -17,8 +17,6 @@ import logger, { morganStream } from './utils/logger';
 import { apiAuthMiddleware, ensureApiKey } from './middleware/apiAuth';
 import { initializeServices } from './services/init';
 import { getScheduler } from './scheduler';
-import { sendStartupHeartbeat } from './services/telemetry';
-import { refreshAnnouncementsOnStartup } from './services/announcements';
 import { createMcpRouter, closeAllMcpSessions } from './mcp';
 import { getAuthConfig } from './auth/config';
 import { purgeExpiredSessions } from './auth/sessions';
@@ -174,13 +172,6 @@ async function startServer(): Promise<void> {
       logger.info(`  Port: ${config.port}`);
       logger.info(`  API: http://localhost:${config.port}/api`);
       logger.info(`  Health: http://localhost:${config.port}/api/health`);
-
-      // Anonymous install-count heartbeat. Fired after the server is already
-      // listening and never awaited, so an unreachable endpoint costs startup
-      // nothing. No-ops when telemetry is off or not yet due.
-      sendStartupHeartbeat();
-      // Same rules for the "What's new" feed: after listen, never awaited.
-      refreshAnnouncementsOnStartup();
     });
 
     // Graceful shutdown handlers

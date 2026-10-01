@@ -9,6 +9,11 @@ import { ToastProvider } from './components/common/Toast';
 import { DisplayPreferencesProvider } from './contexts/DisplayPreferencesContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
+// Fonts ship inside the bundle; the browser never contacts a font CDN.
+import '@fontsource-variable/dm-sans';
+import '@fontsource-variable/dm-sans/wght-italic.css';
+import '@fontsource-variable/outfit';
+import '@fontsource-variable/jetbrains-mono';
 import './index.css';
 
 const queryClient = new QueryClient({

@@ -136,17 +136,10 @@ Full docs are in the **[Wiki](https://github.com/helliott20/prunerr/wiki)**:
 
 ## Privacy
 
-Prunerr sends one thing outside your network: once a day, a random ID and its
-version number, so there's some idea of how many installs are out there.
-That's it &mdash; no library data, no settings, no credentials, no hostname,
-and no IP address is stored.
-
-Turn it off in **Settings &rarr; System &rarr; Privacy**, or set
-`TELEMETRY_ENABLED=false`. Turning it off deletes the random ID.
-
-The exact payload is shown in the UI, and the server that receives it is open
-source in [`packaging/telemetry`](packaging/telemetry). Details:
-[docs/telemetry.md](docs/telemetry.md).
+Prunerr talks only to the services you configure (your media server, Sonarr,
+Radarr and the other integrations in Settings). There is no telemetry, no
+update check, no remote feed and no third-party fonts or scripts: nothing is
+sent anywhere, and nothing asks you whether it may.
 
 ## Support
 

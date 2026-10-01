@@ -14,8 +14,6 @@ import { evaluateRuleConditions } from '../rules/engine';
 import { ruleScopeMatches } from '../rules/scope';
 import { buildEvaluationContext } from '../rules/context';
 import { getNotificationService } from '../notifications';
-import { sendHeartbeat } from '../services/telemetry';
-import { refreshAnnouncements as fetchAnnouncementsFeed } from '../services/announcements';
 import { getUsageForPaths, resolveTargetBytes, GiB, type FsUsage, type TargetMode } from '../services/diskSpace';
 import { DeletionAction } from '../rules/types';
 import type { DiskPressureData } from '../notifications/templates';
@@ -1472,77 +1470,6 @@ export async function monitorDiskPressure(): Promise<TaskResult> {
   );
 }
 
-// ============================================================================
-// Telemetry Heartbeat
-// ============================================================================
-
-/**
- * Send the anonymous install-count heartbeat.
- *
- * Always reports success: a heartbeat that could not be delivered — because
- * telemetry is off, because it is not due yet, or because the machine is
- * offline — is a normal outcome, not a failed scheduled task. Nobody should
- * see a red job in Prunerr because a counter somewhere missed a tick.
- */
-export async function sendTelemetryHeartbeat(): Promise<TaskResult> {
-  const startedAt = new Date();
-  const taskName = 'sendTelemetryHeartbeat';
-
-  const result = await sendHeartbeat();
-
-  const completedAt = new Date();
-  const messages: Record<string, string> = {
-    disabled: 'Telemetry is disabled — nothing sent',
-    'not-due': 'Heartbeat not due yet',
-    failed: 'Heartbeat could not be delivered — will retry on the next run',
-  };
-
-  return {
-    success: true,
-    taskName,
-    startedAt,
-    completedAt,
-    durationMs: completedAt.getTime() - startedAt.getTime(),
-    message: result.sent ? 'Heartbeat sent' : messages[result.reason ?? 'failed'],
-    data: { sent: result.sent, reason: result.reason ?? null },
-  };
-}
-
-// ============================================================================
-// Announcements Feed
-// ============================================================================
-
-/**
- * Refresh the "What's new" feed.
- *
- * Always reports success for the same reason the heartbeat does: a feed that
- * could not be fetched — switched off, not due, or offline — is a normal
- * outcome, and the cached copy keeps serving the panel in the meantime.
- */
-export async function refreshAnnouncements(): Promise<TaskResult> {
-  const startedAt = new Date();
-  const taskName = 'refreshAnnouncements';
-
-  const result = await fetchAnnouncementsFeed();
-
-  const completedAt = new Date();
-  const messages: Record<string, string> = {
-    disabled: 'Announcements are disabled — nothing fetched',
-    'not-due': 'Feed refresh not due yet',
-    failed: 'Feed could not be fetched — the cached copy stays in use',
-  };
-
-  return {
-    success: true,
-    taskName,
-    startedAt,
-    completedAt,
-    durationMs: completedAt.getTime() - startedAt.getTime(),
-    message: result.fetched ? `Feed refreshed (${result.count ?? 0} entries)` : messages[result.reason ?? 'failed'],
-    data: { fetched: result.fetched, count: result.count ?? null, reason: result.reason ?? null },
-  };
-}
-
 export type TaskFunction = () => Promise<TaskResult>;
 
 export const taskRegistry: Record<string, TaskFunction> = {
@@ -1554,8 +1481,6 @@ export const taskRegistry: Record<string, TaskFunction> = {
   captureUnraidCapacitySnapshot,
   syncPlexUsers,
   monitorDiskPressure,
-  sendTelemetryHeartbeat,
-  refreshAnnouncements,
 };
 
 /**

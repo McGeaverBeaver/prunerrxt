@@ -20,13 +20,6 @@ import { getScheduler } from '../scheduler';
 import { getNotificationService } from '../notifications';
 import { getFixedT } from '../i18n';
 import { createBackup, restoreFromFile, validateBackupFile } from '../services/backup';
-import { clearAnnouncementsCache } from '../services/announcements';
-import {
-  getTelemetryState,
-  markNoticeSeen,
-  setTelemetryEnabled,
-  TELEMETRY_INSTALL_ID_KEY,
-} from '../services/telemetry';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -61,10 +54,11 @@ const KNOWN_SETTING_PREFIXES = [
   'watch_history_',
   'webhooks_',
   'diskPressure_',
-  'telemetry_',
-  'announcements_',
   'api_key',
 ];
+
+/** Never exported or imported: they identify this install, not its configuration. */
+const SECRET_SETTING_KEYS = new Set(['api_key', 'auth_session_secret']);
 
 function isKnownSettingKey(key: string): boolean {
   return KNOWN_SETTING_PREFIXES.some(prefix => key.startsWith(prefix));
@@ -260,7 +254,7 @@ router.get('/export', (_req: Request, res: Response) => {
         // The install ID is per-machine, not a preference. Carrying it into a
         // backup would make a restored copy report as the same install as the
         // original, undercounting anyone who runs two.
-        .filter((s) => s.key !== 'api_key' && s.key !== TELEMETRY_INSTALL_ID_KEY)
+        .filter((s) => !SECRET_SETTING_KEYS.has(s.key))
         .reduce((acc, s) => ({
           ...acc,
           [s.key]: s.value
@@ -394,7 +388,7 @@ router.post('/import', async (req: Request, res: Response) => {
     // import api_key, and never adopt another install's telemetry ID (a shared
     // settings file would otherwise make several installs count as one).
     const settingsArray = Object.entries(settings)
-      .filter(([key]) => isKnownSettingKey(key) && key !== 'api_key' && key !== TELEMETRY_INSTALL_ID_KEY)
+      .filter(([key]) => isKnownSettingKey(key) && !SECRET_SETTING_KEYS.has(key))
       .map(([key, value]) => ({ key, value }));
 
     if (settingsArray.length === 0) {
@@ -435,53 +429,6 @@ router.post('/import', async (req: Request, res: Response) => {
 });
 
 // ============================================================================
-// Telemetry — anonymous install count
-// ============================================================================
-
-const TelemetryUpdateSchema = z.object({
-  enabled: z.boolean().optional(),
-  /** Set once the first-run notice has been read, so it stops appearing. */
-  noticeSeen: z.boolean().optional(),
-});
-
-// GET /api/settings/telemetry - What is sent, and whether it is on
-router.get('/telemetry', (_req: Request, res: Response) => {
-  try {
-    res.json({ success: true, data: getTelemetryState() });
-  } catch (error) {
-    logger.error('Failed to get telemetry state:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve telemetry state',
-    });
-  }
-});
-
-// PUT /api/settings/telemetry - Toggle it, or acknowledge the first-run notice
-router.put('/telemetry', validateBody(TelemetryUpdateSchema), (req: Request, res: Response) => {
-  try {
-    const { enabled, noticeSeen } = req.body as z.infer<typeof TelemetryUpdateSchema>;
-
-    if (typeof enabled === 'boolean') {
-      setTelemetryEnabled(enabled);
-      // The "What's new" feed rides the same switch; forget the cached copy so
-      // nothing fetched under the old setting lingers.
-      if (!enabled) clearAnnouncementsCache();
-    }
-    if (noticeSeen) {
-      markNoticeSeen();
-    }
-
-    res.json({ success: true, data: getTelemetryState() });
-  } catch (error) {
-    logger.error('Failed to update telemetry state:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update telemetry state',
-    });
-  }
-});
-
 // GET /api/settings/api-key - Get the current API key and enabled status
 router.get('/api-key', (_req: Request, res: Response) => {
   try {

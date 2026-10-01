@@ -46,9 +46,9 @@ git push origin <your-branch>:beta
 
 Merge the branch to `main` and tag as usual when it is ready to release.
 
-**Announcements.** The in-app "What's new" panel is fed remotely; publish
-from the Worker's `/admin` page (see `packaging/telemetry/README.md`). No
-release step is involved.
+**No outbound calls.** Prunerr contacts only the services the user configures.
+Do not add telemetry, update checks, remote feeds, CDN assets or any other
+request to a third party.
 
 **IMPORTANT: When releasing a new version, also bump the CasaOS manifest.**
 

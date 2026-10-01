@@ -481,6 +481,15 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(user_key);
     `,
   },
+  {
+    version: 22,
+    name: 'remove_telemetry_settings',
+    up: `
+      -- Prunerr no longer contacts anything outside the instance. Drop the
+      -- install ID and feed cache the old heartbeat and announcements kept.
+      DELETE FROM settings WHERE key LIKE 'telemetry_%' OR key LIKE 'announcements_%';
+    `,
+  },
 ];
 
 // Schema version tracking table

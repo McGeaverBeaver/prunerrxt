@@ -12,7 +12,7 @@ let cachedVersion: string | null = null;
  * Docker builds inject APP_VERSION, which is authoritative. Outside Docker
  * (local dev, `npm start` from a checkout) there is no such variable, so fall
  * back to the version in package.json. Resolved once and cached — this is read
- * on every health check and on every telemetry heartbeat.
+ * on every health check.
  */
 export function getAppVersion(): string {
   if (cachedVersion !== null) {

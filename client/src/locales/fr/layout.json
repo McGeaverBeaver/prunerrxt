@@ -81,28 +81,5 @@
   "theme": {
     "toDark": "Passer en mode sombre",
     "toLight": "Passer en mode clair"
-  },
-  "whatsNew": {
-    "buttonUnread_one": "",
-    "buttonUnread_many": "",
-    "buttonUnread_other": "",
-    "close": "",
-    "disabled": "",
-    "disabledByEnv": "",
-    "empty": "",
-    "loadFailed": "",
-    "offline": "",
-    "readMore": "",
-    "refresh": "",
-    "showLess": "",
-    "title": "",
-    "type": {
-      "announcement": "",
-      "feature": "",
-      "feedback": "",
-      "fix": "",
-      "improvement": ""
-    },
-    "unread": ""
   }
 }

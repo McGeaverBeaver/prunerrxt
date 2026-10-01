@@ -98,11 +98,10 @@ export const SETTINGS_NAV: NavCategory[] = [
       { id: 'api-key', labelKey: 'nav.sub.apiKey', fallback: 'API key' },
       { id: 'mcp', labelKey: 'nav.sub.mcp', fallback: 'AI assistant (MCP)' },
       { id: 'login', labelKey: 'nav.sub.login', fallback: 'Login & access' },
-      { id: 'privacy', labelKey: 'nav.sub.privacy', fallback: 'Privacy' },
       { id: 'backup-restore', labelKey: 'nav.sub.backupRestore', fallback: 'Backup & restore' },
     ],
     keywords:
-      'api key token regenerate export import backup restore version privacy telemetry analytics tracking anonymous install count opt out phone home mcp model context protocol ai assistant claude cursor connector login sso oidc authentik oauth role admin operator viewer session',
+      'api key token regenerate export import backup restore version mcp model context protocol ai assistant claude cursor connector login sso oidc authentik oauth role admin operator viewer session',
   },
 ];
 

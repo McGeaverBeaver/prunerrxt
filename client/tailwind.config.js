@@ -71,9 +71,9 @@ export default {
         },
       },
       fontFamily: {
-        display: ['Outfit', 'system-ui', 'sans-serif'],
-        sans: ['DM Sans', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        display: ['Outfit Variable', 'system-ui', 'sans-serif'],
+        sans: ['DM Sans Variable', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono Variable', 'monospace'],
       },
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '0.75rem' }],

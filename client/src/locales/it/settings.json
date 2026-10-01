@@ -372,7 +372,6 @@
       "mediaServer": "Server multimediale",
       "notificationLanguage": "Lingua delle notifiche",
       "overseerr": "Seerr",
-      "privacy": "",
       "scanSchedule": "Pianificazione scansioni",
       "sonarrRadarr": "Sonarr e Radarr",
       "unraid": "Unraid",
@@ -406,17 +405,6 @@
     "intervalLabel": "Intervallo di sincronizzazione",
     "timeHint": "Esegui prima della scansione così le regole vedono il catalogo più recente",
     "timeLabel": "Orario di sincronizzazione"
-  },
-  "privacy": {
-    "announcementsBody": "",
-    "description": "",
-    "exactlyWhatIsSent": "",
-    "installCountBody": "",
-    "installCountTitle": "",
-    "lastSent": "",
-    "lockedByEnv": "",
-    "noEndpoint": "",
-    "notYetGenerated": ""
   },
   "safety": {
     "effect": {
@@ -520,8 +508,7 @@
     "librariesExcludedMsg_many": "Rimossi {{count}} elementi dalle librerie escluse",
     "librariesExcludedMsg_other": "Rimossi {{count}} elementi dalle librerie escluse",
     "librariesExcludedTitle": "Librerie escluse",
-    "savedTitle": "Impostazioni salvate",
-    "telemetryFailed": ""
+    "savedTitle": "Impostazioni salvate"
   },
   "unraidHelper": {
     "copied": "Copiato",

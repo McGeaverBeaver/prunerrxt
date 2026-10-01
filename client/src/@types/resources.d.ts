@@ -228,13 +228,6 @@ export default interface Resources {
       "monthlyAt": "Monthly on day {{day}} at {{time}}",
       "weeklyAt": "Every {{day}} at {{time}}"
     },
-    "telemetry": {
-      "dismiss": "Dismiss",
-      "gotIt": "Got it",
-      "noticeBody": "Once a day, Prunerr sends a random ID and its version number so we can see how many people are using it. That is all it sends — nothing about your library, your settings or you.",
-      "noticeTitle": "Anonymous install count",
-      "turnOff": "Turn it off"
-    },
     "timeline": {
       "action": {
         "addedToPlex": "Added to {{name}}",
@@ -588,28 +581,6 @@ export default interface Resources {
     "theme": {
       "toDark": "Switch to dark mode",
       "toLight": "Switch to light mode"
-    },
-    "whatsNew": {
-      "buttonUnread_one": "What's new, {{count}} unread",
-      "buttonUnread_other": "What's new, {{count}} unread",
-      "close": "Close",
-      "disabled": "Announcements are off because the anonymous install count is off. Turn it on under Settings → Privacy to receive them.",
-      "disabledByEnv": "Announcements are off for this container (TELEMETRY_ENABLED=false).",
-      "empty": "Nothing to show yet.",
-      "loadFailed": "Could not load what’s new.",
-      "offline": "Announcements could not be fetched. Check back later.",
-      "readMore": "Read more",
-      "refresh": "Check for announcements",
-      "showLess": "Show less",
-      "title": "What's new",
-      "type": {
-        "announcement": "Announcement",
-        "feature": "New",
-        "feedback": "Your feedback",
-        "fix": "Fixed",
-        "improvement": "Improved"
-      },
-      "unread": "New"
     }
   },
   "library": {
@@ -1641,7 +1612,6 @@ export default interface Resources {
         "mediaServer": "Media server",
         "notificationLanguage": "Notification language",
         "overseerr": "Seerr",
-        "privacy": "Privacy",
         "scanSchedule": "Scan schedule",
         "sonarrRadarr": "Sonarr & Radarr",
         "unraid": "Unraid",
@@ -1675,17 +1645,6 @@ export default interface Resources {
       "intervalLabel": "Sync Interval",
       "timeHint": "Run before your scan so rules see the latest catalog",
       "timeLabel": "Sync Time"
-    },
-    "privacy": {
-      "announcementsBody": "The same switch controls the announcements shown under What’s new in the sidebar. They are fetched from the same endpoint a few times a day with only the version number attached; with this off, none are shown.",
-      "description": "What Prunerr sends outside your network, and how to stop it.",
-      "exactlyWhatIsSent": "Exactly what is sent",
-      "installCountBody": "Once a day, Prunerr sends a random ID and its version number so we can see how many installs are out there. Nothing about your library, your settings, your credentials or you is included, and your IP address is not stored. Switching this off deletes the random ID.",
-      "installCountTitle": "Anonymous install count",
-      "lastSent": "Last sent: {{when}}",
-      "lockedByEnv": "Turned off for this container by TELEMETRY_ENABLED=false. Nothing is sent, and this switch cannot override it.",
-      "noEndpoint": "This build has no telemetry endpoint configured, so nothing is sent regardless of this switch.",
-      "notYetGenerated": "not generated yet"
     },
     "safety": {
       "effect": {
@@ -1785,8 +1744,7 @@ export default interface Resources {
       "librariesExcludedMsg_one": "Removed {{count}} item from excluded libraries",
       "librariesExcludedMsg_other": "Removed {{count}} items from excluded libraries",
       "librariesExcludedTitle": "Libraries excluded",
-      "savedTitle": "Settings saved",
-      "telemetryFailed": "Could not change that setting"
+      "savedTitle": "Settings saved"
     },
     "unraidHelper": {
       "copied": "Copied",

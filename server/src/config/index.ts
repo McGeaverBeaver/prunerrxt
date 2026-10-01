@@ -25,8 +25,6 @@ import type {
   OverseerrConfig,
   DiscordConfig,
   UnraidConfig,
-  TelemetryConfig,
-  AnnouncementsConfig,
 } from '../types';
 
 function getEnv(key: string, defaultValue?: string): string {
@@ -117,33 +115,6 @@ const unraidConfig: UnraidConfig = {
   apiKey: getEnv('UNRAID_API_KEY'),
 };
 
-// Anonymous install-count telemetry.
-//
-// The endpoint that receives heartbeats. Its source lives in this repo under
-// packaging/telemetry — deploy that Worker, then put its URL here (Cloudflare
-// hands out a free *.workers.dev subdomain, so no domain purchase is needed).
-//
-// While this is empty no heartbeat is ever sent, whatever the in-app setting
-// says. That is the safe default: an unconfigured build must not be able to
-// pick up a URL somebody else controls.
-const DEFAULT_TELEMETRY_ENDPOINT = 'https://prunerr-telemetry.harryelliott16.workers.dev/v1/ping';
-
-const telemetryConfig: TelemetryConfig = {
-  endpoint: getEnv('TELEMETRY_URL', DEFAULT_TELEMETRY_ENDPOINT).trim(),
-  // Hard off switch. TELEMETRY_ENABLED=false means no ping and no install ID,
-  // regardless of the toggle in Settings.
-  enabled: getEnvBoolean('TELEMETRY_ENABLED', true),
-};
-
-// The in-app "What's new" feed. Served by the same Worker as the heartbeat
-// (packaging/telemetry), governed by the same toggle, and inert while empty.
-const DEFAULT_ANNOUNCEMENTS_ENDPOINT =
-  'https://prunerr-telemetry.harryelliott16.workers.dev/v1/announcements';
-
-const announcementsConfig: AnnouncementsConfig = {
-  endpoint: getEnv('ANNOUNCEMENTS_URL', DEFAULT_ANNOUNCEMENTS_ENDPOINT).trim(),
-};
-
 // Main application configuration
 const config: AppConfig = {
   port: getEnvNumber('PORT', 3000),
@@ -160,8 +131,6 @@ const config: AppConfig = {
   overseerr: overseerrConfig,
   discord: discordConfig,
   unraid: unraidConfig,
-  telemetry: telemetryConfig,
-  announcements: announcementsConfig,
 };
 
 // Validation function to check required configurations

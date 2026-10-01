@@ -42,13 +42,6 @@
     "monthlyAt": "Monatlich am {{day}}. um {{time}}",
     "weeklyAt": "Jeden {{day}} um {{time}}"
   },
-  "telemetry": {
-    "dismiss": "",
-    "gotIt": "",
-    "noticeBody": "",
-    "noticeTitle": "",
-    "turnOff": ""
-  },
   "timeline": {
     "action": {
       "addedToPlex": "Zu {{name}} hinzugefügt",

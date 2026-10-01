@@ -2,7 +2,6 @@ import { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Menu, Sun, Moon } from 'lucide-react';
 import Sidebar from './Sidebar';
-import { TelemetryNotice } from '@/components/common/TelemetryNotice';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { PageScrollProvider } from '@/contexts/PageScrollContext';
@@ -351,7 +350,6 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Fixed-position, and mounted outside <main> so it also shows over the
           full-bleed settings page. Renders nothing once acknowledged. */}
-      <TelemetryNotice />
     </div>
   );
 }
