@@ -18,6 +18,9 @@ import logger from '../utils/logger';
 import { getApiKey, keysMatch } from '../middleware/apiAuth';
 import { createMcpServer } from './server';
 import { isMcpEnabled, mcpDisabledReason } from './config';
+import { resolveAccessToken } from '../auth/oauthServer';
+import { publicBaseUrl } from '../auth/oauthRoutes';
+import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 
 interface McpSession {
   transport: StreamableHTTPServerTransport;
@@ -67,20 +70,27 @@ function jsonRpcError(res: Response, status: number, code: number, message: stri
   res.status(status).json({ jsonrpc: '2.0', error: { code, message }, id: null });
 }
 
-/** The API key from either header form, or null. */
-export function extractMcpApiKey(req: Request): string | null {
-  const headerKey = req.headers['x-api-key'];
-  if (typeof headerKey === 'string' && headerKey.trim()) return headerKey.trim();
-
+/** Bearer credential from the Authorization header, or null. */
+function bearerToken(req: Request): string | null {
   const authorization = req.headers['authorization'];
-  if (typeof authorization === 'string') {
-    const match = /^Bearer\s+(.+)$/i.exec(authorization.trim());
-    if (match && match[1]) return match[1].trim();
-  }
-  return null;
+  if (typeof authorization !== 'string') return null;
+  const match = /^Bearer\s+(.+)$/i.exec(authorization.trim());
+  return match && match[1] ? match[1].trim() : null;
 }
 
-function authenticate(req: Request, res: Response): boolean {
+function challenge(req: Request, res: Response, error?: string): void {
+  const metadata = `${publicBaseUrl(req)}/.well-known/oauth-protected-resource/mcp`;
+  const parts = ['Bearer realm="prunerr-mcp"', `resource_metadata="${metadata}"`];
+  if (error) parts.push(`error="${error}"`);
+  res.setHeader('WWW-Authenticate', parts.join(', '));
+}
+
+/**
+ * Who is calling. The API key (either header) acts as admin, as it does for
+ * the REST API; an OAuth access token carries the role of the user who
+ * approved the client. Returns null after writing the error response.
+ */
+function authenticate(req: Request, res: Response): AuthInfo | null {
   if (!isMcpEnabled()) {
     const reason = mcpDisabledReason();
     const message =
@@ -90,22 +100,49 @@ function authenticate(req: Request, res: Response): boolean {
           ? 'The MCP connector is disabled by MCP_ENABLED=false.'
           : 'The MCP connector is turned off in Settings → System → AI assistant.';
     jsonRpcError(res, 403, -32000, message);
-    return false;
+    return null;
   }
 
-  const provided = extractMcpApiKey(req);
-  if (!provided) {
-    res.setHeader('WWW-Authenticate', 'Bearer realm="prunerr-mcp"');
-    jsonRpcError(res, 401, -32000, 'Authentication required: send the Prunerr API key as "Authorization: Bearer <key>" or "X-Api-Key: <key>".');
-    return false;
-  }
-  if (!keysMatch(provided, getApiKey())) {
+  const admin = (token: string): AuthInfo => ({ token, clientId: 'api-key', scopes: ['prunerr'], extra: { role: 'admin', username: 'API key', kind: 'apiKey' } });
+
+  const headerKey = req.headers['x-api-key'];
+  if (typeof headerKey === 'string' && headerKey.trim()) {
+    if (keysMatch(headerKey.trim(), getApiKey())) return admin(headerKey.trim());
     logger.warn(`MCP auth: invalid API key from ${req.ip}`);
-    res.setHeader('WWW-Authenticate', 'Bearer realm="prunerr-mcp", error="invalid_token"');
+    challenge(req, res, 'invalid_token');
     jsonRpcError(res, 401, -32000, 'Invalid API key.');
-    return false;
+    return null;
   }
-  return true;
+
+  const bearer = bearerToken(req);
+  if (!bearer) {
+    challenge(req, res);
+    jsonRpcError(
+      res,
+      401,
+      -32000,
+      'Authentication required: sign in through OAuth (see the resource_metadata in WWW-Authenticate) or send the Prunerr API key as "Authorization: Bearer <key>" or "X-Api-Key: <key>".'
+    );
+    return null;
+  }
+
+  if (keysMatch(bearer, getApiKey())) return admin(bearer);
+
+  const resolved = resolveAccessToken(bearer);
+  if (resolved) {
+    return {
+      token: bearer,
+      clientId: resolved.clientId,
+      scopes: [resolved.scope],
+      expiresAt: Math.floor(new Date(resolved.expiresAt).getTime() / 1000),
+      extra: { role: resolved.role, username: resolved.username, userKey: resolved.key, kind: 'oauth' },
+    };
+  }
+
+  logger.warn(`MCP auth: invalid or expired bearer token from ${req.ip}`);
+  challenge(req, res, 'invalid_token');
+  jsonRpcError(res, 401, -32000, 'Invalid or expired token.');
+  return null;
 }
 
 function sessionIdOf(req: Request): string | undefined {
@@ -117,7 +154,9 @@ export function createMcpRouter(): Router {
   const router = Router();
 
   router.post('/', async (req: Request, res: Response) => {
-    if (!authenticate(req, res)) return;
+    const authInfo = authenticate(req, res);
+    if (!authInfo) return;
+    (req as Request & { auth?: AuthInfo }).auth = authInfo;
 
     try {
       const sessionId = sessionIdOf(req);
@@ -169,7 +208,9 @@ export function createMcpRouter(): Router {
   });
 
   const requireSession = async (req: Request, res: Response): Promise<void> => {
-    if (!authenticate(req, res)) return;
+    const authInfo = authenticate(req, res);
+    if (!authInfo) return;
+    (req as Request & { auth?: AuthInfo }).auth = authInfo;
     const sessionId = sessionIdOf(req);
     const session = sessionId ? sessions.get(sessionId) : undefined;
     if (!session) {

@@ -18,6 +18,8 @@ import { apiAuthMiddleware, ensureApiKey } from './middleware/apiAuth';
 import { initializeServices } from './services/init';
 import { getScheduler } from './scheduler';
 import { createMcpRouter, closeAllMcpSessions } from './mcp';
+import oauthRouter from './auth/oauthRoutes';
+import { purgeExpiredOAuth } from './auth/oauthServer';
 import { getAuthConfig } from './auth/config';
 import { purgeExpiredSessions } from './auth/sessions';
 
@@ -47,6 +49,8 @@ app.use(
       ? process.env['CORS_ORIGIN'] || true
       : true,
     credentials: true,
+    // Browser-based MCP clients read these from the /mcp response.
+    exposedHeaders: ['Mcp-Session-Id', 'Mcp-Protocol-Version', 'WWW-Authenticate'],
   })
 );
 
@@ -72,6 +76,10 @@ if (config.nodeEnv === 'production') {
   app.use(express.static(clientPath));
   logger.info(`Serving static files from: ${clientPath}`);
 }
+
+// OAuth 2.1 endpoints for MCP clients (/.well-known/*, /oauth/*). Fixed
+// paths, so they live at the root rather than under /api.
+app.use(oauthRouter);
 
 // MCP connector (Streamable HTTP). Authenticates with the API key itself and
 // is off entirely unless login is enabled — see mcp/config.ts.
@@ -151,7 +159,11 @@ async function startServer(): Promise<void> {
         .join(' and ');
       logger.info(`Login enabled: ${methods || 'NO METHODS CONFIGURED'}`);
       purgeExpiredSessions();
-      setInterval(() => purgeExpiredSessions(), 60 * 60 * 1000).unref();
+      purgeExpiredOAuth();
+      setInterval(() => {
+        purgeExpiredSessions();
+        purgeExpiredOAuth();
+      }, 60 * 60 * 1000).unref();
     } else {
       logger.info('Login disabled (AUTH_ENABLED is not true); the MCP connector is off');
     }

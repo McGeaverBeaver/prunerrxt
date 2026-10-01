@@ -328,6 +328,8 @@
       "scans": "Scans & sync",
       "system": "System"
     },
+    "hostedBody": "Add the endpoint above as a custom connector. No key needed: the client registers itself, sends you to the Prunerr login, asks once for permission, and then acts as you with your role. Make sure Prunerr knows its public address (APP_URL, or X-Forwarded-Proto/Host from the proxy).",
+    "hostedTitle": "Claude.ai and other hosted clients",
     "immediateBody": "Off by default. An assistant can always queue items (they wait out the grace period and can be removed from the queue), but \"delete now\" and processing the queue for real are refused unless this is on.",
     "immediateTitle": "Allow immediate deletion",
     "offBecauseAuth": "Off because login is disabled. An AI connector on an install anyone on the network can open is one exposure too many, so set AUTH_ENABLED=true (see Login & access below) to turn it on.",

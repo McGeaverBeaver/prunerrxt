@@ -74,6 +74,12 @@ export default function LoginPage() {
     setFormError(null);
     try {
       const user = await authApi.loginLocal(username.trim(), password);
+      // An OAuth approval page lives on the server, not in the SPA: go there
+      // with a real navigation so the new session cookie rides along.
+      if (returnTo.startsWith('/oauth/')) {
+        window.location.assign(returnTo);
+        return;
+      }
       setUser(user);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : t('errors.generic', 'Sign-in failed. Please try again.'));

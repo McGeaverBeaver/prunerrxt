@@ -490,6 +490,62 @@ const migrations: Migration[] = [
       DELETE FROM settings WHERE key LIKE 'telemetry_%' OR key LIKE 'announcements_%';
     `,
   },
+  {
+    version: 23,
+    name: 'oauth_server',
+    up: `
+      -- Prunerr as an OAuth 2.1 authorization server for MCP clients
+      -- (claude.ai connectors, Claude Desktop, …). Secrets, codes and tokens
+      -- are stored as SHA-256 hashes.
+      CREATE TABLE IF NOT EXISTS oauth_clients (
+        client_id TEXT PRIMARY KEY,
+        client_secret_hash TEXT,
+        client_name TEXT,
+        redirect_uris TEXT NOT NULL,
+        token_endpoint_auth_method TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS oauth_consents (
+        user_key TEXT NOT NULL,
+        client_id TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (user_key, client_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS oauth_codes (
+        code_hash TEXT PRIMARY KEY,
+        client_id TEXT NOT NULL,
+        redirect_uri TEXT NOT NULL,
+        code_challenge TEXT NOT NULL,
+        scope TEXT NOT NULL,
+        user_key TEXT NOT NULL,
+        username TEXT NOT NULL,
+        role TEXT NOT NULL,
+        resource TEXT,
+        expires_at TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS oauth_tokens (
+        token_hash TEXT PRIMARY KEY,
+        kind TEXT NOT NULL CHECK (kind IN ('access', 'refresh')),
+        pair_id TEXT NOT NULL,
+        client_id TEXT NOT NULL,
+        user_key TEXT NOT NULL,
+        username TEXT NOT NULL,
+        role TEXT NOT NULL,
+        scope TEXT NOT NULL,
+        resource TEXT,
+        expires_at TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_oauth_tokens_pair ON oauth_tokens(pair_id);
+      CREATE INDEX IF NOT EXISTS idx_oauth_tokens_user ON oauth_tokens(user_key, client_id);
+      CREATE INDEX IF NOT EXISTS idx_oauth_tokens_expires ON oauth_tokens(expires_at);
+    `,
+  },
 ];
 
 // Schema version tracking table

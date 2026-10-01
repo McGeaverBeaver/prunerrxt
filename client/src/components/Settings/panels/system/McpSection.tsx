@@ -253,6 +253,18 @@ export function McpSection({ registerSection, apiKey }: { registerSection: Panel
               </p>
             </div>
 
+            <div className="flex flex-col gap-2 rounded-xl bg-surface-800/45 px-3.5 py-3">
+              <p className="font-display text-[12.5px] font-semibold text-surface-200">
+                {t('mcp.hostedTitle', 'Claude.ai and other hosted clients')}
+              </p>
+              <p className="text-[11.5px] text-surface-400">
+                {t(
+                  'mcp.hostedBody',
+                  'Add the endpoint above as a custom connector. No key needed: the client registers itself, sends you to the Prunerr login, asks once for permission, and then acts as you with your role. Make sure Prunerr knows its public address (APP_URL, or X-Forwarded-Proto/Host from the proxy).'
+                )}
+              </p>
+            </div>
+
             <Snippet
               title={t('mcp.snippetClaudeCode', 'Claude Code')}
               code={snippets.claudeCode}

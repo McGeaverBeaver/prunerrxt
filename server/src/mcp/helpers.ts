@@ -8,6 +8,8 @@ import type { z } from 'zod';
 import type { MediaItem } from '../types';
 import { formatBytes } from '../utils/format';
 import { IMMEDIATE_DELETION_REFUSED, allowsImmediateDeletion } from './config';
+import { isRole, type Role } from '../auth/config';
+import { ROLE_RANK } from '../auth/roles';
 
 // ============================================================================
 // Catalogue
@@ -33,6 +35,7 @@ export interface ToolCatalogEntry {
   destructive: boolean;
   /** Needs the "allow immediate deletion" opt-in before it will act. */
   requiresImmediateDeletion: boolean;
+  minRole: Role;
 }
 
 const catalog: ToolCatalogEntry[] = [];
@@ -53,6 +56,11 @@ interface ToolDefinition<InputShape extends Shape | undefined> {
   annotations?: ToolAnnotations;
   /** Refuse unless the immediate-deletion opt-in is on. */
   requiresImmediateDeletion?: boolean;
+  /**
+   * Lowest role that may call the tool. Defaults: read-only tools → viewer,
+   * system tools → admin, everything else → operator. The API key is admin.
+   */
+  minRole?: Role;
 }
 
 type Handler<InputShape extends Shape | undefined> = InputShape extends Shape
@@ -82,10 +90,18 @@ export function defineTool<InputShape extends Shape | undefined = undefined>(
       readOnly,
       destructive,
       requiresImmediateDeletion: definition.requiresImmediateDeletion === true,
+      minRole: definition.minRole ?? (definition.group === 'system' ? 'admin' : readOnly ? 'viewer' : 'operator'),
     });
   }
 
-  const run = async (args: unknown): Promise<CallToolResult> => {
+  const minRole: Role = definition.minRole ?? (definition.group === 'system' ? 'admin' : readOnly ? 'viewer' : 'operator');
+
+  const run = async (args: unknown, extra?: { authInfo?: { extra?: Record<string, unknown> } }): Promise<CallToolResult> => {
+    const rawRole = extra?.authInfo?.extra?.['role'];
+    const role: Role = isRole(rawRole) ? rawRole : 'admin';
+    if (ROLE_RANK[role] < ROLE_RANK[minRole]) {
+      return fail(`Your role (${role}) cannot use ${definition.name}; it needs ${minRole}. Ask a Prunerr admin to change your group mapping.`);
+    }
     if (definition.requiresImmediateDeletion && !allowsImmediateDeletion()) {
       return fail(IMMEDIATE_DELETION_REFUSED);
     }
@@ -108,10 +124,10 @@ export function defineTool<InputShape extends Shape | undefined = undefined>(
   // on the same runtime registration, so the cast here is on the type level only.
   if (definition.inputSchema) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (server.registerTool as any)(definition.name, config, (args: unknown) => run(args));
+    (server.registerTool as any)(definition.name, config, (args: unknown, extra: unknown) => run(args, extra as { authInfo?: { extra?: Record<string, unknown> } }));
   } else {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (server.registerTool as any)(definition.name, config, () => run({}));
+    (server.registerTool as any)(definition.name, config, (extra: unknown) => run({}, extra as { authInfo?: { extra?: Record<string, unknown> } }));
   }
 }
 

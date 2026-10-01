@@ -36,8 +36,39 @@ work.
 
 ## Connecting a client
 
-Authenticate with your Prunerr API key (Settings → System → API key), sent as
-either header:
+There are two ways to authenticate, depending on the client.
+
+### Hosted clients: sign in with OAuth (claude.ai, Claude Desktop connectors)
+
+Clients that cannot send a custom header use the MCP OAuth flow, which
+Prunerr serves itself. Add the endpoint as a custom connector:
+
+```
+https://prunerr.example.com/mcp
+```
+
+The client registers itself automatically, sends you to Prunerr to sign in
+(through Authentik, or the local account), and shows a one-time **Allow**
+page. From then on it acts with **your** account and **your role**: a viewer
+gets read-only tools, an operator can queue and manage, an admin can also use
+the system tools. Approvals are remembered per client; tokens last an hour
+and refresh for 30 days.
+
+For this to work Prunerr must know its public address. Behind a reverse proxy
+either pass `X-Forwarded-Proto` and `X-Forwarded-Host`, or set
+`APP_URL=https://prunerr.example.com` — the OAuth issuer and redirect targets
+are built from it, and a mismatch shows up as *Couldn't register* or
+*invalid redirect* in the client.
+
+Endpoints, for the curious: `/.well-known/oauth-protected-resource`,
+`/.well-known/oauth-authorization-server`, `/oauth/register`,
+`/oauth/authorize`, `/oauth/token`, `/oauth/revoke`. Authorization code with
+PKCE (S256) only; public clients are accepted; tokens are stored hashed.
+
+### Local clients: the API key
+
+Clients you run yourself can send your Prunerr API key (Settings → System →
+API key) as either header and act as an admin:
 
 ```
 Authorization: Bearer <api-key>
