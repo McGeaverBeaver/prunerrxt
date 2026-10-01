@@ -48,6 +48,21 @@ interface ParsedGuids {
   plexGuid?: string;
 }
 
+/** What a persistence callback reports back: rows created vs. rows refreshed. */
+export interface SyncPersistCounts {
+  added: number;
+  updated: number;
+}
+
+/** The most recent of several optional timestamps, or null when none is set. */
+export function latestOf(...dates: Array<Date | null | undefined>): Date | null {
+  let latest: Date | null = null;
+  for (const d of dates) {
+    if (d && !Number.isNaN(d.getTime()) && (!latest || d.getTime() > latest.getTime())) latest = d;
+  }
+  return latest;
+}
+
 export class ScannerService {
   private plex: MediaServerService | null = null;
   private watchHistoryProvider: WatchHistoryProvider | null = null;
@@ -66,7 +81,7 @@ export class ScannerService {
   private sonarrTagMap: Map<number, string> = new Map();
 
   // Database callback - to be injected
-  private dbCallback: ((items: SyncedMediaData[]) => Promise<void>) | null = null;
+  private dbCallback: ((items: SyncedMediaData[]) => Promise<void | SyncPersistCounts>) | null = null;
 
   // Prune callback - to be injected. Removes DB rows for a library whose Plex
   // item no longer exists (e.g. Radarr upgrades that get a new ratingKey).
@@ -194,7 +209,7 @@ export class ScannerService {
   /**
    * Set the database callback for persisting scanned items
    */
-  setDatabaseCallback(callback: (items: SyncedMediaData[]) => Promise<void>): void {
+  setDatabaseCallback(callback: (items: SyncedMediaData[]) => Promise<void | SyncPersistCounts>): void {
     this.dbCallback = callback;
   }
 
@@ -467,8 +482,13 @@ export class ScannerService {
     let persistSucceeded = false;
     if (this.dbCallback && syncedItems.length > 0) {
       try {
-        await this.dbCallback(syncedItems);
-        itemsAdded = syncedItems.length; // Simplified - actual implementation would track adds vs updates
+        const counts = await this.dbCallback(syncedItems);
+        if (counts) {
+          itemsAdded = counts.added;
+          itemsUpdated = counts.updated;
+        } else {
+          itemsAdded = syncedItems.length;
+        }
         persistSucceeded = true;
       } catch (error) {
         errors.push({
@@ -1023,9 +1043,13 @@ export class ScannerService {
       added_at: plexItem.addedAt
         ? new Date(plexItem.addedAt * 1000).toISOString()
         : undefined,
-      // Use Tautulli data if available, fall back to Plex watch data
-      last_watched_at: tautulliData?.lastWatched?.toISOString()
-        || (plexItem.lastViewedAt ? new Date(plexItem.lastViewedAt * 1000).toISOString() : undefined),
+      // Whichever source saw the most recent play wins. Plex's lastViewedAt
+      // only reflects the token's own account, so with Tautulli or Tracearr
+      // configured it is a fallback, and only when it is actually newer.
+      last_watched_at: latestOf(
+        tautulliData?.lastWatched ?? null,
+        plexItem.lastViewedAt ? new Date(plexItem.lastViewedAt * 1000) : null
+      )?.toISOString(),
       play_count: tautulliData?.playCount || plexItem.viewCount || 0,
       watched_by: tautulliData?.watchedBy,
       status: 'monitored',

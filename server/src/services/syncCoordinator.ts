@@ -22,6 +22,8 @@ function getScanner(): ScannerService {
   if (!scannerService) {
     scannerService = new ScannerService();
     scannerService.setDatabaseCallback(async (items) => {
+      let added = 0;
+      let updated = 0;
       for (const item of items) {
         const input = scannerService!.convertToMediaItemInput(item);
         const existingItem = input.plex_id ? mediaItemsRepo.getByPlexId(input.plex_id) : null;
@@ -54,10 +56,13 @@ function getScanner(): ScannerService {
           } else {
             mediaItemsRepo.update(existingItem.id, plexFields);
           }
+          updated++;
         } else {
           mediaItemsRepo.create(input);
+          added++;
         }
       }
+      return { added, updated };
     });
     scannerService.setPruneCallback(async (libraryKey, seenPlexIds) => {
       return mediaItemsRepo.deleteStaleByLibraryKey(libraryKey, seenPlexIds);

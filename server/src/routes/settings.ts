@@ -251,10 +251,10 @@ router.get('/export', (_req: Request, res: Response) => {
       exportedAt: new Date().toISOString(),
       appName: 'Prunerr',
       settings: rawSettings
-        // The install ID is per-machine, not a preference. Carrying it into a
-        // backup would make a restored copy report as the same install as the
-        // original, undercounting anyone who runs two.
-        .filter((s) => !SECRET_SETTING_KEYS.has(s.key))
+        // The API key and the session secret identify this install, not its
+        // configuration, and job run history is runtime state: none of them belong
+        // in a portable export.
+        .filter((s) => !SECRET_SETTING_KEYS.has(s.key) && !s.key.startsWith('scheduler_job_'))
         .reduce((acc, s) => ({
           ...acc,
           [s.key]: s.value

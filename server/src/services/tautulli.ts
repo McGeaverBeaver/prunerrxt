@@ -75,6 +75,27 @@ interface TautulliLibraryStatsItem {
   total_size: number;
 }
 
+/**
+ * When the item was last played, from Tautulli history rows.
+ *
+ * Every row counts, not only "fully watched" ones: Tautulli's watched_status
+ * is 1 for watched, 0.5 for partial and 0 for barely started, and a play that
+ * stopped at 70% is still proof someone is watching the show. (The previous
+ * filter looked for a value of 2, which Tautulli never emits, so nothing ever
+ * matched and the timestamp fell back to Plex's admin-only lastViewedAt.)
+ *
+ * `stopped` is when the session ended; `date` (session start) and `started`
+ * are fallbacks for rows Tautulli is still writing.
+ */
+export function latestPlay(history: Array<Pick<TautulliHistory, 'stopped' | 'date' | 'started'>>): Date | null {
+  let latest = 0;
+  for (const row of history) {
+    const at = row.stopped || row.date || row.started || 0;
+    if (at > latest) latest = at;
+  }
+  return latest > 0 ? new Date(latest * 1000) : null;
+}
+
 export class TautulliService implements WatchHistoryProvider {
   private client: AxiosInstance;
   private apiKey: string;
@@ -187,9 +208,7 @@ export class TautulliService implements WatchHistoryProvider {
     try {
       const history = await this.getHistory(ratingKey);
 
-      // Find the most recent watch
-      const watchedEntries = history.filter((h) => h.watchedStatus === 2);
-      const lastWatchedEntry = watchedEntries.sort((a, b) => b.stopped - a.stopped)[0];
+      const lastWatched = latestPlay(history);
 
       // Get unique users who watched
       const watchedBy = [...new Set(history.map((h) => h.friendlyName))];
@@ -198,7 +217,7 @@ export class TautulliService implements WatchHistoryProvider {
       const playCount = history.length;
 
       return {
-        lastWatched: lastWatchedEntry ? new Date(lastWatchedEntry.stopped * 1000) : null,
+        lastWatched,
         playCount,
         watchedBy,
       };
@@ -303,9 +322,7 @@ export class TautulliService implements WatchHistoryProvider {
       // Use grandparent_rating_key to get all episode watches for this show
       const history = await this.getShowHistory(showRatingKey);
 
-      // Find the most recent watch
-      const watchedEntries = history.filter((h) => h.watchedStatus === 2);
-      const lastWatchedEntry = watchedEntries.sort((a, b) => b.stopped - a.stopped)[0];
+      const lastWatched = latestPlay(history);
 
       // Get unique users who watched
       const watchedBy = [...new Set(history.map((h) => h.friendlyName))];
@@ -316,7 +333,7 @@ export class TautulliService implements WatchHistoryProvider {
       logger.debug(`Show ${showRatingKey} watch status: ${playCount} plays, ${watchedBy.length} users`);
 
       return {
-        lastWatched: lastWatchedEntry ? new Date(lastWatchedEntry.stopped * 1000) : null,
+        lastWatched,
         playCount,
         watchedBy,
       };

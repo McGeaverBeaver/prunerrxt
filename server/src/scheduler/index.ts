@@ -1,6 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { CronExpressionParser } from 'cron-parser';
 import logger from '../utils/logger';
+import settingsRepo from '../db/repositories/settings';
 import {
   scanLibraries,
   processDeletionQueue,
@@ -89,6 +90,64 @@ export class Scheduler {
         schedule,
         isRunning: false,
       });
+    }
+
+    this.restoreJobHistory();
+  }
+
+  /**
+   * Job status lives in memory, so a container restart used to show every job
+   * as never run. The last run and its outcome are kept in the settings table
+   * (one small JSON row per job) and read back here.
+   */
+  private static historyKey(name: string): string {
+    return `scheduler_job_${name}`;
+  }
+
+  private restoreJobHistory(): void {
+    for (const [name, status] of this.jobStatus) {
+      try {
+        const saved = settingsRepo.getJson<{ lastRun?: string; lastResult?: TaskResult & { startedAt: string; completedAt: string } } | null>(
+          Scheduler.historyKey(name),
+          null
+        );
+        if (!saved) continue;
+        if (saved.lastRun) status.lastRun = new Date(saved.lastRun);
+        if (saved.lastResult) {
+          status.lastResult = {
+            ...saved.lastResult,
+            startedAt: new Date(saved.lastResult.startedAt),
+            completedAt: new Date(saved.lastResult.completedAt),
+          };
+        }
+      } catch {
+        // The database may not be open yet (tests, early construction); the
+        // status simply starts empty.
+      }
+    }
+  }
+
+  private persistJobHistory(name: string): void {
+    const status = this.jobStatus.get(name);
+    if (!status) return;
+    try {
+      const result = status.lastResult;
+      settingsRepo.setJson(Scheduler.historyKey(name), {
+        lastRun: status.lastRun?.toISOString() ?? null,
+        lastResult: result
+          ? {
+              success: result.success,
+              taskName: result.taskName,
+              startedAt: result.startedAt,
+              completedAt: result.completedAt,
+              durationMs: result.durationMs,
+              ...(result.message !== undefined ? { message: result.message } : {}),
+              ...(result.error !== undefined ? { error: result.error } : {}),
+            }
+          : null,
+      });
+    } catch (error) {
+      logger.debug(`Could not persist run history for job "${name}": ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -272,6 +331,7 @@ export class Scheduler {
         status.lastResult = result;
         status.nextRun = this.getNextRunTime(status.schedule);
       }
+      this.persistJobHistory(name);
 
       if (result.success) {
         logger.info(`Task "${name}" completed successfully in ${result.durationMs}ms`);
@@ -295,6 +355,7 @@ export class Scheduler {
         };
         status.nextRun = this.getNextRunTime(status.schedule);
       }
+      this.persistJobHistory(name);
 
       logger.error(`Task "${name}" threw an exception:`, error);
       return null;
