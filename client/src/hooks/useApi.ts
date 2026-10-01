@@ -13,6 +13,8 @@ import {
   webhooksApi,
   telemetryApi,
   announcementsApi,
+  authSettingsApi,
+  mcpApi,
 } from '@/services/api';
 import { mediaServerName } from '@/lib/mediaServer';
 import type {
@@ -575,5 +577,35 @@ export function useVersion() {
     },
     staleTime: Infinity, // Version doesn't change during runtime
     retry: false,
+  });
+}
+
+// Login configuration (read-only; Settings → System)
+export function useAuthSettings(enabled = true) {
+  return useQuery({
+    queryKey: ['settings', 'auth'],
+    queryFn: authSettingsApi.get,
+    enabled,
+    staleTime: 1000 * 60,
+  });
+}
+
+// MCP connector (Settings → System)
+export function useMcpInfo(enabled = true) {
+  return useQuery({
+    queryKey: ['settings', 'mcp'],
+    queryFn: mcpApi.get,
+    enabled,
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useUpdateMcp() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { enabled?: boolean; allowImmediateDeletion?: boolean }) => mcpApi.update(body),
+    onSuccess: (info) => {
+      queryClient.setQueryData(['settings', 'mcp'], info);
+    },
   });
 }

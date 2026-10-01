@@ -21,7 +21,7 @@ type IconProps = SVGProps<SVGSVGElement>;
 const SPRING = 'cubic-bezier(0.34, 1.4, 0.64, 1)';
 
 /** transform transition, optionally staggered */
-const t = (ms: number, delay = 0) => ({
+const anim = (ms: number, delay = 0) => ({
   transition: `transform ${ms}ms ${SPRING} ${delay}ms`,
 });
 
@@ -54,11 +54,11 @@ export function InfoIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <circle cx="12" cy="12" r="10"
-        style={{ ...t(420), ...atCenter, transform: 'scale(calc(1 + var(--h, 0) * 0.08))' }} />
+        style={{ ...anim(420), ...atCenter, transform: 'scale(calc(1 + var(--h, 0) * 0.08))' }} />
       <path d="M12 16v-4"
-        style={{ ...t(440, 60), ...fromBottom, transform: 'scaleY(calc(1 + var(--h, 0) * 0.28))' }} />
+        style={{ ...anim(440, 60), ...fromBottom, transform: 'scaleY(calc(1 + var(--h, 0) * 0.28))' }} />
       <path d="M12 8h.01"
-        style={{ ...t(420, 120), ...fillBox, transform: 'translateY(calc(var(--h, 0) * -0.9px))' }} />
+        style={{ ...anim(420, 120), ...fillBox, transform: 'translateY(calc(var(--h, 0) * -0.9px))' }} />
     </Svg>
   );
 }
@@ -68,15 +68,15 @@ export function EpisodesIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <path d="M8 5h13"
-        style={{ ...t(400), transform: 'translateX(calc(var(--h, 0) * 1.4px))' }} />
+        style={{ ...anim(400), transform: 'translateX(calc(var(--h, 0) * 1.4px))' }} />
       <path d="M13 12h8"
-        style={{ ...t(400, 70), transform: 'translateX(calc(var(--h, 0) * 1.4px))' }} />
+        style={{ ...anim(400, 70), transform: 'translateX(calc(var(--h, 0) * 1.4px))' }} />
       <path d="M13 19h8"
-        style={{ ...t(400, 140), transform: 'translateX(calc(var(--h, 0) * 1.4px))' }} />
+        style={{ ...anim(400, 140), transform: 'translateX(calc(var(--h, 0) * 1.4px))' }} />
       <path d="M3 10a2 2 0 0 0 2 2h3"
-        style={{ ...t(420, 70), ...fillBox, transform: 'scaleX(calc(1 + var(--h, 0) * 0.12))' }} />
+        style={{ ...anim(420, 70), ...fillBox, transform: 'scaleX(calc(1 + var(--h, 0) * 0.12))' }} />
       <path d="M3 5v12a2 2 0 0 0 2 2h3"
-        style={{ ...t(420, 140), ...fillBox, transform: 'scaleX(calc(1 + var(--h, 0) * 0.12))' }} />
+        style={{ ...anim(420, 140), ...fillBox, transform: 'scaleX(calc(1 + var(--h, 0) * 0.12))' }} />
     </Svg>
   );
 }
@@ -86,13 +86,13 @@ export function DashboardIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <rect width="7" height="9" x="3" y="3" rx="1"
-        style={{ ...t(420), transform: 'translate(calc(var(--h, 0) * -0.8px), calc(var(--h, 0) * -0.8px))' }} />
+        style={{ ...anim(420), transform: 'translate(calc(var(--h, 0) * -0.8px), calc(var(--h, 0) * -0.8px))' }} />
       <rect width="7" height="5" x="14" y="3" rx="1"
-        style={{ ...t(420, 55), transform: 'translate(calc(var(--h, 0) * 0.8px), calc(var(--h, 0) * -0.8px))' }} />
+        style={{ ...anim(420, 55), transform: 'translate(calc(var(--h, 0) * 0.8px), calc(var(--h, 0) * -0.8px))' }} />
       <rect width="7" height="9" x="14" y="12" rx="1"
-        style={{ ...t(420, 110), transform: 'translate(calc(var(--h, 0) * 0.8px), calc(var(--h, 0) * 0.8px))' }} />
+        style={{ ...anim(420, 110), transform: 'translate(calc(var(--h, 0) * 0.8px), calc(var(--h, 0) * 0.8px))' }} />
       <rect width="7" height="5" x="3" y="16" rx="1"
-        style={{ ...t(420, 165), transform: 'translate(calc(var(--h, 0) * -0.8px), calc(var(--h, 0) * 0.8px))' }} />
+        style={{ ...anim(420, 165), transform: 'translate(calc(var(--h, 0) * -0.8px), calc(var(--h, 0) * 0.8px))' }} />
     </Svg>
   );
 }
@@ -102,13 +102,13 @@ export function LibraryIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <path d="m16 6 4 14"
-        style={{ ...t(440, 150), ...fromBottom, transform: 'translateY(calc(var(--h, 0) * -1.6px))' }} />
+        style={{ ...anim(440, 150), ...fromBottom, transform: 'translateY(calc(var(--h, 0) * -1.6px))' }} />
       <path d="M12 6v14"
-        style={{ ...t(440, 100), ...fromBottom, transform: 'scaleY(calc(1 + var(--h, 0) * 0.16))' }} />
+        style={{ ...anim(440, 100), ...fromBottom, transform: 'scaleY(calc(1 + var(--h, 0) * 0.16))' }} />
       <path d="M8 8v12"
-        style={{ ...t(440, 50), ...fromBottom, transform: 'scaleY(calc(1 - var(--h, 0) * 0.12))' }} />
+        style={{ ...anim(440, 50), ...fromBottom, transform: 'scaleY(calc(1 - var(--h, 0) * 0.12))' }} />
       <path d="M4 4v16"
-        style={{ ...t(440), ...fromBottom, transform: 'scaleY(calc(1 + var(--h, 0) * 0.1))' }} />
+        style={{ ...anim(440), ...fromBottom, transform: 'scaleY(calc(1 + var(--h, 0) * 0.1))' }} />
     </Svg>
   );
 }
@@ -118,11 +118,11 @@ export function CollectionsIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"
-        style={{ ...t(420), transform: 'translateY(calc(var(--h, 0) * -1.8px))' }} />
+        style={{ ...anim(420), transform: 'translateY(calc(var(--h, 0) * -1.8px))' }} />
       <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"
-        style={{ ...t(420, 60), transform: 'translateY(calc(var(--h, 0) * 0.3px))' }} />
+        style={{ ...anim(420, 60), transform: 'translateY(calc(var(--h, 0) * 0.3px))' }} />
       <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"
-        style={{ ...t(420, 120), transform: 'translateY(calc(var(--h, 0) * 1.4px))' }} />
+        style={{ ...anim(420, 120), transform: 'translateY(calc(var(--h, 0) * 1.4px))' }} />
     </Svg>
   );
 }
@@ -132,11 +132,11 @@ export function RulesIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <path d="M2 5h20"
-        style={{ ...t(400), ...fillBox, transform: 'scaleX(calc(1 - var(--h, 0) * 0.08))' }} />
+        style={{ ...anim(400), ...fillBox, transform: 'scaleX(calc(1 - var(--h, 0) * 0.08))' }} />
       <path d="M6 12h12"
-        style={{ ...t(400, 70), ...fillBox, transform: 'translateX(calc(var(--h, 0) * 2.4px))' }} />
+        style={{ ...anim(400, 70), ...fillBox, transform: 'translateX(calc(var(--h, 0) * 2.4px))' }} />
       <path d="M9 19h6"
-        style={{ ...t(400, 140), ...fillBox, transform: 'translateX(calc(var(--h, 0) * -2.4px))' }} />
+        style={{ ...anim(400, 140), ...fillBox, transform: 'translateX(calc(var(--h, 0) * -2.4px))' }} />
     </Svg>
   );
 }
@@ -146,7 +146,7 @@ export function QueueIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <g style={{
-        ...t(460),
+        ...anim(460),
         transformBox: 'view-box',
         transformOrigin: '4px 6px',
         transform: 'rotate(calc(var(--h, 0) * -17deg)) translateY(calc(var(--h, 0) * -0.7px))',
@@ -156,9 +156,9 @@ export function QueueIcon(props: IconProps) {
       </g>
       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
       <path d="M10 11v6"
-        style={{ ...t(420, 80), ...fromBottom, transform: 'scaleY(calc(1 - var(--h, 0) * 0.32))' }} />
+        style={{ ...anim(420, 80), ...fromBottom, transform: 'scaleY(calc(1 - var(--h, 0) * 0.32))' }} />
       <path d="M14 11v6"
-        style={{ ...t(420, 150), ...fromBottom, transform: 'scaleY(calc(1 - var(--h, 0) * 0.32))' }} />
+        style={{ ...anim(420, 150), ...fromBottom, transform: 'scaleY(calc(1 - var(--h, 0) * 0.32))' }} />
     </Svg>
   );
 }
@@ -169,9 +169,9 @@ export function HistoryIcon(props: IconProps) {
     <Svg {...props}>
       <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
       <path d="M3 3v5h5"
-        style={{ ...t(420), transform: 'translate(calc(var(--h, 0) * -1px), calc(var(--h, 0) * -1px))' }} />
+        style={{ ...anim(420), transform: 'translate(calc(var(--h, 0) * -1px), calc(var(--h, 0) * -1px))' }} />
       <path d="M12 7v5l4 2"
-        style={{ ...t(560), ...atCenter, transform: 'rotate(calc(var(--h, 0) * -50deg))' }} />
+        style={{ ...anim(560), ...atCenter, transform: 'rotate(calc(var(--h, 0) * -50deg))' }} />
     </Svg>
   );
 }
@@ -182,7 +182,7 @@ const PULSE = 'M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.
 export function ActivityIcon(props: IconProps) {
   return (
     <Svg {...props}>
-      <g style={{ ...t(460), ...fillBox, transform: 'scaleY(calc(1 + var(--h, 0) * 0.18))' }}>
+      <g style={{ ...anim(460), ...fillBox, transform: 'scaleY(calc(1 + var(--h, 0) * 0.18))' }}>
         <path d={PULSE} />
         {/* Overlay copy: invisible at rest, so the icon never looks broken.
             navIcons.css only runs the sweep while the row is hovered — a
@@ -210,7 +210,7 @@ export function SettingsIcon(props: IconProps) {
       <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
         style={{ transition: `transform 620ms cubic-bezier(0.34, 1.2, 0.64, 1)`, ...atCenter, transform: 'rotate(calc(var(--h, 0) * 45deg))' }} />
       <circle cx="12" cy="12" r="3"
-        style={{ ...t(420, 60), ...fillBox, transform: 'scale(calc(1 + var(--h, 0) * 0.16))' }} />
+        style={{ ...anim(420, 60), ...fillBox, transform: 'scale(calc(1 + var(--h, 0) * 0.16))' }} />
     </Svg>
   );
 }

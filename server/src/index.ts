@@ -19,6 +19,9 @@ import { initializeServices } from './services/init';
 import { getScheduler } from './scheduler';
 import { sendStartupHeartbeat } from './services/telemetry';
 import { refreshAnnouncementsOnStartup } from './services/announcements';
+import { createMcpRouter, closeAllMcpSessions } from './mcp';
+import { getAuthConfig } from './auth/config';
+import { purgeExpiredSessions } from './auth/sessions';
 
 // Create Express application
 const app = express();
@@ -72,7 +75,11 @@ if (config.nodeEnv === 'production') {
   logger.info(`Serving static files from: ${clientPath}`);
 }
 
-// API key authentication middleware
+// MCP connector (Streamable HTTP). Authenticates with the API key itself and
+// is off entirely unless login is enabled — see mcp/config.ts.
+app.use('/mcp', createMcpRouter());
+
+// API key / session authentication middleware
 app.use('/api', apiAuthMiddleware);
 
 // API routes
@@ -138,6 +145,20 @@ async function startServer(): Promise<void> {
     // Ensure API key exists in settings
     ensureApiKey();
 
+    // Login configuration comes from the environment; say so, and say what is wrong with it.
+    const authConfig = getAuthConfig();
+    if (authConfig.enabled) {
+      const methods = [authConfig.oidc ? `single sign-on via ${authConfig.oidc.providerName}` : null, authConfig.local ? 'local account' : null]
+        .filter(Boolean)
+        .join(' and ');
+      logger.info(`Login enabled: ${methods || 'NO METHODS CONFIGURED'}`);
+      purgeExpiredSessions();
+      setInterval(() => purgeExpiredSessions(), 60 * 60 * 1000).unref();
+    } else {
+      logger.info('Login disabled (AUTH_ENABLED is not true); the MCP connector is off');
+    }
+    authConfig.warnings.forEach((warning) => logger.warn(`Auth: ${warning}`));
+
     // Initialize services (DeletionService, Sonarr, Radarr, Overseerr)
     await initializeServices();
 
@@ -169,6 +190,8 @@ async function startServer(): Promise<void> {
       // Stop the scheduler
       scheduler.stop();
       logger.info('Scheduler stopped');
+
+      await closeAllMcpSessions();
 
       server.close(() => {
         logger.info('HTTP server closed');

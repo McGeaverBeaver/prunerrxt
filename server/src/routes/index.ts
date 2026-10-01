@@ -14,10 +14,12 @@ import usersRouter from './users';
 import collectionsRouter from './collections';
 import webhooksRouter from './webhooks';
 import announcementsRouter from './announcements';
+import authRouter from '../auth/routes';
 
 const router = Router();
 
 // Mount all route handlers
+router.use('/auth', authRouter);
 router.use('/health', healthRouter);
 router.use('/settings', settingsRouter);
 router.use('/media', mediaRouter);

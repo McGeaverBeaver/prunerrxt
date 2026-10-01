@@ -48,4 +48,25 @@ All service connections are configured through the web UI — no config files ne
     <Config Name="PGID" Target="PGID" Default="100" Description="Group ID for file permissions" Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
 
     <Config Name="Anonymous install count" Target="TELEMETRY_ENABLED" Default="true" Description="Once a day Prunerr sends a random ID and its version number, so there is some idea of how many installs are running. Nothing else is sent: no library data, no settings, no credentials, no hostname, and no IP address is stored. Set to false to disable it completely." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+    <Config Name="Require login" Target="AUTH_ENABLED" Default="false" Description="Set to true to require a login. Configure single sign-on (Authentik or any OpenID Connect provider) with the OIDC_* variables below and/or a local account with AUTH_LOCAL_*. Off keeps Prunerr open to anyone on your network, as before, and disables the AI assistant (MCP) connector. Guide: docs/authentication.md" Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+
+    <Config Name="OIDC issuer URL" Target="OIDC_ISSUER_URL" Default="" Description="Single sign-on issuer, e.g. https://auth.example.com/application/o/prunerr/ for Authentik. Register the redirect URI http://[IP]:[PORT:3000]/api/auth/oidc/callback at the provider." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+
+    <Config Name="OIDC client ID" Target="OIDC_CLIENT_ID" Default="" Description="From the provider." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+
+    <Config Name="OIDC client secret" Target="OIDC_CLIENT_SECRET" Default="" Description="From the provider." Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+
+    <Config Name="OIDC admin groups" Target="OIDC_ADMIN_GROUPS" Default="" Description="Comma-separated provider groups that get full access, including Settings and the MCP connector." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+
+    <Config Name="OIDC operator groups" Target="OIDC_OPERATOR_GROUPS" Default="" Description="Comma-separated groups that may manage the library, queue, rules and scans but not Settings." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+
+    <Config Name="OIDC viewer groups" Target="OIDC_VIEWER_GROUPS" Default="" Description="Comma-separated groups with read-only access." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+
+    <Config Name="Local login" Target="AUTH_LOCAL_ENABLED" Default="false" Description="Set to true for a built-in username/password account (also set AUTH_LOCAL_USERNAME and AUTH_LOCAL_PASSWORD or AUTH_LOCAL_PASSWORD_HASH). Works alongside or instead of single sign-on." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+
+    <Config Name="Local login username" Target="AUTH_LOCAL_USERNAME" Default="" Description="Username for the local account." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+
+    <Config Name="Local login password" Target="AUTH_LOCAL_PASSWORD" Default="" Description="Password for the local account. For a hashed value use AUTH_LOCAL_PASSWORD_HASH instead (node scripts/hash-password.mjs)." Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+
+    <Config Name="AI assistant (MCP) connector" Target="MCP_ENABLED" Default="true" Description="Serves the Model Context Protocol at /mcp so Claude, Cursor and other assistants can work with your library, authenticated with the API key. Only active when login is enabled. Set to false to turn it off completely. Guide: docs/mcp.md" Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
 </Container>

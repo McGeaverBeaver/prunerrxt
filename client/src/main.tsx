@@ -8,6 +8,7 @@ import i18n from './i18n';
 import { ToastProvider } from './components/common/Toast';
 import { DisplayPreferencesProvider } from './contexts/DisplayPreferencesContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -28,7 +29,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <DisplayPreferencesProvider>
             <BrowserRouter>
               <ToastProvider>
-                <App />
+                <AuthProvider>
+                  <App />
+                </AuthProvider>
               </ToastProvider>
             </BrowserRouter>
           </DisplayPreferencesProvider>

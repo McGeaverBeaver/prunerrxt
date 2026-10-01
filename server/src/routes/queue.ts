@@ -1,17 +1,24 @@
 import { Router, Request, Response } from 'express';
 import mediaItemsRepo from '../db/repositories/mediaItems';
-import type { MediaItem } from '../types';
 import historyRepo from '../db/repositories/historyRepo';
 import { logActivity } from '../db/repositories/activity';
 import logger from '../utils/logger';
-import { toThumbnailUrl } from '../utils/posterUrl';
-import { getDeletionService } from '../services/deletion';
-import episodeDeletionsRepo, { type EpisodeDeletion } from '../db/repositories/episodeDeletions';
+import episodeDeletionsRepo from '../db/repositories/episodeDeletions';
 import { episodeLabel, executeQueuedDeletions } from '../services/episodeDeletions';
 import { getSonarrService, getRadarrService, getOverseerrService } from '../services/init';
-import { DeletionAction, DELETION_ACTION_LABELS } from '../rules/types';
+import { DeletionAction } from '../rules/types';
 import rulesRepo from '../db/repositories/rules';
-import { getNotificationService } from '../notifications';
+import {
+  deleteQueueItemNow,
+  getAllQueueItems,
+  listQueue,
+  normalizeDeletionAction,
+  parseQueueId,
+  processQueue,
+  removeFromQueue,
+  sendDeletionCompleteNotification,
+  summarizeQueue,
+} from '../services/deletionQueue';
 
 // Progress event type
 interface DeletionProgress {
@@ -32,189 +39,6 @@ interface DeletionProgress {
 }
 
 const router = Router();
-
-/**
- * Fire a DELETION_COMPLETE notification covering the items deleted in a single
- * request (manual Process Queue, Delete Now, or the SSE stream). Silently
- * no-ops when no items were deleted.
- */
-async function sendDeletionCompleteNotification(
-  items: Array<{ title: string; type: string; ruleId?: number | null }>,
-  spaceFreedBytes: number,
-  errorCount: number
-): Promise<void> {
-  if (items.length === 0) return;
-
-  const ruleNameCache = new Map<number, string>();
-  const resolveRuleName = (ruleId: number | null | undefined): string | undefined => {
-    if (ruleId === null || ruleId === undefined) return undefined;
-    if (!ruleNameCache.has(ruleId)) {
-      const rule = rulesRepo.rules.getById(ruleId);
-      ruleNameCache.set(ruleId, rule?.name ?? `Rule #${ruleId}`);
-    }
-    return ruleNameCache.get(ruleId);
-  };
-
-  try {
-    await getNotificationService().notify('DELETION_COMPLETE', {
-      itemsDeleted: items.length,
-      spaceFreedBytes,
-      spaceFreedGB: (spaceFreedBytes / (1024 * 1024 * 1024)).toFixed(2),
-      errors: errorCount,
-      items: items.map((i) => ({
-        title: i.title,
-        type: i.type,
-        ruleName: resolveRuleName(i.ruleId),
-      })),
-    });
-  } catch (notifyError) {
-    logger.error('Failed to send deletion complete notification:', notifyError);
-  }
-}
-
-/**
- * Normalize deletion action values to handle legacy/malformed values
- */
-function normalizeDeletionAction(action: string | undefined): DeletionAction {
-  if (!action) return DeletionAction.UNMONITOR_AND_DELETE;
-
-  // Map legacy values to current enum values
-  const legacyMappings: Record<string, DeletionAction> = {
-    'delete_files': DeletionAction.DELETE_FILES_ONLY,
-    'unmonitor': DeletionAction.UNMONITOR_ONLY,
-    'full_delete': DeletionAction.FULL_REMOVAL,
-    'remove': DeletionAction.FULL_REMOVAL,
-  };
-
-  // Check if it's a legacy value
-  if (legacyMappings[action]) {
-    return legacyMappings[action];
-  }
-
-  // Check if it's a valid current enum value
-  const validActions = Object.values(DeletionAction) as string[];
-  if (validActions.includes(action)) {
-    return action as DeletionAction;
-  }
-
-  // Default fallback
-  logger.warn(`Unknown deletion action "${action}", defaulting to UNMONITOR_AND_DELETE`);
-  return DeletionAction.UNMONITOR_AND_DELETE;
-}
-
-interface QueueItemResponse {
-  id: string;
-  mediaItemId: string;
-  /** 'media' is a whole movie/show row; 'episode' is a single queued episode. */
-  kind: 'media' | 'episode';
-  title: string;
-  type: string;
-  size: number;
-  posterUrl?: string;
-  queuedAt: string;
-  deleteAt: string;
-  /** Name of the rule that queued the item; absent when queued by hand. */
-  matchedRule?: string;
-  /** Id of that rule, so the client can link back to it. */
-  ruleId?: string;
-  daysRemaining: number;
-  deletionAction: DeletionAction;
-  deletionActionLabel: string;
-  resetOverseerr: boolean;
-  requestedBy?: string;
-  tmdbId?: number;
-  overseerrResetAt?: string;
-  seasonNumber?: number;
-  episodeNumber?: number;
-}
-
-/** Queue ids carry an `ep-` prefix for episode rows so one route serves both. */
-function parseQueueId(raw: string): { kind: 'media' | 'episode'; id: number } | null {
-  const isEpisode = raw.startsWith('ep-');
-  const id = parseInt(isEpisode ? raw.slice(3) : raw, 10);
-  if (isNaN(id)) return null;
-  return { kind: isEpisode ? 'episode' : 'media', id };
-}
-
-function daysUntil(deleteAfter: string, now: Date): number {
-  return Math.max(0, Math.ceil((new Date(deleteAfter).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-}
-
-/**
- * Resolves rule names for queue attribution, caching per request so a queue of
- * hundreds of items queued by the same rule costs one lookup.
- */
-function createRuleNameResolver(): (id: number | null | undefined) => string | undefined {
-  const cache = new Map<number, string | undefined>();
-  return (id) => {
-    if (id === null || id === undefined) return undefined;
-    if (!cache.has(id)) cache.set(id, rulesRepo.rules.getById(id)?.name);
-    return cache.get(id);
-  };
-}
-
-/** Map a media row pending deletion into the shape the Queue page renders. */
-function mediaRowToQueueItem(
-  item: MediaItem,
-  now: Date,
-  ruleName: (id: number | null | undefined) => string | undefined
-): QueueItemResponse {
-  // Extract extended fields
-  const itemAny = item as any;
-  const deletionAction = normalizeDeletionAction(itemAny.deletion_action);
-  const matchedRuleId = itemAny.matched_rule_id as number | null | undefined;
-  const matchedRule = ruleName(matchedRuleId);
-
-  return {
-    id: String(item.id),
-    mediaItemId: String(item.id),
-    kind: 'media',
-    title: item.title,
-    type: item.type === 'show' ? 'tv' : item.type,
-    size: item.file_size || 0,
-    posterUrl: toThumbnailUrl(item.poster_url) || undefined,
-    queuedAt: item.marked_at!,
-    deleteAt: item.delete_after!,
-    daysRemaining: daysUntil(item.delete_after!, now),
-    deletionAction,
-    deletionActionLabel: DELETION_ACTION_LABELS[deletionAction] || deletionAction,
-    resetOverseerr: Boolean(itemAny.reset_overseerr),
-    requestedBy: itemAny.requested_by || undefined,
-    tmdbId: itemAny.tmdb_id || undefined,
-    overseerrResetAt: itemAny.overseerr_reset_at || undefined,
-    // Only surface the id alongside a name — a rule that has since been
-    // deleted would otherwise link nowhere.
-    ...(matchedRule ? { matchedRule, ruleId: String(matchedRuleId) } : {}),
-  };
-}
-
-/** Map a queued episode row into the same shape the Queue page already renders. */
-function episodeRowToQueueItem(row: EpisodeDeletion, now: Date): QueueItemResponse {
-  const deletionAction = normalizeDeletionAction(row.deletion_action);
-  const show = mediaItemsRepo.getById(row.media_item_id);
-
-  return {
-    id: `ep-${row.id}`,
-    mediaItemId: String(row.media_item_id),
-    kind: 'episode',
-    title: episodeLabel(row.series_title, row.season_number, row.episode_number, row.episode_title),
-    type: 'episode',
-    size: row.file_size || 0,
-    posterUrl: toThumbnailUrl(show?.poster_url ?? null) || undefined,
-    queuedAt: row.marked_at,
-    deleteAt: row.delete_after,
-    daysRemaining: daysUntil(row.delete_after, now),
-    deletionAction,
-    deletionActionLabel: DELETION_ACTION_LABELS[deletionAction] || deletionAction,
-    resetOverseerr: false,
-    seasonNumber: row.season_number,
-    episodeNumber: row.episode_number,
-  };
-}
-
-function pendingEpisodeQueueItems(now: Date): QueueItemResponse[] {
-  return episodeDeletionsRepo.getAllPending().map((row) => episodeRowToQueueItem(row, now));
-}
 
 /**
  * Run one queued episode over SSE, using the same progress envelope the Queue
@@ -271,33 +95,21 @@ async function streamEpisodeDeletion(rowId: number, res: Response): Promise<void
 router.get('/upcoming', (req: Request, res: Response) => {
   try {
     const limit = parseInt(req.query['limit'] as string, 10) || 50;
-
-    // Get all items pending deletion
-    const pendingItems = mediaItemsRepo.getPendingDeletion();
-
-    const now = new Date();
-    const ruleName = createRuleNameResolver();
-    const queueItems: QueueItemResponse[] = pendingItems
-      .filter((item) => item.delete_after && item.marked_at)
-      .map<QueueItemResponse>((item) => mediaRowToQueueItem(item, now, ruleName))
-      .concat(pendingEpisodeQueueItems(now))
-      .sort((a, b) => a.daysRemaining - b.daysRemaining)
-      .slice(0, limit);
-
-    // Calculate totals
-    const totalSize = queueItems.reduce((sum, item) => sum + item.size, 0);
-    const readyForDeletion = queueItems.filter((item) => item.daysRemaining === 0).length;
-    const willResetOverseerr = queueItems.filter((item) => item.resetOverseerr).length;
+    const all = getAllQueueItems();
+    const queueItems = all.slice(0, limit);
+    const summary = summarizeQueue(queueItems);
 
     res.json({
       success: true,
       data: queueItems,
       total: queueItems.length,
       summary: {
-        totalItems: pendingItems.length,
-        totalSize,
-        readyForDeletion,
-        willResetOverseerr,
+        // Historical quirk kept for the dashboard: totalItems counts the whole
+        // queue while the other fields describe the returned slice.
+        totalItems: mediaItemsRepo.getPendingDeletion().length,
+        totalSize: summary.totalSize,
+        readyForDeletion: summary.readyForDeletion,
+        willResetOverseerr: summary.willResetOverseerr,
       },
     });
   } catch (error) {
@@ -316,41 +128,16 @@ router.get('/', (req: Request, res: Response) => {
     // returned — the Queue page renders every item and paginates client-side,
     // so a default cap here would silently hide items.
     const limitParam = parseInt(req.query['limit'] as string, 10);
-    const hasLimit = !Number.isNaN(limitParam) && limitParam > 0;
     const offset = parseInt(req.query['offset'] as string, 10) || 0;
-
-    // Get all items pending deletion
-    const pendingItems = mediaItemsRepo.getPendingDeletion();
-
-    const now = new Date();
-    const ruleName = createRuleNameResolver();
-    const allQueueItems: QueueItemResponse[] = pendingItems
-      .filter((item) => item.delete_after && item.marked_at)
-      .map<QueueItemResponse>((item) => mediaRowToQueueItem(item, now, ruleName))
-      .concat(pendingEpisodeQueueItems(now))
-      .sort((a, b) => a.daysRemaining - b.daysRemaining);
-
-    const paginatedItems = hasLimit
-      ? allQueueItems.slice(offset, offset + limitParam)
-      : allQueueItems.slice(offset);
-
-    // Calculate totals
-    const totalSize = allQueueItems.reduce((sum, item) => sum + item.size, 0);
-    const readyForDeletion = allQueueItems.filter((item) => item.daysRemaining === 0).length;
-    const willResetOverseerr = allQueueItems.filter((item) => item.resetOverseerr).length;
+    const listing = listQueue({ limit: Number.isNaN(limitParam) ? 0 : limitParam, offset });
 
     res.json({
       success: true,
-      data: paginatedItems,
-      total: allQueueItems.length,
-      limit: hasLimit ? limitParam : allQueueItems.length,
-      offset,
-      summary: {
-        totalItems: allQueueItems.length,
-        totalSize,
-        readyForDeletion,
-        willResetOverseerr,
-      },
+      data: listing.items,
+      total: listing.total,
+      limit: listing.limit,
+      offset: listing.offset,
+      summary: listing.summary,
     });
   } catch (error) {
     logger.error('Failed to get queue:', error);
@@ -364,89 +151,16 @@ router.get('/', (req: Request, res: Response) => {
 // DELETE /api/queue/:id - Remove an item from the deletion queue (cancel deletion)
 router.delete('/:id', (req: Request, res: Response) => {
   try {
-    const parsedId = parseQueueId(req.params['id'] as string);
-    if (!parsedId) {
-      res.status(400).json({
-        success: false,
-        error: 'Invalid queue item ID',
-      });
+    const result = removeFromQueue(req.params['id'] as string);
+    if (!result.ok) {
+      res.status(result.status).json({ success: false, error: result.error });
       return;
     }
-
-    if (parsedId.kind === 'episode') {
-      const row = episodeDeletionsRepo.getById(parsedId.id);
-      if (!row || row.status !== 'pending') {
-        res.status(404).json({ success: false, error: 'Episode is not in the deletion queue' });
-        return;
-      }
-
-      const title = episodeLabel(row.series_title, row.season_number, row.episode_number, row.episode_title);
-      episodeDeletionsRepo.cancelByIds([parsedId.id]);
-
-      logActivity({
-        eventType: 'manual_action',
-        action: 'episodes_unqueued',
-        actorType: 'user',
-        targetType: 'media_item',
-        targetId: row.media_item_id,
-        targetTitle: title,
-        metadata: JSON.stringify({ episodes: 1 }),
-      });
-
-      res.json({ success: true, data: { id: `ep-${parsedId.id}` }, message: `"${title}" removed from deletion queue` });
-      return;
-    }
-
-    const id = parsedId.id;
-
-    // Verify the item exists and is in pending_deletion status
-    const item = mediaItemsRepo.getById(id);
-    if (!item) {
-      res.status(404).json({
-        success: false,
-        error: `Item not found: ${id}`,
-      });
-      return;
-    }
-
-    if (item.status !== 'pending_deletion') {
-      res.status(400).json({
-        success: false,
-        error: 'Item is not in the deletion queue',
-      });
-      return;
-    }
-
-    // Remove from deletion queue by resetting status and clearing deletion fields
-    const updatedItem = mediaItemsRepo.update(id, {
-      status: 'monitored',
-      marked_at: undefined,
-      delete_after: undefined,
-    });
-
-    if (!updatedItem) {
-      res.status(500).json({
-        success: false,
-        error: 'Failed to update item',
-      });
-      return;
-    }
-
-    logger.info(`Removed item "${item.title}" from deletion queue`);
-
-    logActivity({
-      eventType: 'manual_action',
-      action: 'queue_removed',
-      actorType: 'user',
-      targetType: 'media_item',
-      targetId: id,
-      targetTitle: item.title,
-    });
 
     res.json({
       success: true,
-      data: updatedItem,
-      message: `"${item.title}" removed from deletion queue`,
+      data: result.item ?? { id: result.id },
+      message: `"${result.title}" removed from deletion queue`,
     });
   } catch (error) {
     logger.error('Failed to remove item from queue:', error);
@@ -463,199 +177,9 @@ router.post('/process', async (req: Request, res: Response) => {
     const dryRun = req.query['dryRun'] === 'true';
     const force = req.query['force'] === 'true';
 
-    // Get the deletion service
-    const deletionService = getDeletionService();
+    const { message, ...data } = await processQueue({ dryRun, force });
 
-    // Get items ready for deletion
-    const pendingItems = mediaItemsRepo.getPendingDeletion();
-    const now = new Date();
-
-    // force=true processes ALL pending items (manual "Process Queue" button)
-    // force=false only processes items whose grace period has expired (auto-processing)
-    const itemsReadyForDeletion = force
-      ? pendingItems.filter((item) => item.delete_after && item.marked_at)
-      : pendingItems.filter((item) => {
-          if (!item.delete_after) return false;
-          const deleteAfter = new Date(item.delete_after);
-          const daysRemaining = Math.max(
-            0,
-            Math.ceil((deleteAfter.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-          );
-          return daysRemaining === 0;
-        });
-
-    // Queued episodes ride the same button: whatever is due (or everything,
-    // when forced) gets processed alongside the whole-item rows.
-    const episodeRowsReady = force
-      ? episodeDeletionsRepo.getAllPending()
-      : episodeDeletionsRepo.getDue(now);
-
-    if (itemsReadyForDeletion.length === 0 && episodeRowsReady.length === 0) {
-      res.json({
-        success: true,
-        data: {
-          processed: 0,
-          deleted: 0,
-          failed: 0,
-          freedSpace: 0,
-          overseerrResets: 0,
-          dryRun,
-        },
-        message: 'No items ready for deletion',
-      });
-      return;
-    }
-
-    interface DeletionResultItem {
-      id: number;
-      title: string;
-      fileSize: number | null;
-      deletionAction: DeletionAction;
-      deletionActionLabel: string;
-      overseerrReset?: boolean;
-      overseerrError?: string;
-    }
-
-    const results: {
-      deleted: DeletionResultItem[];
-      failed: Array<{ id: number; title: string; error: string }>;
-    } = {
-      deleted: [],
-      failed: [],
-    };
-
-    // Collected for the batched DELETION_COMPLETE Discord notification
-    const notifyItems: Array<{ title: string; type: string; ruleId?: number | null }> = [];
-
-    let freedSpace = 0;
-    let overseerrResets = 0;
-
-    // Process each item
-    for (const item of itemsReadyForDeletion) {
-      try {
-        const itemAny = item as any;
-        const deletionAction = normalizeDeletionAction(itemAny.deletion_action);
-        const resetOverseerr = Boolean(itemAny.reset_overseerr);
-        const matchedRuleId = itemAny.matched_rule_id as number | undefined;
-
-        if (dryRun) {
-          // Dry run - just record what would be deleted
-          const actionDeletesFiles = deletionAction !== DeletionAction.UNMONITOR_ONLY;
-          logger.info(`[DRY RUN] Would process: "${item.title}" (action: ${deletionAction}, reset overseerr: ${resetOverseerr})`);
-          results.deleted.push({
-            id: item.id,
-            title: item.title,
-            fileSize: actionDeletesFiles ? item.file_size : 0,
-            deletionAction,
-            deletionActionLabel: DELETION_ACTION_LABELS[deletionAction] || deletionAction,
-            overseerrReset: resetOverseerr,
-          });
-          if (actionDeletesFiles) {
-            freedSpace += item.file_size || 0;
-          }
-          if (resetOverseerr) {
-            overseerrResets++;
-          }
-        } else {
-          // Actual deletion using DeletionService
-          const result = await deletionService.executeDelete(item as any, deletionAction, {
-            resetOverseerr,
-            ruleId: matchedRuleId,
-          });
-
-          if (result.success) {
-            results.deleted.push({
-              id: item.id,
-              title: item.title,
-              fileSize: result.fileSizeFreed || null,
-              deletionAction,
-              deletionActionLabel: DELETION_ACTION_LABELS[deletionAction] || deletionAction,
-              overseerrReset: result.overseerrReset,
-              overseerrError: result.overseerrError,
-            });
-            notifyItems.push({
-              title: item.title,
-              type: item.type,
-              ruleId: matchedRuleId ?? null,
-            });
-            freedSpace += result.fileSizeFreed || 0;
-            if (result.overseerrReset) {
-              overseerrResets++;
-            }
-            logger.info(`Processed item: "${item.title}" (action: ${deletionAction}, overseerr reset: ${result.overseerrReset})`);
-          } else {
-            results.failed.push({
-              id: item.id,
-              title: item.title,
-              error: result.error || 'Unknown error',
-            });
-          }
-        }
-      } catch (itemError) {
-        const errorMessage = itemError instanceof Error ? itemError.message : String(itemError);
-        logger.error(`Failed to process deletion for "${item.title}":`, itemError);
-        results.failed.push({
-          id: item.id,
-          title: item.title,
-          error: errorMessage,
-        });
-      }
-    }
-
-    // Episodes: dry runs only tally what would go, real runs execute them.
-    let episodesDeleted = 0;
-    let episodesFailed = 0;
-
-    if (episodeRowsReady.length > 0) {
-      if (dryRun) {
-        episodesDeleted = episodeRowsReady.length;
-        freedSpace += episodeRowsReady.reduce((sum, row) => sum + (row.file_size || 0), 0);
-        logger.info(`[DRY RUN] Would process ${episodeRowsReady.length} queued episode(s)`);
-      } else {
-        const episodeResult = await executeQueuedDeletions(episodeRowsReady);
-        episodesDeleted = episodeResult.deleted;
-        episodesFailed = episodeResult.failed;
-        freedSpace += episodeResult.freedBytes;
-        for (const outcome of episodeResult.outcomes.filter((o) => o.success)) {
-          notifyItems.push({ title: outcome.label, type: 'episode', ruleId: null });
-        }
-      }
-    }
-
-    const freedSpaceGB = (freedSpace / (1024 * 1024 * 1024)).toFixed(2);
-
-    logger.info(
-      `Queue processing complete: ${results.deleted.length + episodesDeleted} processed, ${results.failed.length + episodesFailed} failed, ${freedSpaceGB}GB freed, ${overseerrResets} Overseerr resets${dryRun ? ' (dry run)' : ''}`
-    );
-
-    if (!dryRun) {
-      await sendDeletionCompleteNotification(notifyItems, freedSpace, results.failed.length);
-    }
-
-    const totalDeleted = results.deleted.length + episodesDeleted;
-    const totalFailed = results.failed.length + episodesFailed;
-
-    res.json({
-      success: true,
-      data: {
-        processed: itemsReadyForDeletion.length + episodeRowsReady.length,
-        deleted: totalDeleted,
-        failed: totalFailed,
-        freedSpace,
-        freedSpaceFormatted: `${freedSpaceGB} GB`,
-        overseerrResets,
-        episodes: {
-          processed: episodeRowsReady.length,
-          deleted: episodesDeleted,
-          failed: episodesFailed,
-        },
-        dryRun,
-        results,
-      },
-      message: dryRun
-        ? `Dry run complete: ${totalDeleted} item(s) would be processed`
-        : `Processed ${totalDeleted} item(s), ${totalFailed} failed, ${overseerrResets} Overseerr resets`,
-    });
+    res.json({ success: true, data, message });
   } catch (error) {
     logger.error('Failed to process deletion queue:', error);
     res.status(500).json({
@@ -668,117 +192,23 @@ router.post('/process', async (req: Request, res: Response) => {
 // POST /api/queue/:id/delete-now - Immediately delete a single item (bypass grace period)
 router.post('/:id/delete-now', async (req: Request, res: Response) => {
   try {
-    const parsedId = parseQueueId(req.params['id'] as string);
-    if (!parsedId) {
-      res.status(400).json({
+    const result = await deleteQueueItemNow(req.params['id'] as string);
+
+    if (!result.ok) {
+      res.status(result.status).json({
         success: false,
-        error: 'Invalid queue item ID',
+        error: result.error,
+        ...(result.overseerrError !== undefined ? { data: { overseerrError: result.overseerrError } } : {}),
       });
       return;
     }
 
-    if (parsedId.kind === 'episode') {
-      const row = episodeDeletionsRepo.getById(parsedId.id);
-      if (!row || row.status !== 'pending') {
-        res.status(404).json({ success: false, error: 'Episode is not in the deletion queue' });
-        return;
-      }
-
-      const result = await executeQueuedDeletions([row]);
-      const outcome = result.outcomes[0];
-
-      if (!outcome?.success) {
-        res.status(500).json({ success: false, error: outcome?.error || 'Failed to delete episode' });
-        return;
-      }
-
-      await sendDeletionCompleteNotification(
-        [{ title: outcome.label, type: 'episode' }],
-        result.freedBytes,
-        0
-      );
-
-      res.json({
-        success: true,
-        data: {
-          id: `ep-${parsedId.id}`,
-          title: outcome.label,
-          deletionAction: row.deletion_action,
-          fileSizeFreed: result.freedBytes,
-        },
-        message: `"${outcome.label}" deleted successfully`,
-      });
-      return;
-    }
-
-    const id = parsedId.id;
-
-    // Verify the item exists and is in pending_deletion status
-    const item = mediaItemsRepo.getById(id);
-    if (!item) {
-      res.status(404).json({
-        success: false,
-        error: `Item not found: ${id}`,
-      });
-      return;
-    }
-
-    if (item.status !== 'pending_deletion') {
-      res.status(400).json({
-        success: false,
-        error: 'Item is not in the deletion queue',
-      });
-      return;
-    }
-
-    // Get the deletion service
-    const deletionService = getDeletionService();
-
-    // Extract deletion options from the item
-    const itemAny = item as any;
-    const deletionAction = normalizeDeletionAction(itemAny.deletion_action);
-    const resetOverseerr = Boolean(itemAny.reset_overseerr);
-    const matchedRuleId = itemAny.matched_rule_id as number | undefined;
-
-    // Execute the deletion immediately
-    const result = await deletionService.executeDelete(item as any, deletionAction, {
-      resetOverseerr,
-      ruleId: matchedRuleId,
+    const { ok: _ok, ...data } = result;
+    res.json({
+      success: true,
+      data,
+      message: `"${result.title}" deleted successfully`,
     });
-
-    if (result.success) {
-      const freedSpaceGB = ((result.fileSizeFreed || 0) / (1024 * 1024 * 1024)).toFixed(2);
-      logger.info(`Immediately deleted: "${item.title}" (action: ${deletionAction}, freed: ${freedSpaceGB}GB, overseerr reset: ${result.overseerrReset})`);
-
-      await sendDeletionCompleteNotification(
-        [{ title: item.title, type: item.type, ruleId: matchedRuleId ?? null }],
-        result.fileSizeFreed || 0,
-        0
-      );
-
-      res.json({
-        success: true,
-        data: {
-          id: item.id,
-          title: item.title,
-          deletionAction,
-          deletionActionLabel: DELETION_ACTION_LABELS[deletionAction] || deletionAction,
-          fileSizeFreed: result.fileSizeFreed || 0,
-          fileSizeFreedFormatted: `${freedSpaceGB} GB`,
-          overseerrReset: result.overseerrReset,
-          overseerrError: result.overseerrError,
-        },
-        message: `"${item.title}" deleted successfully`,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: result.error || 'Failed to delete item',
-        data: {
-          overseerrError: result.overseerrError,
-        },
-      });
-    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Failed to immediately delete item: ${errorMessage}`);

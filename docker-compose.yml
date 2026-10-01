@@ -63,6 +63,25 @@ services:
       # Nothing else. Set to false to disable entirely; see docs/telemetry.md.
       # - TELEMETRY_ENABLED=false
 
+      # Login & access (optional; docs/authentication.md). Off by default.
+      # Single sign-on via Authentik or any OpenID Connect provider, roles from
+      # groups, and/or a local account. The MCP connector needs AUTH_ENABLED=true.
+      # - AUTH_ENABLED=true
+      # - OIDC_ISSUER_URL=https://auth.example.com/application/o/prunerr/
+      # - OIDC_CLIENT_ID=
+      # - OIDC_CLIENT_SECRET=
+      # - OIDC_ADMIN_GROUPS=prunerr-admins
+      # - OIDC_OPERATOR_GROUPS=media-ops
+      # - OIDC_VIEWER_GROUPS=family
+      # - AUTH_LOCAL_ENABLED=true
+      # - AUTH_LOCAL_USERNAME=admin
+      # - AUTH_LOCAL_PASSWORD_HASH=scrypt$$...   # node scripts/hash-password.mjs; write $ as $$
+      # - APP_URL=https://prunerr.example.com
+
+      # AI assistant connector (MCP) at /mcp - docs/mcp.md. On by default once
+      # login is enabled; set to false for a hard off switch.
+      # - MCP_ENABLED=true
+
       # Database Settings
       - DATA_DIR=/app/data
       - DB_PATH=/app/data/prunerr.db

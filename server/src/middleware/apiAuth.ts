@@ -2,6 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import settingsRepo from '../db/repositories/settings';
 import logger from '../utils/logger';
+import { getAuthConfig } from '../auth/config';
+import { isAuthorized } from '../auth/roles';
+import { sessionFromRequest } from '../auth/sessions';
+import { isPublicApiPath, setRequestAuth } from '../auth/middleware';
 
 const API_KEY_SETTING = 'api_key';
 
@@ -49,101 +53,98 @@ export function clearApiKeyCache(): void {
 }
 
 /**
- * Determine whether a request originates from the same-origin web UI.
- *
- * Uses Sec-Fetch-Site header ONLY — this is a Fetch Metadata Request Header
- * that browsers enforce and cannot be set by cross-origin JavaScript.
- * Non-browser clients (curl, scripts) CAN forge this header, so this is
- * a convenience for the web UI, not a security boundary. The real security
- * boundary is the API key itself.
- *
- * NOTE: This app is designed for trusted LAN / VPN access. If exposed to
- * the public internet, put it behind a reverse proxy with auth (e.g. Authelia,
- * Authentik, or Cloudflare Access).
- */
-function isSameOriginBrowser(req: Request): boolean {
-  // If the request explicitly sends an API key, validate it normally
-  if (req.headers['x-api-key']) {
-    return false;
-  }
-
-  // Sec-Fetch-Site is the most reliable (browser-enforced)
-  const secFetchSite = req.headers['sec-fetch-site'] as string | undefined;
-  if (secFetchSite === 'same-origin') {
-    return true;
-  }
-
-  // Fallback: check Origin or Referer matches Host (needed for reverse proxies
-  // that strip Sec-Fetch-Site, or older browsers that don't send it)
-  const host = req.headers['host'];
-  if (host) {
-    const origin = req.headers['origin'] as string | undefined;
-    if (origin) {
-      try { if (new URL(origin).host === host) return true; } catch { /* invalid */ }
-    }
-    const referer = req.headers['referer'] as string | undefined;
-    if (referer) {
-      try { if (new URL(referer).host === host) return true; } catch { /* invalid */ }
-    }
-  }
-
-  // Fallback: if the request has typical browser fetch metadata but no Sec-Fetch-Site
-  // (some proxies strip it), accept requests with Sec-Fetch-Mode or Accept: text/html
-  const secFetchMode = req.headers['sec-fetch-mode'] as string | undefined;
-  if (secFetchMode === 'cors' || secFetchMode === 'navigate' || secFetchMode === 'same-origin') {
-    const accept = req.headers['accept'] as string | undefined;
-    if (accept && (accept.includes('text/html') || accept.includes('application/json'))) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
  * Constant-time key comparison using HMAC to avoid length leaks.
  * Both inputs are hashed to a fixed-length digest before comparing,
  * so neither the key length nor content leaks via timing.
  */
-function keysMatch(provided: string, valid: string): boolean {
+export function keysMatch(provided: string, valid: string): boolean {
   const hash = (s: string) => crypto.createHmac('sha256', 'prunerr-api-key-compare').update(s).digest();
   const a = hash(provided);
   const b = hash(valid);
   return crypto.timingSafeEqual(a, b);
 }
 
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
 /**
- * Express middleware that enforces API key authentication on /api/* routes.
+ * Express middleware that authenticates and authorizes /api/* requests.
  *
- * - Same-origin browser requests (web UI) are allowed via Sec-Fetch-Site.
- * - All other requests must include a valid X-Api-Key header.
- * - The PRUNERR_API_KEY env var is accepted as an override.
+ * Two modes, decided by AUTH_ENABLED:
  *
- * SECURITY NOTE: The same-origin bypass relies on Sec-Fetch-Site which is
- * browser-enforced but forgeable by non-browser clients. This app is designed
- * for trusted networks. For public exposure, use a reverse proxy with auth.
+ * Login disabled (the default, and the historical behaviour): requests with
+ * no X-Api-Key header are allowed through — the web UI never sends one. A
+ * request that does send the header must send the right key. The app is
+ * designed for trusted LAN / VPN access in this mode; expose it publicly only
+ * behind a reverse proxy with auth, or enable login.
+ *
+ * Login enabled: every request needs either a valid API key (acts as admin)
+ * or a session cookie from the login flow, and the session's role decides
+ * what it may do (see auth/roles.ts). Health probes and the login endpoints
+ * themselves stay public.
  */
 export function apiAuthMiddleware(req: Request, res: Response, next: NextFunction): void {
-  // If no X-Api-Key header is present, allow the request through.
-  // The web UI never sends this header, so this lets the UI work seamlessly.
-  // External scripts/tools that want authenticated access send the header,
-  // and we validate it below.
   const providedKey = req.headers['x-api-key'] as string | undefined;
-  if (!providedKey) {
+
+  if (providedKey) {
+    if (!keysMatch(providedKey, getApiKey())) {
+      logger.warn(`API auth: invalid API key from ${req.ip} for ${req.method} ${req.path}`);
+      res.status(401).json({
+        success: false,
+        error: 'Invalid API key.',
+        code: 'INVALID_API_KEY',
+      });
+      return;
+    }
+    setRequestAuth(res, { kind: 'apiKey', role: 'admin' });
     next();
     return;
   }
 
-  // X-Api-Key header is present — validate it
-  const validKey = getApiKey();
-  if (!keysMatch(providedKey, validKey)) {
-    logger.warn(`API auth: invalid API key from ${req.ip} for ${req.method} ${req.path}`);
+  const authConfig = getAuthConfig();
+  if (!authConfig.enabled) {
+    setRequestAuth(res, { kind: 'disabled', role: 'admin' });
+    next();
+    return;
+  }
+
+  if (isPublicApiPath(req.path)) {
+    next();
+    return;
+  }
+
+  const session = sessionFromRequest(req);
+  if (!session) {
     res.status(401).json({
       success: false,
-      error: 'Invalid API key.',
+      error: 'Authentication required.',
+      code: 'AUTH_REQUIRED',
     });
     return;
   }
 
+  // A cookie-authenticated mutation from another site is the classic CSRF
+  // shape. SameSite=Lax already withholds the cookie on cross-site POSTs in
+  // modern browsers; this is the belt to that suspender.
+  const fetchSite = req.headers['sec-fetch-site'];
+  if (!SAFE_METHODS.has(req.method.toUpperCase()) && fetchSite === 'cross-site') {
+    res.status(403).json({
+      success: false,
+      error: 'Cross-site request refused.',
+      code: 'CSRF',
+    });
+    return;
+  }
+
+  if (!isAuthorized(session.role, req.method, req.path)) {
+    res.status(403).json({
+      success: false,
+      error: `Your role (${session.role}) does not allow this action.`,
+      code: 'FORBIDDEN',
+      role: session.role,
+    });
+    return;
+  }
+
+  setRequestAuth(res, { kind: 'session', role: session.role, session });
   next();
 }

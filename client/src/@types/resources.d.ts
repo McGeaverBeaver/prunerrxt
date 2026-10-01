@@ -74,6 +74,27 @@ export default interface Resources {
       "time": "Time"
     }
   },
+  "auth": {
+    "continueWith": "Continue with {{provider}}",
+    "errors": {
+      "denied": "The identity provider refused the sign-in.",
+      "exchange": "Prunerr could not exchange the login code with the identity provider. Check the client ID, secret and redirect URI.",
+      "generic": "Sign-in failed. Please try again.",
+      "noRole": "Your account signed in, but it is not in any group that Prunerr grants access to. Ask an administrator to add you to one of the mapped groups.",
+      "provider": "Prunerr could not reach the identity provider.",
+      "state": "That sign-in attempt expired or did not start here. Please try again.",
+      "token": "The identity provider returned a token Prunerr could not verify.",
+      "unavailable": "Single sign-on is not configured on this install."
+    },
+    "footer": "Access is configured by the server environment. See docs/authentication.md.",
+    "noMethods": "Login is enabled but no sign-in method is configured. Set OIDC_* or AUTH_LOCAL_* in the container environment, or set AUTH_ENABLED=false.",
+    "or": "or",
+    "password": "Password",
+    "signIn": "Sign in",
+    "sso": "Single sign-on",
+    "subtitle": "Sign in to manage your library",
+    "username": "Username"
+  },
   "collections": {
     "backToCollections": "Back to Collections",
     "badges": {
@@ -489,6 +510,12 @@ export default interface Resources {
     }
   },
   "layout": {
+    "account": {
+      "roleAdmin": "Administrator",
+      "roleOperator": "Operator",
+      "roleViewer": "Viewer",
+      "signOut": "Sign out"
+    },
     "closeMenu": "Close navigation menu",
     "diskStats": {
       "allHealthy": "All healthy",
@@ -1510,6 +1537,83 @@ export default interface Resources {
       "refresh": "Refresh libraries from {{server}}",
       "title": "Library Exclusions"
     },
+    "login": {
+      "apiKeyNote": "The API key always acts as an administrator, with or without login.",
+      "clientId": "Client ID",
+      "defaultRole": "Everyone else",
+      "description": "Who can open Prunerr, and what each role may do. Configured by environment variables.",
+      "disabledBody": "Anyone who can reach this address can use Prunerr, and the MCP connector stays off. Fine on a trusted LAN or behind a reverse proxy that handles login; set AUTH_ENABLED=true to turn on single sign-on or a local account.",
+      "disabledTitle": "Login disabled",
+      "enabledBody": "Every page and API call needs a signed-in user or the API key. Sessions last {{hours}} hours; {{sessions}} active now.",
+      "enabledTitle": "Login required",
+      "groupsClaim": "Groups claim",
+      "howTo": "Turning it on (Authentik example)",
+      "howToHint": "Add these to the container environment and restart. Full details in docs/authentication.md.",
+      "issuer": "Issuer",
+      "loading": "Loading…",
+      "localTitle": "Local account",
+      "none": "none",
+      "password": "Password",
+      "passwordHashed": "scrypt hash (AUTH_LOCAL_PASSWORD_HASH)",
+      "passwordPlain": "plain text in the environment (AUTH_LOCAL_PASSWORD)",
+      "redirectUri": "Redirect URI",
+      "role": "Role",
+      "roleAdminDesc": "everything, including Settings, the API key, backups and the MCP connector",
+      "roleOperatorDesc": "queue, protect, rules, scans and collections; no Settings",
+      "roleViewerDesc": "read-only",
+      "roles": {
+        "admin": "Administrator",
+        "none": "No access",
+        "operator": "Operator",
+        "viewer": "Viewer"
+      },
+      "rolesTitle": "Roles",
+      "scopes": "Scopes",
+      "ssoTitle": "Single sign-on · {{provider}}",
+      "ssoUnreachable": "The identity provider could not be reached: {{error}}",
+      "username": "Username"
+    },
+    "mcp": {
+      "badgeDestructive": "destructive",
+      "badgeImmediate": "needs opt-in",
+      "badgeReadOnly": "read-only",
+      "catalogTitle_one": "What the assistant can do ({{count}} tools)",
+      "catalogTitle_other": "What the assistant can do ({{count}} tools)",
+      "copied": "Copied",
+      "copy": "Copy",
+      "copyEndpoint": "Copy endpoint URL",
+      "copySnippet": "Copy {{title}} snippet",
+      "counts": "{{tools}} tools · {{resources}} resources · {{prompts}} prompts · {{sessions}} connected now",
+      "description": "Let Claude, Cursor or any Model Context Protocol client read your library, review the queue and build rules with you.",
+      "enableBody": "Serves the Model Context Protocol over HTTP at the endpoint below. Clients authenticate with your API key, and every call is logged in the activity log like a manual action.",
+      "enableTitle": "MCP connector",
+      "endpoint": "Endpoint",
+      "endpointHint": "Streamable HTTP transport. Send your API key as <1>Authorization: Bearer</1> or <3>X-Api-Key</3>. Reveal the key above to have it filled into the snippets.",
+      "groups": {
+        "actions": "Item actions",
+        "collections": "Collections",
+        "history": "History & users",
+        "library": "Library",
+        "overview": "Overview",
+        "queue": "Deletion queue",
+        "rules": "Rules",
+        "scans": "Scans & sync",
+        "system": "System"
+      },
+      "immediateBody": "Off by default. An assistant can always queue items (they wait out the grace period and can be removed from the queue), but \"delete now\" and processing the queue for real are refused unless this is on.",
+      "immediateTitle": "Allow immediate deletion",
+      "offBecauseAuth": "Off because login is disabled. An AI connector on an install anyone on the network can open is one exposure too many, so set AUTH_ENABLED=true (see Login & access below) to turn it on.",
+      "offBecauseEnv": "Turned off for this container by MCP_ENABLED=false. This switch cannot override it.",
+      "snippetClaudeCode": "Claude Code",
+      "snippetClaudeCodeHint": "Run once in a terminal; adds Prunerr to your user-level MCP servers.",
+      "snippetClaudeDesktop": "Claude Desktop (via mcp-remote)",
+      "snippetClaudeDesktopHint": "Claude Desktop only launches local commands; mcp-remote bridges it to the HTTP endpoint. Needs Node.js on that machine.",
+      "snippetJson": "Cursor, Windsurf, VS Code and other HTTP clients",
+      "snippetJsonHint": "Paste into the client’s mcp.json (the key is usually \"mcpServers\" or \"servers\").",
+      "unavailableBody": "This server does not expose the MCP connector.",
+      "unavailableTitle": "MCP connector not available",
+      "updateFailed": "Could not change that setting"
+    },
     "mediaServer": {
       "description": "The server Prunerr reads your library from",
       "playbackReportingHint": "Tip: install the Playback Reporting plugin on your server. Without it only the most recent play of each item is recorded, so repeat views are missed and play counts read low.",
@@ -1532,6 +1636,8 @@ export default interface Resources {
         "haptics": "Haptic feedback",
         "libraryExclusions": "Library exclusions",
         "librarySync": "Library sync",
+        "login": "Login & access",
+        "mcp": "AI assistant (MCP)",
         "mediaServer": "Media server",
         "notificationLanguage": "Notification language",
         "overseerr": "Seerr",
@@ -1611,6 +1717,15 @@ export default interface Resources {
         "title": "Auto-Process Queue"
       },
       "dayOfWeek": "Day of Week",
+      "days": {
+        "friday": "schedule.days.friday",
+        "monday": "schedule.days.monday",
+        "saturday": "schedule.days.saturday",
+        "sunday": "schedule.days.sunday",
+        "thursday": "schedule.days.thursday",
+        "tuesday": "schedule.days.tuesday",
+        "wednesday": "schedule.days.wednesday"
+      },
       "description": "Automate library scanning and cleanup",
       "hourlyHint": "Scan will run at this minute past each hour",
       "intervalLabel": "Scan Interval",
@@ -1712,6 +1827,15 @@ export default interface Resources {
       "description": "POST events to any URL — wire Prunerr into Home Assistant, n8n, or your own automations",
       "empty": "No webhooks configured. Add one to start sending events.",
       "enterUrlFirst": "Enter a URL first",
+      "events": {
+        "deletionComplete": "webhooks.events.deletionComplete",
+        "deletionError": "webhooks.events.deletionError",
+        "deletionImminent": "webhooks.events.deletionImminent",
+        "diskPressure": "webhooks.events.diskPressure",
+        "itemsQueued": "webhooks.events.itemsQueued",
+        "scanComplete": "webhooks.events.scanComplete",
+        "scanError": "webhooks.events.scanError"
+      },
       "eventsLabel": "Events",
       "nameLabel": "Name (optional)",
       "remove": "Remove webhook",

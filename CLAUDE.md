@@ -78,6 +78,20 @@ Do not attribute work to Claude anywhere in the repo or on GitHub. No
 on issue, PR, review or discussion comments. Everything should read as coming
 from the maintainer.
 
+## Login, roles and the MCP connector
+- Login is configured only by environment variables (`AUTH_ENABLED`, `OIDC_*`,
+  `AUTH_LOCAL_*`); see `server/src/auth/config.ts` and `docs/authentication.md`.
+  Roles are `admin` > `operator` > `viewer`; the policy lives in
+  `server/src/auth/roles.ts` and is enforced in `server/src/middleware/apiAuth.ts`.
+  The API key always acts as admin. With login off, everything behaves as before.
+- The MCP server (`server/src/mcp/`) is mounted at `/mcp`, authenticates with the
+  API key, and is **off while login is disabled** (`mcp/config.ts`). Tools are
+  registered through `defineTool` so the catalogue in Settings stays in sync.
+  Anything that frees disk space goes through `services/deletionQueue.ts` and
+  `services/mediaActions.ts`, which the REST routes share; put new behaviour
+  there, not in a route or a tool.
+- Immediate deletion via MCP is a separate opt-in (`mcp_allow_immediate_deletion`).
+
 ## Key Patterns
 - Client uses `camelCase`, server/database uses `snake_case`
 - Media type: client uses `'tv'`, server uses `'show'` - conversion happens in routes

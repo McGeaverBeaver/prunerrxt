@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import Layout from './components/Layout/Layout';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -10,6 +10,8 @@ import History from './components/History/History';
 import ActivityLog from './components/ActivityLog/ActivityLog';
 import Settings from './components/Settings/Settings';
 import Recommendations from './components/Recommendations/Recommendations';
+import LoginPage from './components/Auth/LoginPage';
+import { useAuth } from './contexts/AuthContext';
 
 const MediaItemDetail = lazy(() => import('./components/Library/MediaItemDetail'));
 const Collections = lazy(() => import('./components/Collections/Collections'));
@@ -33,6 +35,7 @@ const CollectionDetail = lazy(() => import('./components/Collections/CollectionD
 function AnimatedRoutes() {
   const location = useLocation();
   const reduce = useReducedMotion();
+  const { isAdmin } = useAuth();
   const sectionKey = '/' + (location.pathname.split('/')[1] ?? '');
 
   return (
@@ -60,13 +63,27 @@ function AnimatedRoutes() {
         <Route path="/queue" element={<Queue />} />
         <Route path="/history" element={<History />} />
         <Route path="/activity" element={<ActivityLog />} />
-        <Route path="/settings" element={<Settings />} />
+        {/* Settings hold service credentials; only admins get the page. */}
+        <Route path="/settings" element={isAdmin ? <Settings /> : <Navigate to="/" replace />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
       </Routes>
     </motion.div>
   );
 }
 
 function App() {
+  const auth = useAuth();
+
+  // Wait for the first /auth/me answer: rendering the app and then yanking
+  // it away for the login page would flash every widget's loading state.
+  if (auth.status === 'loading') {
+    return <div className="min-h-screen bg-surface-950" aria-busy="true" />;
+  }
+
+  if (auth.enabled && !auth.user) {
+    return <LoginPage />;
+  }
+
   return (
     <Layout>
       <Suspense fallback={<div className="p-6 text-surface-400">Loading...</div>}>

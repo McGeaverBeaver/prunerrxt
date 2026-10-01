@@ -3,15 +3,7 @@ import { getDatabase } from '../db';
 import config, { isServiceConfigured } from '../config';
 import logger from '../utils/logger';
 import { getAppVersion } from '../utils/version';
-import { getScheduler } from '../scheduler';
-import * as scanHistoryRepo from '../db/repositories/scanHistoryRepo';
-import { getPlexService, getRadarrService, getSonarrService, getTautulliService, getTracearrService, getOverseerrService } from '../services/init';
-import { getConfiguredServerType, getMediaServerLabel, type MediaServerType } from '../services/mediaServer';
-import {
-  getLastSyncCompletedAt,
-  getLastSyncFinishedAt,
-  getLastSyncSuccess,
-} from '../services/syncCoordinator';
+import { getSystemHealth } from '../services/systemHealth';
 
 // APP_VERSION at Docker build time, package.json otherwise. Shared with the
 // telemetry heartbeat so both report the same string.
@@ -117,149 +109,10 @@ router.get('/live', (_req: Request, res: Response) => {
 // Aggregated Health Status for Dashboard
 // ============================================================================
 
-interface ServiceHealthStatus {
-  service: string;
-  configured: boolean;
-  connected: boolean;
-  responseTimeMs?: number;
-  error?: string;
-  lastChecked: string;
-}
-
-interface SchedulerStatus {
-  isRunning: boolean;
-  lastScan: string | null;
-  nextRun: string | null;
-  scanSchedule: string;
-  lastSync: string | null;          // last successful Plex sync
-  lastSyncAt: string | null;        // last sync attempt finish (success OR failure)
-  lastSyncSuccess: boolean | null;  // whether that finish was a success
-  nextSync: string | null;
-  syncSchedule: string;
-}
-
-interface SystemHealthResponse {
-  services: ServiceHealthStatus[];
-  scheduler: SchedulerStatus;
-  overall: 'healthy' | 'degraded' | 'unhealthy';
-  /**
-   * Which backend the 'plex' service entry actually refers to. The entry keeps
-   * its historical key so existing clients keep resolving it; this field lets
-   * the UI label it correctly for Jellyfin/Emby installs.
-   */
-  mediaServerType: MediaServerType;
-  mediaServerLabel: string;
-}
-
-async function checkService(
-  name: string,
-  service: { testConnection: () => Promise<boolean> } | null
-): Promise<ServiceHealthStatus> {
-  const lastChecked = new Date().toISOString();
-
-  if (!service) {
-    return { service: name, configured: false, connected: false, lastChecked };
-  }
-
-  const startTime = Date.now();
-  try {
-    // Race the connection test against a 5-second timeout
-    const connected = await Promise.race([
-      service.testConnection(),
-      new Promise<boolean>((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timeout')), 5000)
-      ),
-    ]);
-
-    return {
-      service: name,
-      configured: true,
-      connected,
-      responseTimeMs: Date.now() - startTime,
-      lastChecked,
-    };
-  } catch (error) {
-    return {
-      service: name,
-      configured: true,
-      connected: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      responseTimeMs: Date.now() - startTime,
-      lastChecked,
-    };
-  }
-}
-
-function determineOverallHealth(services: ServiceHealthStatus[]): 'healthy' | 'degraded' | 'unhealthy' {
-  const configuredServices = services.filter((s) => s.configured);
-  if (configuredServices.length === 0) return 'unhealthy';
-
-  const connectedCount = configuredServices.filter((s) => s.connected).length;
-  if (connectedCount === configuredServices.length) return 'healthy';
-  if (connectedCount > 0) return 'degraded';
-  return 'unhealthy';
-}
-
 // Aggregated health status for dashboard
 router.get('/status', async (_req: Request, res: Response) => {
   try {
-    const serverType = getConfiguredServerType();
-
-    // Run all service checks in parallel
-    const serviceChecks = await Promise.allSettled([
-      checkService('plex', getPlexService()),
-      checkService('radarr', getRadarrService()),
-      checkService('sonarr', getSonarrService()),
-      checkService('tautulli', getTautulliService()),
-      checkService('tracearr', getTracearrService()),
-      checkService('overseerr', getOverseerrService()),
-    ]);
-
-    const serviceNames = ['plex', 'radarr', 'sonarr', 'tautulli', 'tracearr', 'overseerr'];
-    const services: ServiceHealthStatus[] = serviceChecks.map((result, index) => {
-      if (result.status === 'fulfilled') {
-        return result.value;
-      }
-      return {
-        service: serviceNames[index] || 'unknown',
-        configured: false,
-        connected: false,
-        error: result.reason instanceof Error ? result.reason.message : 'Check failed',
-        lastChecked: new Date().toISOString(),
-      };
-    });
-
-    // Get scheduler info
-    const scheduler = getScheduler();
-    const scanJobStatus = scheduler.getJobStatus('scanLibraries');
-    const syncJobStatus = scheduler.getJobStatus('syncPlexLibrary');
-    const schedulerConfig = scheduler.getConfig();
-
-    // Get last scan from history
-    const latestScan = scanHistoryRepo.getLatest();
-    const lastSyncCompletedAt = getLastSyncCompletedAt();
-    const lastSyncFinishedAt = getLastSyncFinishedAt();
-    const lastSyncSuccess = getLastSyncSuccess();
-
-    const response: SystemHealthResponse = {
-      services,
-      scheduler: {
-        isRunning: scheduler.isSchedulerRunning(),
-        lastScan: latestScan?.completed_at || latestScan?.started_at || null,
-        nextRun: scanJobStatus?.nextRun?.toISOString() || null,
-        scanSchedule: schedulerConfig.schedules.scanLibraries,
-        lastSync: lastSyncCompletedAt?.toISOString() || null,
-        lastSyncAt: lastSyncFinishedAt?.toISOString() || null,
-        lastSyncSuccess,
-        nextSync: syncJobStatus?.nextRun?.toISOString() || null,
-        syncSchedule: schedulerConfig.schedules.syncPlexLibrary,
-      },
-      overall: determineOverallHealth(services),
-      mediaServerType: serverType,
-      mediaServerLabel: getMediaServerLabel(serverType),
-    };
-
-    res.json({ success: true, data: response });
+    res.json({ success: true, data: await getSystemHealth() });
   } catch (error) {
     logger.error('Health status check failed:', error);
     res.status(500).json({

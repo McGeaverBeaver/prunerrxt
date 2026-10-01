@@ -4,6 +4,12 @@ import settingsRepo from '../db/repositories/settings';
 import { SettingInputSchema } from '../types';
 import logger from '../utils/logger';
 import { getApiKey, clearApiKeyCache, ensureApiKey } from '../middleware/apiAuth';
+import { getMcpInfo } from '../mcp/info';
+import { setAllowImmediateDeletion, setMcpEnabled } from '../mcp/config';
+import { getAuthConfig } from '../auth/config';
+import { ROLE_DESCRIPTIONS } from '../auth/roles';
+import { countSessions } from '../auth/sessions';
+import { describeOidcProvider } from '../auth/oidc';
 import crypto from 'crypto';
 import { PlexService, TautulliService, SonarrService, RadarrService, OverseerrService, UnraidService } from '../services';
 import { TracearrService } from '../services/tracearr';
@@ -517,6 +523,78 @@ router.post('/api-key/regenerate', (_req: Request, res: Response) => {
       success: false,
       error: 'Failed to regenerate API key',
     });
+  }
+});
+
+// GET /api/settings/mcp - The MCP connector: state, endpoint, tool catalogue
+router.get('/mcp', (req: Request, res: Response) => {
+  try {
+    res.json({ success: true, data: getMcpInfo(req) });
+  } catch (error) {
+    logger.error('Failed to get MCP info:', error);
+    res.status(500).json({ success: false, error: 'Failed to retrieve MCP connector state' });
+  }
+});
+
+const McpUpdateSchema = z.object({
+  enabled: z.boolean().optional(),
+  allowImmediateDeletion: z.boolean().optional(),
+});
+
+// PUT /api/settings/mcp - Toggle the connector and its safety switch
+router.put('/mcp', validateBody(McpUpdateSchema), (req: Request, res: Response) => {
+  try {
+    const { enabled, allowImmediateDeletion } = req.body as z.infer<typeof McpUpdateSchema>;
+    if (typeof enabled === 'boolean') {
+      setMcpEnabled(enabled);
+      logger.info(`MCP connector ${enabled ? 'enabled' : 'disabled'} in settings`);
+    }
+    if (typeof allowImmediateDeletion === 'boolean') {
+      setAllowImmediateDeletion(allowImmediateDeletion);
+      logger.info(`MCP immediate deletion ${allowImmediateDeletion ? 'allowed' : 'refused'}`);
+    }
+    res.json({ success: true, data: getMcpInfo(req) });
+  } catch (error) {
+    logger.error('Failed to update MCP settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to update MCP connector settings' });
+  }
+});
+
+// GET /api/settings/auth - How login is configured (read-only; it comes from the environment)
+router.get('/auth', async (_req: Request, res: Response) => {
+  try {
+    const config = getAuthConfig();
+    res.json({
+      success: true,
+      data: {
+        enabled: config.enabled,
+        sessionTtlHours: config.sessionTtlHours,
+        activeSessions: config.enabled ? countSessions() : 0,
+        warnings: config.warnings,
+        roles: ROLE_DESCRIPTIONS,
+        local: config.local ? { enabled: true, username: config.local.username, role: config.local.role, usesHash: Boolean(config.local.passwordHash) } : { enabled: false },
+        oidc: config.oidc
+          ? {
+              enabled: true,
+              providerName: config.oidc.providerName,
+              issuer: config.oidc.issuer,
+              clientId: config.oidc.clientId,
+              redirectUri: config.oidc.redirectUri,
+              scopes: config.oidc.scopes,
+              groupsClaim: config.oidc.groupsClaim,
+              adminGroups: config.oidc.adminGroups,
+              operatorGroups: config.oidc.operatorGroups,
+              viewerGroups: config.oidc.viewerGroups,
+              defaultRole: config.oidc.defaultRole,
+              autoLogin: config.oidc.autoLogin,
+              provider: await describeOidcProvider(),
+            }
+          : { enabled: false },
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to get auth settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to retrieve login configuration' });
   }
 });
 

@@ -1,4 +1,10 @@
 {
+  "account": {
+    "roleAdmin": "",
+    "roleOperator": "",
+    "roleViewer": "",
+    "signOut": ""
+  },
   "closeMenu": "Fermer le menu de navigation",
   "diskStats": {
     "allHealthy": "Tout est sain",
@@ -78,6 +84,7 @@
   },
   "whatsNew": {
     "buttonUnread_one": "",
+    "buttonUnread_many": "",
     "buttonUnread_other": "",
     "close": "",
     "disabled": "",

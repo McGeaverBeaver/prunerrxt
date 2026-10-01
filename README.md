@@ -52,6 +52,10 @@ You set up rules like "delete movies nobody's watched in 6 months that are over 
 
 - **API** &mdash; Full REST API with key authentication for scripts, automation, and mobile apps like nzb360. [More &rarr;](https://github.com/helliott20/prunerr/wiki/API-Reference)
 
+- **AI assistant (MCP)** &mdash; A built-in [Model Context Protocol](https://modelcontextprotocol.io) server at `/mcp`. Let Claude, Cursor or any MCP client search the library, review the queue, preview and build rules, and queue cleanups with you &mdash; through the same grace-period queue, with protected items off limits and immediate deletion opt-in. [More &rarr;](docs/mcp.md)
+
+- **Login & roles** &mdash; Optional single sign-on through Authentik or any OpenID Connect provider, with admin / operator / viewer roles mapped from your groups, plus an optional local account. All configured by environment variables. [More &rarr;](docs/authentication.md)
+
 ## Quick Start
 
 ```bash
@@ -126,6 +130,8 @@ Full docs are in the **[Wiki](https://github.com/helliott20/prunerr/wiki)**:
 - [Collections](https://github.com/helliott20/prunerr/wiki/Collections) &mdash; Protection and bulk actions
 - [Deletion Management](https://github.com/helliott20/prunerr/wiki/Deletion-Management) &mdash; Queue, grace periods, actions
 - [API Reference](https://github.com/helliott20/prunerr/wiki/API-Reference) &mdash; Endpoints and authentication
+- [Login & access](docs/authentication.md) &mdash; Single sign-on (Authentik/OIDC), roles, local account
+- [AI assistant (MCP)](docs/mcp.md) &mdash; Connect Claude, Cursor and other MCP clients
 - [Troubleshooting](https://github.com/helliott20/prunerr/wiki/Troubleshooting) &mdash; Common issues
 
 ## Privacy

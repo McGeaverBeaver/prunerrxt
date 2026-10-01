@@ -5,6 +5,8 @@ import {
   Sparkles,
   X,
   Moon,
+  LogOut,
+  UserRound,
 } from 'lucide-react';
 import {
   DashboardIcon,
@@ -24,6 +26,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useUnraidStats, useDeletionQueue, useVersion, useStats } from '@/hooks/useApi';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { DiskStatsModal } from './DiskStatsModal';
 import { StorageWidget } from './StorageWidget';
@@ -44,9 +47,10 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
   const { data: version } = useVersion();
   const { resolvedTheme, toggleTheme } = useTheme();
   const { t } = useTranslation('layout');
+  const auth = useAuth();
   const queueCount = queueItems?.length ?? 0;
 
-  const navItems = [
+  const allNavItems = [
     { id: 'dashboard', label: t('nav.dashboard', 'Dashboard'), href: '/', icon: DashboardIcon },
     { id: 'library', label: t('nav.library', 'Library'), href: '/library', icon: LibraryIcon },
     { id: 'collections', label: t('nav.collections', 'Collections'), href: '/collections', icon: CollectionsIcon },
@@ -56,6 +60,16 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
     { id: 'activity', label: t('nav.activity', 'Activity'), href: '/activity', icon: ActivityIcon },
     { id: 'settings', label: t('nav.settings', 'Settings'), href: '/settings', icon: SettingsIcon },
   ];
+  // Settings hold service credentials, so only admins see the entry at all.
+  const navItems = allNavItems.filter((item) => item.id !== 'settings' || auth.isAdmin);
+
+  const roleLabel = auth.user
+    ? auth.user.role === 'admin'
+      ? t('account.roleAdmin', 'Administrator')
+      : auth.user.role === 'operator'
+        ? t('account.roleOperator', 'Operator')
+        : t('account.roleViewer', 'Viewer')
+    : null;
 
   const handleNavClick = () => {
     // Close mobile menu when a nav link is clicked
@@ -153,6 +167,32 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
           <DiskPressureWidget stats={dashboardStats} />
         )}
       </div>
+
+      {/* Signed-in user, when this install has a login */}
+      {auth.enabled && auth.user && (
+        <div className="sidebar-account px-4 py-3 border-t border-surface-800/50">
+          <div className="flex items-center gap-3 rounded-xl bg-surface-800/40 px-3 py-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-700/70 text-surface-300">
+              <UserRound className="h-4 w-4" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-surface-100" title={auth.user.email ?? auth.user.username}>
+                {auth.user.displayName}
+              </p>
+              <p className="truncate text-2xs uppercase tracking-wider text-surface-500">{roleLabel}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void auth.logout()}
+              className="p-2 rounded-lg text-surface-500 hover:text-ruby-text hover:bg-surface-700/60 transition-colors"
+              title={t('account.signOut', 'Sign out')}
+              aria-label={t('account.signOut', 'Sign out')}
+            >
+              <LogOut className="h-4 w-4" aria-hidden />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Disk Stats Modal */}
       <DiskStatsModal

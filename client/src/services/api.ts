@@ -40,7 +40,11 @@ interface ApiErrorResponse {
   error?: string;
   details?: string;
   success?: boolean;
+  code?: string;
 }
+
+/** Fired on `window` when the server says the session is gone; the auth context listens. */
+export const UNAUTHENTICATED_EVENT = 'prunerr:unauthenticated';
 
 // Response interceptor for error handling
 api.interceptors.response.use(
@@ -49,6 +53,12 @@ api.interceptors.response.use(
     const errorData = error.response?.data;
     const message = errorData?.error || error.message || 'An error occurred';
     const details = errorData?.details;
+
+    // A lost or expired login: tell the app so it can show the login page
+    // instead of a wall of failed requests.
+    if (error.response?.status === 401 && errorData?.code === 'AUTH_REQUIRED') {
+      window.dispatchEvent(new Event(UNAUTHENTICATED_EVENT));
+    }
 
     // Create a detailed error message
     const fullMessage = details ? `${message}\n\n${details}` : message;
@@ -693,6 +703,142 @@ export const webhooksApi = {
       body
     );
     return data.data ?? {};
+  },
+};
+
+// ============================================================================
+// Login
+// ============================================================================
+
+export type AuthRole = 'admin' | 'operator' | 'viewer';
+
+export interface AuthUser {
+  id: string;
+  username: string;
+  displayName: string;
+  email: string | null;
+  role: AuthRole;
+  provider: 'oidc' | 'local';
+  groups: string[];
+  sessionExpiresAt: string;
+}
+
+export interface AuthMethods {
+  oidc: { enabled: boolean; providerName: string | null; autoLogin: boolean };
+  local: { enabled: boolean };
+}
+
+export interface AuthState {
+  enabled: boolean;
+  methods: AuthMethods;
+  roles: Record<AuthRole, string>;
+  mcpEnabled: boolean;
+  user: AuthUser | null;
+}
+
+export const authApi = {
+  me: async (): Promise<AuthState> => {
+    const { data } = await api.get<ApiResponse<AuthState>>('/auth/me');
+    if (!data.data) throw new Error('Failed to load login state');
+    return data.data;
+  },
+
+  loginLocal: async (username: string, password: string): Promise<AuthUser> => {
+    const { data } = await api.post<ApiResponse<{ user: AuthUser }>>('/auth/login/local', { username, password });
+    if (!data.data) throw new Error('Login failed');
+    return data.data.user;
+  },
+
+  logout: async (): Promise<void> => {
+    await api.post('/auth/logout');
+  },
+};
+
+/** Read-only view of how login is configured (it comes from the environment). */
+export interface AuthSettingsInfo {
+  enabled: boolean;
+  sessionTtlHours: number;
+  activeSessions: number;
+  warnings: string[];
+  roles: Record<AuthRole, string>;
+  local: { enabled: false } | { enabled: true; username: string; role: AuthRole; usesHash: boolean };
+  oidc:
+    | { enabled: false }
+    | {
+        enabled: true;
+        providerName: string;
+        issuer: string;
+        clientId: string;
+        redirectUri: string | null;
+        scopes: string[];
+        groupsClaim: string;
+        adminGroups: string[];
+        operatorGroups: string[];
+        viewerGroups: string[];
+        defaultRole: AuthRole | 'none';
+        autoLogin: boolean;
+        provider: { issuer: string; discovery: string; reachable: boolean; error?: string };
+      };
+}
+
+export const authSettingsApi = {
+  get: async (): Promise<AuthSettingsInfo> => {
+    const { data } = await api.get<ApiResponse<AuthSettingsInfo>>('/settings/auth');
+    if (!data.data) throw new Error('Failed to load login configuration');
+    return data.data;
+  },
+};
+
+// ============================================================================
+// MCP connector
+// ============================================================================
+
+export type McpToolGroup =
+  | 'overview'
+  | 'library'
+  | 'actions'
+  | 'queue'
+  | 'rules'
+  | 'collections'
+  | 'scans'
+  | 'history'
+  | 'system';
+
+export interface McpToolInfo {
+  name: string;
+  title: string;
+  description: string;
+  group: McpToolGroup;
+  readOnly: boolean;
+  destructive: boolean;
+  requiresImmediateDeletion: boolean;
+}
+
+export interface McpInfo {
+  enabled: boolean;
+  disabledReason: 'auth_disabled' | 'env' | 'setting' | null;
+  enabledByEnv: boolean;
+  enabledBySetting: boolean;
+  authEnabled: boolean;
+  allowImmediateDeletion: boolean;
+  endpoint: string;
+  activeSessions: number;
+  tools: McpToolInfo[];
+  resources: string[];
+  prompts: string[];
+}
+
+export const mcpApi = {
+  get: async (): Promise<McpInfo> => {
+    const { data } = await api.get<ApiResponse<McpInfo>>('/settings/mcp');
+    if (!data.data) throw new Error('Failed to load MCP connector state');
+    return data.data;
+  },
+
+  update: async (body: { enabled?: boolean; allowImmediateDeletion?: boolean }): Promise<McpInfo> => {
+    const { data } = await api.put<ApiResponse<McpInfo>>('/settings/mcp', body);
+    if (!data.data) throw new Error('Failed to update MCP connector');
+    return data.data;
   },
 };
 

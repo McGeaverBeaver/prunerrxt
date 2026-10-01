@@ -1,4 +1,10 @@
 {
+  "account": {
+    "roleAdmin": "",
+    "roleOperator": "",
+    "roleViewer": "",
+    "signOut": ""
+  },
   "closeMenu": "Navigatiemenu sluiten",
   "diskStats": {
     "allHealthy": "Allemaal gezond",

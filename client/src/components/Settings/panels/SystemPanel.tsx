@@ -14,6 +14,8 @@ import { SettingsCard } from '../components/SettingsCard';
 import { SettingsEmptyState } from '../components/SettingsEmptyState';
 import { Toggle } from '../components/Toggle';
 import type { PanelProps } from '../types';
+import { McpSection } from './system/McpSection';
+import { LoginSection } from './system/LoginSection';
 
 const MASKED_KEY = '•'.repeat(32);
 
@@ -392,6 +394,10 @@ export default function SystemPanel({ registerSection }: PanelProps) {
           )}
         </SettingsCard>
       </PanelSection>
+
+      <McpSection registerSection={registerSection} apiKey={apiKeyVisible && apiKeyInfo ? apiKeyInfo.apiKey : null} />
+
+      <LoginSection registerSection={registerSection} />
 
       <PanelSection
         id="privacy"

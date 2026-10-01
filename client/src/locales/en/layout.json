@@ -1,4 +1,10 @@
 {
+  "account": {
+    "roleAdmin": "Administrator",
+    "roleOperator": "Operator",
+    "roleViewer": "Viewer",
+    "signOut": "Sign out"
+  },
   "closeMenu": "Close navigation menu",
   "diskStats": {
     "allHealthy": "All healthy",
