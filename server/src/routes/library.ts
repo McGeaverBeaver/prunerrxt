@@ -27,6 +27,7 @@ import {
 import logger from '../utils/logger';
 import { formatBytes } from '../utils/format';
 import { toThumbnailUrl } from '../utils/posterUrl';
+import { openSseStream } from '../utils/sse';
 
 const router = Router();
 
@@ -807,33 +808,29 @@ router.get('/sync/stream', (req: Request, res: Response) => {
     return;
   }
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-  res.flushHeaders();
+  const stream = openSseStream(req, res);
 
   // Replay buffered events so the client catches up
   for (const event of getSyncProgressLog()) {
-    res.write(`data: ${JSON.stringify(event)}\n\n`);
+    stream.send(event);
   }
 
   const unsubscribe = subscribeToSync((data) => {
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    stream.send(data);
     // Close the stream once the coordinator emits its final 'complete' sentinel
     // so the server doesn't hold the SSE connection open after the sync ends.
     if ((data as { stage?: string } | null)?.stage === 'complete') {
-      res.end();
+      stream.close();
     }
   });
 
-  req.on('close', () => {
-    unsubscribe();
-  });
+  // A client that leaves mid-sync stops receiving events; the sync itself
+  // carries on in the coordinator.
+  stream.onClose(unsubscribe);
 });
 
 // POST /api/library/sync/stream - Start sync with SSE progress streaming
-router.post('/sync/stream', async (_req: Request, res: Response) => {
+router.post('/sync/stream', async (req: Request, res: Response) => {
   if (isSyncInProgress()) {
     res.status(409).json({
       success: false,
@@ -842,15 +839,14 @@ router.post('/sync/stream', async (_req: Request, res: Response) => {
     return;
   }
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-  res.flushHeaders();
+  const stream = openSseStream(req, res);
 
   const unsubscribe = subscribeToSync((data) => {
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    stream.send(data);
   });
+  // The sync keeps running if the browser goes away; it just stops writing
+  // to a response nobody is reading (which used to crash the process).
+  stream.onClose(unsubscribe);
 
   try {
     const outcome = await runLibrarySync();
@@ -864,7 +860,7 @@ router.post('/sync/stream', async (_req: Request, res: Response) => {
     }
   } finally {
     unsubscribe();
-    res.end();
+    stream.close();
   }
 });
 

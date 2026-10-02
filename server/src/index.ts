@@ -142,6 +142,20 @@ app.use((err: ErrorWithStatus, _req: Request, res: Response, _next: NextFunction
 });
 
 // Start server
+// A promise nobody awaited that rejects is logged, not fatal: the scheduler
+// and the sync coordinator run long jobs in the background, and one of them
+// failing must not take the web UI down with it.
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection:', reason instanceof Error ? { message: reason.message, stack: reason.stack } : { reason });
+});
+
+// An exception that escapes everything is still fatal (the process state is
+// unknown), but it reaches the log file first instead of only the console.
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception, exiting:', { message: error.message, stack: error.stack });
+  setTimeout(() => process.exit(1), 250).unref();
+});
+
 async function startServer(): Promise<void> {
   try {
     // Initialize database
