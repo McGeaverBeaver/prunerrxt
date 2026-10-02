@@ -38,6 +38,8 @@
     "collectionProtected": "Collection protégée",
     "collectionUnprotected": "Collection non protégée",
     "deleted": "Supprimé",
+    "deletionFailed": "",
+    "episodeDeletionFailed": "",
     "episodesDeleted_one": "",
     "episodesDeleted_many": "",
     "episodesDeleted_other": "",
@@ -57,6 +59,8 @@
     "protectionRemoved": "Protection retirée",
     "queuedForDeletion": "En file d'attente pour suppression",
     "reason": "Raison : {{reason}}",
+    "reconciled": "",
+    "reconciledDescription": "",
     "removedFromQueue": "Retiré de la file d'attente",
     "scanCompleted": "Analyse de la bibliothèque terminée",
     "scanFailed": "Échec de l'analyse de la bibliothèque",
@@ -70,6 +74,12 @@
   "pagination": {
     "pageOf": "Page {{page}} sur {{total}}",
     "showing": "Affichage de {{from}} à {{to}} sur {{total}} activités"
+  },
+  "steps": {
+    "deleteFiles": "",
+    "remove": "",
+    "resetSeerr": "",
+    "unmonitor": ""
   },
   "table": {
     "actor": "Acteur",

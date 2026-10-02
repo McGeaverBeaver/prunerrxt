@@ -15,6 +15,7 @@ import mediaItemsRepo from '../db/repositories/mediaItems';
 import historyRepo from '../db/repositories/historyRepo';
 import { logActivity } from '../db/repositories/activity';
 import { getSonarrService } from './init';
+import { upstreamStatus } from './arrHttp';
 import type { SonarrEpisode, SonarrEpisodeFile } from './types';
 import type { MediaItem } from '../types';
 import logger from '../utils/logger';
@@ -201,6 +202,43 @@ export interface EpisodeDeletionOutcome {
 }
 
 /**
+ * Every failed episode deletion is visible in the activity log, with the step,
+ * Sonarr's answer and the message, so a stuck queue never fails silently.
+ */
+function logEpisodeFailure(
+  row: EpisodeDeletion,
+  label: string,
+  action: EpisodeDeletionAction,
+  step: 'delete_files' | 'unmonitor',
+  message: string,
+  status?: number
+): void {
+  try {
+    logActivity({
+      eventType: 'error',
+      action: 'episode_deletion_failed',
+      actorType: 'user',
+      actorName: 'Manual action',
+      targetType: 'media_item',
+      targetId: row.media_item_id,
+      targetTitle: label,
+      metadata: JSON.stringify({
+        mediaType: 'episode',
+        fileSize: row.file_size,
+        deletionAction: action,
+        step,
+        service: 'Sonarr',
+        upstreamStatus: status ?? null,
+        message,
+        episode: episodeDetail(row),
+      }),
+    });
+  } catch (activityError) {
+    logger.warn(`Failed to log episode deletion failure for "${label}":`, activityError);
+  }
+}
+
+/**
  * Execute one queued episode against Sonarr.
  *
  * The Sonarr call is the only step allowed to fail the outcome: once the file
@@ -219,22 +257,30 @@ async function executeOne(row: EpisodeDeletion): Promise<EpisodeDeletionOutcome>
 
   const sonarr = getSonarrService();
   if (!sonarr) {
-    return { episodeId: row.episode_id, label, success: false, freedBytes: 0, error: 'Sonarr is not configured' };
+    const error = 'Sonarr is not configured';
+    logEpisodeFailure(row, label, action, 'delete_files', error);
+    return { episodeId: row.episode_id, label, success: false, freedBytes: 0, error };
   }
 
   let freedBytes = 0;
+  let step: 'delete_files' | 'unmonitor' = 'delete_files';
 
   try {
     if (actionDeletesFiles(action) && row.episode_file_id) {
+      // A 404 from Sonarr means the file is already gone, which the client
+      // treats as done; the queue row is then completed like any other.
       await sonarr.deleteEpisodeFile(row.episode_file_id);
       freedBytes = row.file_size || 0;
     }
     if (actionUnmonitors(action)) {
+      step = 'unmonitor';
       await sonarr.unmonitorEpisodes([row.episode_id]);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.error(`Failed to delete episode "${label}" in Sonarr: ${message}`);
+    const status = upstreamStatus(error);
+    logger.error(`Failed to delete episode "${label}" in Sonarr at step ${step}${status ? ` (HTTP ${status})` : ''}: ${message}`);
+    logEpisodeFailure(row, label, action, step, message, status);
     return { episodeId: row.episode_id, label, success: false, freedBytes: 0, error: message };
   }
 

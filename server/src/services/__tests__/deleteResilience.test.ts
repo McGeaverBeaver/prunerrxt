@@ -37,10 +37,9 @@ function buildService(deps: Partial<ConstructorParameters<typeof DeletionService
       getByStatus: async () => [],
     },
     radarrService: {
-      unmonitorMovie: vi.fn(async () => undefined),
-      deleteMovieFile: vi.fn(async () => undefined),
-      deleteMovieFilesByMovieId: vi.fn(async () => true),
-      removeMovie: vi.fn(async () => undefined),
+      unmonitorMovie: vi.fn(async () => 'unmonitored' as const),
+      deleteMovieFilesByMovieId: vi.fn(async () => ({ outcome: 'deleted' as const })),
+      removeMovie: vi.fn(async () => 'deleted' as const),
     },
     deletionHistoryRepository: {
       create: vi.fn(async () => ({}) as never),

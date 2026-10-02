@@ -38,6 +38,8 @@ export default interface Resources {
       "collectionProtected": "Collection protected",
       "collectionUnprotected": "Collection unprotected",
       "deleted": "Deleted",
+      "deletionFailed": "Deletion failed",
+      "episodeDeletionFailed": "Episode deletion failed",
       "episodesDeleted_one": "{{count}} episode deleted",
       "episodesDeleted_other": "{{count}} episodes deleted",
       "episodesQueued_one": "{{count}} episode queued for deletion",
@@ -53,6 +55,8 @@ export default interface Resources {
       "protectionRemoved": "Protection removed",
       "queuedForDeletion": "Queued for deletion",
       "reason": "Reason: {{reason}}",
+      "reconciled": "Already deleted in {{service}}",
+      "reconciledDescription": "Removed from the queue; nothing left to delete",
       "removedFromQueue": "Removed from queue",
       "scanCompleted": "Library scan completed",
       "scanFailed": "Library scan failed",
@@ -66,6 +70,12 @@ export default interface Resources {
     "pagination": {
       "pageOf": "Page {{page}} of {{total}}",
       "showing": "Showing {{from}} to {{to}} of {{total}} activities"
+    },
+    "steps": {
+      "deleteFiles": "Deleting files",
+      "remove": "Removing",
+      "resetSeerr": "Resetting in Seerr",
+      "unmonitor": "Unmonitoring"
     },
     "table": {
       "actor": "Actor",
@@ -185,6 +195,20 @@ export default interface Resources {
     }
   },
   "common": {
+    "deleteNowModal": {
+      "stepVerb": {
+        "deleteFiles": "deleting files",
+        "remove": "removing it",
+        "resetSeerr": "resetting the request",
+        "unmonitor": "unmonitoring"
+      },
+      "steps": {
+        "deleteFiles": "Delete files in {{service}}",
+        "remove": "Remove from {{service}} with its files",
+        "resetSeerr": "Reset in Seerr",
+        "unmonitor": "Unmonitor in {{service}}"
+      }
+    },
     "dismissNotification": "Dismiss notification",
     "dropdown": {
       "noMatches": "No matches",
@@ -233,6 +257,8 @@ export default interface Resources {
         "addedToPlex": "Added to {{name}}",
         "collectionProtected": "Collection protected",
         "collectionUnprotected": "Collection unprotected",
+        "deletionFailed": "Deletion failed",
+        "episodeDeletionFailed": "Episode deletion failed",
         "episodesDeleted_one": "{{count}} episode deleted",
         "episodesDeleted_other": "{{count}} episodes deleted",
         "episodesFailed_one": "{{count}} episode download failed",
@@ -256,6 +282,7 @@ export default interface Resources {
         "itemQueued": "Queued for deletion",
         "itemRestored": "Restored",
         "protected": "Item protected",
+        "reconciled": "Already deleted upstream; removed from the queue",
         "ruleMatched": "Matched by rule",
         "scanned": "Library scan",
         "unprotected": "Item unprotected"
@@ -883,12 +910,22 @@ export default interface Resources {
     "deleteNowModal": {
       "actionLabel": "Action:",
       "complete": "Deletion complete!",
+      "connectionLost": "Lost the connection to Prunerr before the deletion reported a result.",
+      "connectionLostDetail": "The deletion keeps running on the server. Check the Activity log for the outcome, then refresh the queue.",
+      "failed": "Deletion failed",
+      "failedAtStep": "Failed while {{step}} in {{service}}",
+      "failedHint": "The item stays in the queue. The failure is recorded in the Activity log.",
       "fileProgress": "File {{current}} of {{total}}",
       "freed": "Freed {{size}}",
       "initializing": "Initializing...",
+      "reconciledBody": "This item was no longer in {{service}}; it had been deleted there already. Prunerr removed it from the queue and marked it deleted. No space was freed by this run.",
+      "reconciledTitle": "Already deleted",
       "resetInSeerrSuffix": " • Reset in Seerr",
+      "stepSkipped": "skipped",
       "title": "Delete Now",
       "titleDeleting": "Deleting...",
+      "upstreamStatus": "{{service}} answered HTTP {{status}}",
+      "verifying": "Still deleting on the {{service}} side; this can take a few minutes for large files on network storage.",
       "warning": "This will immediately and permanently delete this item, bypassing the grace period.",
       "willResetSeerr": "Will reset in Seerr for re-request"
     },
@@ -957,6 +994,8 @@ export default interface Resources {
       "itemsRemovedMsg_one": "{{count}} item removed from queue",
       "itemsRemovedMsg_other": "{{count}} item(s) removed from queue",
       "itemsRemovedTitle": "Items removed",
+      "reconciledMsg": "\"{{title}}\" had already been deleted in {{service}}; removed from the queue",
+      "reconciledTitle": "Already deleted",
       "someItemsFailedMsg_one": "{{count}} item could not be removed",
       "someItemsFailedMsg_other": "{{count}} item(s) could not be removed",
       "someItemsFailedTitle": "Some items failed"

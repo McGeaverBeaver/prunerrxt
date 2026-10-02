@@ -36,6 +36,8 @@
     "collectionProtected": "Collectie beschermd",
     "collectionUnprotected": "Collectiebescherming opgeheven",
     "deleted": "Verwijderd",
+    "deletionFailed": "",
+    "episodeDeletionFailed": "",
     "episodesDeleted_one": "",
     "episodesDeleted_other": "",
     "episodesQueued_one": "",
@@ -51,6 +53,8 @@
     "protectionRemoved": "Bescherming verwijderd",
     "queuedForDeletion": "In wachtrij voor verwijdering",
     "reason": "Reden: {{reason}}",
+    "reconciled": "",
+    "reconciledDescription": "",
     "removedFromQueue": "Uit de wachtrij verwijderd",
     "scanCompleted": "Bibliotheekscan voltooid",
     "scanFailed": "Bibliotheekscan mislukt",
@@ -64,6 +68,12 @@
   "pagination": {
     "pageOf": "Pagina {{page}} van {{total}}",
     "showing": "{{from}} tot {{to}} van {{total}} activiteiten weergegeven"
+  },
+  "steps": {
+    "deleteFiles": "",
+    "remove": "",
+    "resetSeerr": "",
+    "unmonitor": ""
   },
   "table": {
     "actor": "Actor",

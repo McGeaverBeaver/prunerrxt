@@ -12,7 +12,7 @@ import type { MediaItem } from '../types';
 import { logActivity } from '../db/repositories/activity';
 import logger from '../utils/logger';
 import { toThumbnailUrl } from '../utils/posterUrl';
-import { getDeletionService } from './deletion';
+import { getDeletionService, type DeletionProgress } from './deletion';
 import episodeDeletionsRepo, { type EpisodeDeletion } from '../db/repositories/episodeDeletions';
 import { episodeLabel, executeQueuedDeletions } from './episodeDeletions';
 import { DeletionAction, DELETION_ACTION_LABELS } from '../rules/types';
@@ -518,15 +518,35 @@ export type DeleteNowResult =
       fileSizeFreedFormatted: string;
       overseerrReset?: boolean;
       overseerrError?: string;
+      /** The item had already been deleted in Sonarr/Radarr; the queue caught up. */
+      reconciled?: boolean;
     }
-  | { ok: false; status: 400 | 404 | 500; error: string; overseerrError?: string };
+  | {
+      ok: false;
+      status: 400 | 404 | 500;
+      error: string;
+      overseerrError?: string;
+      /** Where it failed, when the failure came from a downstream service. */
+      step?: string;
+      service?: string;
+      upstreamStatus?: number;
+    };
+
+export interface DeleteNowOptions {
+  /** Progress events, as streamed to the Queue page's dialog. */
+  onProgress?: (progress: DeletionProgress) => void;
+}
+
+export type QueueItemInspection =
+  | { ok: true; kind: 'media'; id: number; title: string; item: MediaItem }
+  | { ok: true; kind: 'episode'; id: number; title: string; row: EpisodeDeletion }
+  | { ok: false; status: 400 | 404; error: string };
 
 /**
- * Delete one queued item immediately, skipping the rest of its grace period.
- * Only items already in the queue can be deleted this way — there is no path
- * from "monitored" straight to "gone".
+ * Check that a queue id names something that can be deleted right now, before
+ * any stream is opened or any service is called.
  */
-export async function deleteQueueItemNow(rawId: string): Promise<DeleteNowResult> {
+export function inspectQueueItem(rawId: string): QueueItemInspection {
   const parsedId = parseQueueId(rawId);
   if (!parsedId) {
     return { ok: false, status: 400, error: 'Invalid queue item ID' };
@@ -537,20 +557,71 @@ export async function deleteQueueItemNow(rawId: string): Promise<DeleteNowResult
     if (!row || row.status !== 'pending') {
       return { ok: false, status: 404, error: 'Episode is not in the deletion queue' };
     }
+    const title = episodeLabel(row.series_title, row.season_number, row.episode_number, row.episode_title);
+    return { ok: true, kind: 'episode', id: parsedId.id, title, row };
+  }
+
+  const item = mediaItemsRepo.getById(parsedId.id);
+  if (!item) {
+    return { ok: false, status: 404, error: `Item not found: ${parsedId.id}` };
+  }
+  if (item.status !== 'pending_deletion') {
+    return { ok: false, status: 400, error: 'Item is not in the deletion queue' };
+  }
+  return { ok: true, kind: 'media', id: parsedId.id, title: item.title, item };
+}
+
+/**
+ * Delete one queued item immediately, skipping the rest of its grace period.
+ * Only items already in the queue can be deleted this way — there is no path
+ * from "monitored" straight to "gone".
+ */
+export async function deleteQueueItemNow(rawId: string, options: DeleteNowOptions = {}): Promise<DeleteNowResult> {
+  const inspected = inspectQueueItem(rawId);
+  if (!inspected.ok) {
+    return { ok: false, status: inspected.status, error: inspected.error };
+  }
+
+  const emit = (progress: DeletionProgress): void => {
+    try {
+      options.onProgress?.(progress);
+    } catch (progressError) {
+      logger.debug(`Delete-now progress listener failed: ${progressError instanceof Error ? progressError.message : String(progressError)}`);
+    }
+  };
+
+  if (inspected.kind === 'episode') {
+    const { row, title } = inspected;
+    emit({ stage: 'starting', message: `Starting deletion of "${title}"...` });
+    emit({ stage: 'deleting_files', step: 'delete_files', service: 'Sonarr', message: `Deleting "${title}" in Sonarr...` });
 
     const result = await executeQueuedDeletions([row]);
     const outcome = result.outcomes[0];
 
     if (!outcome?.success) {
-      return { ok: false, status: 500, error: outcome?.error || 'Failed to delete episode' };
+      const error = outcome?.error || 'Failed to delete episode';
+      emit({
+        stage: 'error',
+        step: 'delete_files',
+        service: 'Sonarr',
+        message: `Failed while deleting files in Sonarr: ${error}`,
+        result: { success: false, error, step: 'delete_files', service: 'Sonarr' },
+      });
+      return { ok: false, status: 500, error, step: 'delete_files', service: 'Sonarr' };
     }
 
     await sendDeletionCompleteNotification([{ title: outcome.label, type: 'episode' }], result.freedBytes, 0);
 
+    emit({
+      stage: 'complete',
+      message: `"${title}" deleted successfully`,
+      result: { success: true, fileSizeFreed: result.freedBytes },
+    });
+
     const freedGB = (result.freedBytes / (1024 * 1024 * 1024)).toFixed(2);
     return {
       ok: true,
-      id: `ep-${parsedId.id}`,
+      id: `ep-${inspected.id}`,
       title: outcome.label,
       deletionAction: row.deletion_action,
       deletionActionLabel: DELETION_ACTION_LABELS[normalizeDeletionAction(row.deletion_action)] || row.deletion_action,
@@ -559,16 +630,7 @@ export async function deleteQueueItemNow(rawId: string): Promise<DeleteNowResult
     };
   }
 
-  const id = parsedId.id;
-  const item = mediaItemsRepo.getById(id);
-  if (!item) {
-    return { ok: false, status: 404, error: `Item not found: ${id}` };
-  }
-
-  if (item.status !== 'pending_deletion') {
-    return { ok: false, status: 400, error: 'Item is not in the deletion queue' };
-  }
-
+  const { item } = inspected;
   const deletionService = getDeletionService();
   const itemAny = item as unknown as Record<string, unknown>;
   const deletionAction = normalizeDeletionAction(itemAny['deletion_action'] as string | undefined);
@@ -579,20 +641,36 @@ export async function deleteQueueItemNow(rawId: string): Promise<DeleteNowResult
   const result = await deletionService.executeDelete(item as any, deletionAction, {
     resetOverseerr,
     ruleId: matchedRuleId,
+    deletionType: 'manual',
+    onProgress: emit,
   });
 
   if (!result.success) {
-    return { ok: false, status: 500, error: result.error || 'Failed to delete item', overseerrError: result.overseerrError };
+    return {
+      ok: false,
+      status: 500,
+      error: result.error || 'Failed to delete item',
+      overseerrError: result.overseerrError,
+      step: result.failedStep,
+      service: result.failedService,
+      upstreamStatus: result.upstreamStatus,
+    };
   }
 
   const freedSpaceGB = ((result.fileSizeFreed || 0) / (1024 * 1024 * 1024)).toFixed(2);
-  logger.info(`Immediately deleted: "${item.title}" (action: ${deletionAction}, freed: ${freedSpaceGB}GB, overseerr reset: ${result.overseerrReset})`);
-
-  await sendDeletionCompleteNotification(
-    [{ title: item.title, type: item.type, ruleId: matchedRuleId ?? null }],
-    result.fileSizeFreed || 0,
-    0
+  logger.info(
+    result.reconciled
+      ? `Reconciled "${item.title}": already deleted upstream, removed from the queue`
+      : `Immediately deleted: "${item.title}" (action: ${deletionAction}, freed: ${freedSpaceGB}GB, overseerr reset: ${result.overseerrReset})`
   );
+
+  if (!result.reconciled) {
+    await sendDeletionCompleteNotification(
+      [{ title: item.title, type: item.type, ruleId: matchedRuleId ?? null }],
+      result.fileSizeFreed || 0,
+      0
+    );
+  }
 
   return {
     ok: true,
@@ -604,5 +682,6 @@ export async function deleteQueueItemNow(rawId: string): Promise<DeleteNowResult
     fileSizeFreedFormatted: `${freedSpaceGB} GB`,
     overseerrReset: result.overseerrReset,
     overseerrError: result.overseerrError,
+    reconciled: result.reconciled,
   };
 }

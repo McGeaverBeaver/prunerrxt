@@ -38,6 +38,8 @@
     "collectionProtected": "Coleção protegida",
     "collectionUnprotected": "Coleção desprotegida",
     "deleted": "Eliminado",
+    "deletionFailed": "",
+    "episodeDeletionFailed": "",
     "episodesDeleted_one": "",
     "episodesDeleted_many": "",
     "episodesDeleted_other": "",
@@ -57,6 +59,8 @@
     "protectionRemoved": "Proteção removida",
     "queuedForDeletion": "Em fila para eliminação",
     "reason": "Motivo: {{reason}}",
+    "reconciled": "",
+    "reconciledDescription": "",
     "removedFromQueue": "Removido da fila",
     "scanCompleted": "Análise da biblioteca concluída",
     "scanFailed": "Falha na análise da biblioteca",
@@ -70,6 +74,12 @@
   "pagination": {
     "pageOf": "Página {{page}} de {{total}}",
     "showing": "A mostrar {{from}} a {{to}} de {{total}} atividades"
+  },
+  "steps": {
+    "deleteFiles": "",
+    "remove": "",
+    "resetSeerr": "",
+    "unmonitor": ""
   },
   "table": {
     "actor": "Autor",

@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
+
+type QueueT = TFunction<'queue'>;
 import {
   Trash2,
   Clock,
@@ -18,6 +21,8 @@ import {
   Check,
   X,
   FileVideo,
+  Circle,
+  MinusCircle,
 } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { MaybeLink } from '@/components/common/MaybeLink';
@@ -34,22 +39,99 @@ import { ErrorState } from '@/components/common/ErrorState';
 import { EmptyState } from '@/components/common/EmptyState';
 import type { QueueItem } from '@/types';
 
-// Progress types for SSE streaming
+// Progress types for SSE streaming (mirrors DeletionProgress on the server)
+type DeletionStepKey = 'unmonitor' | 'delete_files' | 'remove' | 'overseerr_reset';
+type UpstreamService = 'Sonarr' | 'Radarr' | 'Overseerr';
+
 interface DeletionProgress {
-  stage: 'starting' | 'unmonitoring' | 'deleting_files' | 'resetting_overseerr' | 'complete' | 'error';
+  stage: 'starting' | 'unmonitoring' | 'deleting_files' | 'verifying' | 'resetting_overseerr' | 'complete' | 'error';
+  step?: DeletionStepKey;
+  service?: UpstreamService;
   message: string;
   fileProgress?: {
     current: number;
     total: number;
     fileName: string;
-    status: 'deleting' | 'deleted' | 'failed';
+    status: 'deleting' | 'verifying' | 'deleted' | 'failed';
   };
   result?: {
     success: boolean;
     fileSizeFreed?: number;
     overseerrReset?: boolean;
+    reconciled?: boolean;
     error?: string;
+    step?: DeletionStepKey;
+    service?: UpstreamService;
+    upstreamStatus?: number;
   };
+}
+
+interface DeletionStepView {
+  key: DeletionStepKey;
+  label: string;
+  status: 'pending' | 'active' | 'done' | 'failed' | 'skipped';
+}
+
+/**
+ * The steps a Delete Now walks through for this item, in order, each with its
+ * current state derived from the latest progress event. Lets the dialog show
+ * "Unmonitor in Radarr ✓ / Delete files in Radarr ✗" rather than one spinner.
+ */
+function deletionSteps(
+  item: QueueItem,
+  progress: DeletionProgress | null,
+  t: QueueT
+): DeletionStepView[] {
+  const service = item.type === 'tv' ? 'Sonarr' : 'Radarr';
+  const action = item.deletionAction;
+  const steps: Array<{ key: DeletionStepKey; label: string }> = [];
+  if (action === 'unmonitor_only' || action === 'unmonitor_and_delete') {
+    steps.push({ key: 'unmonitor', label: t('deleteNowModal.steps.unmonitor', 'Unmonitor in {{service}}', { service }) });
+  }
+  if (action === 'delete_files_only' || action === 'unmonitor_and_delete') {
+    steps.push({ key: 'delete_files', label: t('deleteNowModal.steps.deleteFiles', 'Delete files in {{service}}', { service }) });
+  }
+  if (action === 'full_removal') {
+    steps.push({ key: 'remove', label: t('deleteNowModal.steps.remove', 'Remove from {{service}} with its files', { service }) });
+  }
+  if (item.resetOverseerr) {
+    steps.push({ key: 'overseerr_reset', label: t('deleteNowModal.steps.resetSeerr', 'Reset in Seerr') });
+  }
+
+  const activeStep = progress?.step ?? progress?.result?.step;
+  const activeIndex = activeStep ? steps.findIndex((s) => s.key === activeStep) : -1;
+  const finished = progress?.stage === 'complete';
+  const failed = progress?.stage === 'error';
+  const reconciled = Boolean(progress?.result?.reconciled);
+
+  return steps.map((step, index) => {
+    if (finished) {
+      // Reconciled: the item was already gone, so everything after the step
+      // that discovered it never ran. The Seerr reset still does.
+      if (reconciled && index > Math.max(activeIndex, 0) && step.key !== 'overseerr_reset') {
+        return { ...step, status: 'skipped' };
+      }
+      return { ...step, status: 'done' };
+    }
+    if (activeIndex === -1) return { ...step, status: 'pending' };
+    if (index < activeIndex) return { ...step, status: 'done' };
+    if (index === activeIndex) return { ...step, status: failed ? 'failed' : 'active' };
+    return { ...step, status: failed ? 'skipped' : 'pending' };
+  });
+}
+
+/** The step as a verb phrase for "Failed while …". */
+function stepVerb(step: DeletionStepKey, t: QueueT): string {
+  switch (step) {
+    case 'unmonitor':
+      return t('deleteNowModal.stepVerb.unmonitor', 'unmonitoring');
+    case 'delete_files':
+      return t('deleteNowModal.stepVerb.deleteFiles', 'deleting files');
+    case 'remove':
+      return t('deleteNowModal.stepVerb.remove', 'removing it');
+    case 'overseerr_reset':
+      return t('deleteNowModal.stepVerb.resetSeerr', 'resetting the request');
+  }
 }
 
 const ITEMS_PER_PAGE = 25;
@@ -200,12 +282,37 @@ export default function Queue() {
     setDeletedFiles([]);
   };
 
+  const finishDeletion = useCallback(() => {
+    setConfirmDeleteNow(null);
+    setIsDeleting(false);
+    setDeletionProgress(null);
+    setDeletedFiles([]);
+  }, []);
+
   const handleConfirmDeleteNow = useCallback(async () => {
     if (!confirmDeleteNow) return;
 
     setIsDeleting(true);
     setDeletionProgress(null);
     setDeletedFiles([]);
+
+    // The dialog must always end on a result. If the connection drops before
+    // the server reports one (a proxy timeout mid-delete, say), it says so
+    // instead of spinning forever: the deletion itself carries on server-side
+    // and its outcome is in the activity log.
+    let sawResult = false;
+    const connectionLost = (detail?: string) => {
+      setDeletionProgress({
+        stage: 'error',
+        message: t('deleteNowModal.connectionLost', 'Lost the connection to Prunerr before the deletion reported a result.'),
+        result: {
+          success: false,
+          error: detail || t('deleteNowModal.connectionLostDetail', 'The deletion keeps running on the server. Check the Activity log for the outcome, then refresh the queue.'),
+        },
+      });
+      setIsDeleting(false);
+      refetch();
+    };
 
     try {
       // Use fetch with SSE streaming
@@ -215,7 +322,14 @@ export default function Queue() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to start deletion');
+        let detail = '';
+        try {
+          const body = await response.json();
+          detail = typeof body?.error === 'string' ? body.error : '';
+        } catch {
+          /* not JSON */
+        }
+        throw new Error(detail || t('toasts.deleteFailedMsg', 'Failed to delete item'));
       }
 
       const reader = response.body?.getReader();
@@ -233,57 +347,73 @@ export default function Queue() {
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const progress: DeletionProgress = JSON.parse(line.slice(6));
-              setDeletionProgress(progress);
+          if (!line.startsWith('data: ')) continue;
+          let progress: DeletionProgress;
+          try {
+            progress = JSON.parse(line.slice(6));
+          } catch (e) {
+            console.error('Failed to parse SSE data:', e);
+            continue;
+          }
+          setDeletionProgress(progress);
 
-              // Track deleted files
-              if (progress.fileProgress && progress.fileProgress.status !== 'deleting') {
-                setDeletedFiles(prev => [
-                  ...prev.filter(f => f.name !== progress.fileProgress!.fileName),
-                  { name: progress.fileProgress!.fileName, status: progress.fileProgress!.status }
-                ]);
-              }
+          // Track files as they finish; 'deleting' and 'verifying' are in flight.
+          if (progress.fileProgress && (progress.fileProgress.status === 'deleted' || progress.fileProgress.status === 'failed')) {
+            const file = progress.fileProgress;
+            setDeletedFiles(prev => [
+              ...prev.filter(f => f.name !== file.fileName),
+              { name: file.fileName, status: file.status === 'deleted' ? 'deleted' : 'failed' },
+            ]);
+          }
 
-              // Handle completion
-              if (progress.stage === 'complete' && progress.result?.success) {
-                addToast({
-                  type: 'success',
-                  title: t('toasts.deletedSuccessTitle', 'Deleted successfully'),
-                  message: t('toasts.deletedSuccessMsg', '"{{title}}" has been deleted ({{size}} freed)', { title: confirmDeleteNow.title, size: formatBytes(progress.result.fileSizeFreed || 0) }),
-                });
-                // Keep modal open briefly to show completion
-                setTimeout(() => {
-                  setConfirmDeleteNow(null);
-                  setIsDeleting(false);
-                  setDeletionProgress(null);
-                  setDeletedFiles([]);
-                  refetch();
-                }, 1500);
-              } else if (progress.stage === 'error') {
-                addToast({
-                  type: 'error',
-                  title: t('toasts.deleteFailedTitle', 'Delete failed'),
-                  message: progress.result?.error || t('toasts.deleteFailedMsg', 'Failed to delete item'),
-                });
-                setIsDeleting(false);
-              }
-            } catch (e) {
-              console.error('Failed to parse SSE data:', e);
+          if (progress.stage === 'complete' && progress.result?.success) {
+            sawResult = true;
+            if (progress.result.reconciled) {
+              addToast({
+                type: 'success',
+                title: t('toasts.reconciledTitle', 'Already deleted'),
+                message: t('toasts.reconciledMsg', '"{{title}}" had already been deleted in {{service}}; removed from the queue', {
+                  title: confirmDeleteNow.title,
+                  service: confirmDeleteNow.type === 'tv' ? 'Sonarr' : 'Radarr',
+                }),
+              });
+            } else {
+              addToast({
+                type: 'success',
+                title: t('toasts.deletedSuccessTitle', 'Deleted successfully'),
+                message: t('toasts.deletedSuccessMsg', '"{{title}}" has been deleted ({{size}} freed)', { title: confirmDeleteNow.title, size: formatBytes(progress.result.fileSizeFreed || 0) }),
+              });
             }
+            // Keep modal open briefly to show completion
+            setTimeout(() => {
+              finishDeletion();
+              refetch();
+            }, 1500);
+          } else if (progress.stage === 'error') {
+            sawResult = true;
+            addToast({
+              type: 'error',
+              title: t('toasts.deleteFailedTitle', 'Delete failed'),
+              message: progress.result?.error || t('toasts.deleteFailedMsg', 'Failed to delete item'),
+            });
+            setIsDeleting(false);
+            refetch();
           }
         }
       }
+
+      if (!sawResult) connectionLost();
     } catch (error) {
+      if (sawResult) return;
+      const message = error instanceof Error ? error.message : t('toasts.deleteFailedMsg', 'Failed to delete item');
       addToast({
         type: 'error',
         title: t('toasts.deleteFailedTitle', 'Delete failed'),
-        message: error instanceof Error ? error.message : t('toasts.deleteFailedMsg', 'Failed to delete item'),
+        message,
       });
-      setIsDeleting(false);
+      connectionLost(message);
     }
-  }, [confirmDeleteNow, addToast, refetch, t]);
+  }, [confirmDeleteNow, addToast, refetch, finishDeletion, t]);
 
   const { data: settings } = useSettings();
 
@@ -701,20 +831,59 @@ export default function Queue() {
                     <Loader2 className="w-6 h-6 text-accent-text animate-spin" />
                   </div>
                 )}
-                <div className="flex-1">
-                  <p className="text-surface-50 font-medium">
+                <div className="flex-1 min-w-0">
+                  <p className="text-surface-50 font-medium break-words">
                     {deletionProgress?.message || t('deleteNowModal.initializing', 'Initializing...')}
                   </p>
-                  {deletionProgress?.fileProgress && (
+                  {deletionProgress?.fileProgress && deletionProgress.stage !== 'error' && (
                     <p className="text-sm text-surface-400">
-                      {t('deleteNowModal.fileProgress', 'File {{current}} of {{total}}', { current: deletionProgress.fileProgress.current, total: deletionProgress.fileProgress.total })}
+                      {deletionProgress.fileProgress.status === 'verifying'
+                        ? t('deleteNowModal.verifying', 'Still deleting on the {{service}} side; this can take a few minutes for large files on network storage.', { service: deletionProgress.service ?? 'Sonarr/Radarr' })
+                        : t('deleteNowModal.fileProgress', 'File {{current}} of {{total}}', { current: deletionProgress.fileProgress.current, total: deletionProgress.fileProgress.total })}
                     </p>
                   )}
                 </div>
               </div>
 
+              {/* Step checklist */}
+              {confirmDeleteNow && (
+                <ol className="space-y-1.5 rounded-lg bg-surface-800/50 p-3">
+                  {deletionSteps(confirmDeleteNow, deletionProgress, t).map((step) => (
+                    <li key={step.key} className="flex items-center gap-2 text-sm">
+                      {step.status === 'done' ? (
+                        <Check className="w-4 h-4 text-emerald-text flex-shrink-0" />
+                      ) : step.status === 'failed' ? (
+                        <X className="w-4 h-4 text-ruby-text flex-shrink-0" />
+                      ) : step.status === 'active' ? (
+                        <Loader2 className="w-4 h-4 text-accent-text animate-spin flex-shrink-0" />
+                      ) : step.status === 'skipped' ? (
+                        <MinusCircle className="w-4 h-4 text-surface-500 flex-shrink-0" />
+                      ) : (
+                        <Circle className="w-4 h-4 text-surface-600 flex-shrink-0" />
+                      )}
+                      <span
+                        className={
+                          step.status === 'failed'
+                            ? 'text-ruby-text'
+                            : step.status === 'active'
+                              ? 'text-surface-50'
+                              : step.status === 'skipped'
+                                ? 'text-surface-500 line-through'
+                                : 'text-surface-300'
+                        }
+                      >
+                        {step.label}
+                        {step.status === 'skipped' && (
+                          <span className="ml-2 no-underline text-xs text-surface-500">{t('deleteNowModal.stepSkipped', 'skipped')}</span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+
               {/* Progress bar */}
-              {deletionProgress?.fileProgress && (
+              {deletionProgress?.fileProgress && deletionProgress.stage !== 'error' && deletionProgress.stage !== 'complete' && (
                 <div className="space-y-2">
                   <div className="h-2 bg-surface-800 rounded-full overflow-hidden">
                     <div
@@ -728,7 +897,7 @@ export default function Queue() {
               )}
 
               {/* File list */}
-              {(deletedFiles.length > 0 || deletionProgress?.fileProgress?.status === 'deleting') && (
+              {(deletedFiles.length > 0 || (deletionProgress?.fileProgress && (deletionProgress.fileProgress.status === 'deleting' || deletionProgress.fileProgress.status === 'verifying'))) && (
                 <div ref={fileListRef} className="max-h-72 overflow-y-auto space-y-1 bg-surface-800/50 rounded-lg p-3">
                   {deletedFiles.map((file, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-sm">
@@ -744,7 +913,7 @@ export default function Queue() {
                     </div>
                   ))}
                   {/* Show current file being deleted */}
-                  {deletionProgress?.fileProgress?.status === 'deleting' && (
+                  {deletionProgress?.fileProgress && (deletionProgress.fileProgress.status === 'deleting' || deletionProgress.fileProgress.status === 'verifying') && (
                     <div className="flex items-center gap-2 text-sm">
                       <Loader2 className="w-4 h-4 text-accent-text animate-spin flex-shrink-0" />
                       <FileVideo className="w-4 h-4 text-surface-500 flex-shrink-0" />
@@ -758,27 +927,60 @@ export default function Queue() {
 
               {/* Completion result */}
               {deletionProgress?.stage === 'complete' && deletionProgress.result && (
-                <div className="p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                  <p className="text-emerald-text font-medium">{t('deleteNowModal.complete', 'Deletion complete!')}</p>
-                  <p className="text-sm text-surface-400 mt-1">
-                    {t('deleteNowModal.freed', 'Freed {{size}}', { size: formatBytes(deletionProgress.result.fileSizeFreed || 0) })}
-                    {deletionProgress.result.overseerrReset && t('deleteNowModal.resetInSeerrSuffix', ' • Reset in Seerr')}
-                  </p>
-                </div>
+                deletionProgress.result.reconciled ? (
+                  <div className="p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                    <p className="text-emerald-text font-medium">{t('deleteNowModal.reconciledTitle', 'Already deleted')}</p>
+                    <p className="text-sm text-surface-400 mt-1">
+                      {t('deleteNowModal.reconciledBody', 'This item was no longer in {{service}}; it had been deleted there already. Prunerr removed it from the queue and marked it deleted. No space was freed by this run.', {
+                        service: deletionProgress.service ?? deletionProgress.result.service ?? (confirmDeleteNow?.type === 'tv' ? 'Sonarr' : 'Radarr'),
+                      })}
+                      {deletionProgress.result.overseerrReset && t('deleteNowModal.resetInSeerrSuffix', ' • Reset in Seerr')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                    <p className="text-emerald-text font-medium">{t('deleteNowModal.complete', 'Deletion complete!')}</p>
+                    <p className="text-sm text-surface-400 mt-1">
+                      {t('deleteNowModal.freed', 'Freed {{size}}', { size: formatBytes(deletionProgress.result.fileSizeFreed || 0) })}
+                      {deletionProgress.result.overseerrReset && t('deleteNowModal.resetInSeerrSuffix', ' • Reset in Seerr')}
+                    </p>
+                  </div>
+                )
               )}
 
               {/* Error state */}
               {deletionProgress?.stage === 'error' && (
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="secondary" onClick={() => {
-                    setConfirmDeleteNow(null);
-                    setIsDeleting(false);
-                    setDeletionProgress(null);
-                    setDeletedFiles([]);
-                  }}>
-                    {t('actions.close', 'Close')}
-                  </Button>
-                </div>
+                <>
+                  <div className="p-4 bg-ruby-500/10 rounded-lg border border-ruby-500/20 space-y-1">
+                    <p className="text-ruby-text font-medium">
+                      {deletionProgress.result?.step && deletionProgress.result?.service
+                        ? t('deleteNowModal.failedAtStep', 'Failed while {{step}} in {{service}}', {
+                            step: stepVerb(deletionProgress.result.step, t),
+                            service: deletionProgress.result.service,
+                          })
+                        : t('deleteNowModal.failed', 'Deletion failed')}
+                    </p>
+                    <p className="text-sm text-surface-300 break-words">
+                      {deletionProgress.result?.error || deletionProgress.message}
+                    </p>
+                    {deletionProgress.result?.upstreamStatus !== undefined && (
+                      <p className="text-xs text-surface-500">
+                        {t('deleteNowModal.upstreamStatus', '{{service}} answered HTTP {{status}}', {
+                          service: deletionProgress.result.service ?? 'Sonarr/Radarr',
+                          status: deletionProgress.result.upstreamStatus,
+                        })}
+                      </p>
+                    )}
+                    <p className="text-xs text-surface-500">
+                      {t('deleteNowModal.failedHint', 'The item stays in the queue. The failure is recorded in the Activity log.')}
+                    </p>
+                  </div>
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button variant="secondary" onClick={finishDeletion}>
+                      {t('actions.close', 'Close')}
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
           )}

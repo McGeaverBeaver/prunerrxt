@@ -3,13 +3,98 @@ import {
   DeletionAction,
   type QueueItem,
   type DeletionResult,
+  type DeletionStep,
+  type UpstreamService,
 } from '../rules/types';
 import logger from '../utils/logger';
 import { logActivity } from '../db/repositories/activity';
+import { upstreamStatus, type FileDeletionProgress } from './arrHttp';
 
 // ============================================================================
 // Types
 // ============================================================================
+
+export type { DeletionStep, UpstreamService } from '../rules/types';
+
+/** Where a deletion is right now, as streamed to the Queue page. */
+export type DeletionStage =
+  | 'starting'
+  | 'unmonitoring'
+  | 'deleting_files'
+  | 'verifying'
+  | 'resetting_overseerr'
+  | 'complete'
+  | 'error';
+
+export interface DeletionProgressResult {
+  success: boolean;
+  fileSizeFreed?: number;
+  overseerrReset?: boolean;
+  overseerrError?: string;
+  /** The item was already gone upstream; nothing was deleted by Prunerr. */
+  reconciled?: boolean;
+  error?: string;
+  /** Step and service the failure happened at. */
+  step?: DeletionStep;
+  service?: UpstreamService;
+  /** HTTP status the service answered with, when it answered. */
+  upstreamStatus?: number;
+}
+
+export interface DeletionProgress {
+  stage: DeletionStage;
+  step?: DeletionStep;
+  service?: UpstreamService;
+  message: string;
+  fileProgress?: FileDeletionProgress;
+  result?: DeletionProgressResult;
+}
+
+type StepReporter = (
+  step: DeletionStep,
+  service: UpstreamService,
+  stage: DeletionStage,
+  message: string,
+  fileProgress?: FileDeletionProgress
+) => void;
+
+interface UpstreamOutcome {
+  /** Sonarr/Radarr no longer had the item: deleted there already. */
+  reconciled: boolean;
+  /** At least one file was removed on this run. */
+  filesDeleted: boolean;
+  /** Which service reported the item missing. */
+  service?: UpstreamService;
+}
+
+/** Human wording for a step, used in the error line. */
+export function describeStep(step: DeletionStep): string {
+  switch (step) {
+    case 'unmonitor':
+      return 'unmonitoring';
+    case 'delete_files':
+      return 'deleting files';
+    case 'remove':
+      return 'removing it';
+    case 'overseerr_reset':
+      return 'resetting the request';
+  }
+}
+
+function fileMessage(service: UpstreamService, progress: FileDeletionProgress): string {
+  const name = progress.fileName.split('/').pop() || progress.fileName;
+  const position = progress.total > 1 ? ` (${progress.current}/${progress.total})` : '';
+  switch (progress.status) {
+    case 'deleting':
+      return `Deleting ${name}${position} in ${service}...`;
+    case 'verifying':
+      return `${service} is still deleting ${name}${position}; waiting for it to finish...`;
+    case 'deleted':
+      return `Deleted ${name}${position} in ${service}`;
+    case 'failed':
+      return `${service} could not delete ${name}${position}`;
+  }
+}
 
 export interface DeletionQueueItem {
   id: number;
@@ -51,16 +136,20 @@ export interface DeletionServiceDependencies {
     getById(id: number): Promise<{ id: number; name: string; deletion_action?: string; reset_overseerr?: number } | null>;
   };
   sonarrService?: {
-    unmonitorSeries(seriesId: number): Promise<void>;
-    deleteEpisodeFile(episodeFileId: number): Promise<void>;
-    deleteAllEpisodeFiles(seriesId: number): Promise<{ deleted: number; failed: number }>;
-    removeSeries(seriesId: number, deleteFiles: boolean): Promise<void>;
+    unmonitorSeries(seriesId: number): Promise<'unmonitored' | 'not_found'>;
+    deleteAllEpisodeFiles(
+      seriesId: number,
+      onProgress?: (progress: FileDeletionProgress) => void
+    ): Promise<{ outcome: 'deleted' | 'no_files' | 'not_found'; deleted: number; failed: number; errors: string[] }>;
+    removeSeries(seriesId: number, deleteFiles: boolean): Promise<'deleted' | 'not_found'>;
   };
   radarrService?: {
-    unmonitorMovie(movieId: number): Promise<void>;
-    deleteMovieFile(movieFileId: number): Promise<void>;
-    deleteMovieFilesByMovieId(movieId: number): Promise<boolean>;
-    removeMovie(movieId: number, deleteFiles: boolean): Promise<void>;
+    unmonitorMovie(movieId: number): Promise<'unmonitored' | 'not_found'>;
+    deleteMovieFilesByMovieId(
+      movieId: number,
+      onProgress?: (progress: FileDeletionProgress) => void
+    ): Promise<{ outcome: 'deleted' | 'no_file' | 'not_found' }>;
+    removeMovie(movieId: number, deleteFiles: boolean): Promise<'deleted' | 'not_found'>;
   };
   overseerrService?: {
     resetMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<boolean>;
@@ -351,7 +440,22 @@ export class DeletionService {
   }
 
   /**
-   * Execute deletion for a single media item
+   * Execute deletion for a single media item.
+   *
+   * Every call to Sonarr/Radarr is reported through `onProgress` with the step
+   * and the service it is talking to, so a progress dialog can show exactly
+   * where a deletion is. Three outcomes are not failures:
+   *
+   * - the item is no longer in Sonarr/Radarr (404): somebody deleted it there
+   *   already. The remaining upstream steps are skipped, the Overseerr reset
+   *   still runs, and the item is marked deleted and logged as reconciled.
+   * - the item has no file left to delete: nothing is freed, the item is still
+   *   marked deleted.
+   * - a file delete outlasted the HTTP timeout but the upstream app finished it
+   *   anyway (verified by the service clients).
+   *
+   * Anything else fails the deletion, leaves the item in the queue and writes
+   * an `error` activity entry naming the step, the service and its answer.
    */
   async executeDelete(
     item: MediaItem,
@@ -359,41 +463,53 @@ export class DeletionService {
     options: {
       resetOverseerr?: boolean;
       ruleId?: number;
+      /** Who asked: a scheduled run ('automatic') or a person ('manual'). */
+      deletionType?: DeletionType;
+      onProgress?: (progress: DeletionProgress) => void;
     } = {}
   ): Promise<DeletionResult> {
     logger.info(`Executing deletion for "${item.title}" with action: ${action}, resetOverseerr: ${options.resetOverseerr}`);
 
     const startTime = Date.now();
+    const deletionType: DeletionType = options.deletionType ?? 'automatic';
     // Only count freed space if we're actually deleting files
     const deletesFiles = action !== DeletionAction.UNMONITOR_ONLY;
-    let fileSizeFreed = deletesFiles ? (item.file_size || 0) : 0;
+    let fileSizeFreed = 0;
     let overseerrReset = false;
     let overseerrError: string | undefined;
+    let reconciled = false;
+    let reconciledService: UpstreamService | undefined;
+
+    // The step in flight, so a failure can say where it happened. Kept on an
+    // object because it is written from a callback, which narrowing can't see.
+    const inFlight: { current: { step: DeletionStep; service: UpstreamService } | null } = { current: null };
+
+    const emit = (progress: DeletionProgress): void => {
+      try {
+        options.onProgress?.(progress);
+      } catch (progressError) {
+        logger.debug(`Deletion progress listener failed: ${progressError instanceof Error ? progressError.message : String(progressError)}`);
+      }
+    };
+    const report: StepReporter = (step, service, stage, message, fileProgress) => {
+      inFlight.current = { step, service };
+      emit(fileProgress ? { stage, step, service, message, fileProgress } : { stage, step, service, message });
+    };
+
+    emit({ stage: 'starting', message: `Starting deletion of "${item.title}"...` });
 
     try {
-      switch (action) {
-        case DeletionAction.UNMONITOR_ONLY:
-          await this.unmonitorOnly(item);
-          break;
-
-        case DeletionAction.DELETE_FILES_ONLY:
-          await this.deleteFilesOnly(item);
-          break;
-
-        case DeletionAction.UNMONITOR_AND_DELETE:
-          await this.unmonitorAndDelete(item);
-          break;
-
-        case DeletionAction.FULL_REMOVAL:
-          await this.fullRemoval(item);
-          break;
-
-        default:
-          throw new Error(`Unknown deletion action: ${action}`);
+      const upstream = await this.runUpstreamSteps(item, action, report);
+      reconciled = upstream.reconciled;
+      reconciledService = upstream.service;
+      if (deletesFiles && upstream.filesDeleted) {
+        fileSizeFreed = item.file_size || 0;
       }
 
-      // Reset in Overseerr if requested and item has TMDB ID
+      // Reset in Overseerr if requested and item has TMDB ID. Runs even when the
+      // item was already gone upstream: the request still needs clearing.
       if (options.resetOverseerr && item.tmdb_id && this.dependencies.overseerrService) {
+        report('overseerr_reset', 'Overseerr', 'resetting_overseerr', 'Resetting in Seerr so it can be requested again...');
         try {
           const mediaType = item.type === 'movie' ? 'movie' : 'tv';
           overseerrReset = await this.dependencies.overseerrService.resetMediaByTmdbId(
@@ -417,11 +533,12 @@ export class DeletionService {
           // Don't fail the deletion, just log the error
         }
       }
+      inFlight.current = null;
 
-      // The Sonarr/Radarr delete already succeeded above. Each post-delete
-      // step (history write, rule lookup, activity log, status update) runs in
-      // its own try-catch so a failure in one doesn't lose the others or
-      // mark the whole deletion as failed — the file is gone either way.
+      // The Sonarr/Radarr work is done above. Each post-delete step (history
+      // write, rule lookup, activity log, status update) runs in its own
+      // try-catch so a failure in one doesn't lose the others or mark the
+      // whole deletion as failed — the file is gone either way.
 
       // Record in deletion history
       if (this.dependencies.deletionHistoryRepository) {
@@ -430,9 +547,9 @@ export class DeletionService {
             media_item_id: item.id,
             title: item.title,
             type: item.type,
-            file_size: deletesFiles ? item.file_size : null,
+            file_size: fileSizeFreed > 0 ? fileSizeFreed : null,
             deleted_at: new Date().toISOString(),
-            deletion_type: 'automatic',
+            deletion_type: deletionType,
             deleted_by_rule_id: options.ruleId || null,
             overseerr_reset: overseerrReset ? 1 : 0,
           });
@@ -441,33 +558,33 @@ export class DeletionService {
         }
       }
 
-      // Get rule name for activity logging
-      let ruleName: string | undefined;
-      if (options.ruleId && this.dependencies.ruleRepository) {
-        try {
-          const rule = await this.dependencies.ruleRepository.getById(options.ruleId);
-          ruleName = rule?.name;
-        } catch (ruleLookupError) {
-          logger.warn(`Failed to resolve rule name for ruleId ${options.ruleId}:`, ruleLookupError);
-        }
-      }
+      const { actorType, actorId, actorName } = await this.actorFor(options.ruleId, deletionType);
 
       // Log to activity log
       try {
         logActivity({
           eventType: 'deletion',
-          action: action === DeletionAction.UNMONITOR_ONLY ? 'unmonitored' : 'deleted',
-          actorType: options.ruleId ? 'rule' : 'user',
-          actorId: options.ruleId?.toString() || null,
-          actorName: ruleName || (options.ruleId ? `Rule #${options.ruleId}` : 'Manual deletion'),
+          action: reconciled ? 'reconciled' : action === DeletionAction.UNMONITOR_ONLY ? 'unmonitored' : 'deleted',
+          actorType,
+          actorId,
+          actorName,
           targetType: 'media_item',
           targetId: item.id,
           targetTitle: item.title,
           metadata: JSON.stringify({
             mediaType: item.type,
-            fileSize: item.file_size,
+            fileSize: reconciled ? 0 : item.file_size,
             deletionAction: action,
-            overseerrReset: overseerrReset,
+            deletionType,
+            overseerrReset,
+            ...(reconciled
+              ? {
+                  reconciled: true,
+                  reason: 'already deleted upstream',
+                  service: reconciledService,
+                  upstreamStatus: 404,
+                }
+              : {}),
           }),
         });
       } catch (activityError) {
@@ -495,7 +612,19 @@ export class DeletionService {
       }
 
       const duration = Date.now() - startTime;
-      logger.info(`Successfully processed "${item.title}" in ${duration}ms (action: ${action}, overseerr reset: ${overseerrReset})`);
+      logger.info(
+        reconciled
+          ? `Reconciled "${item.title}" in ${duration}ms: already deleted in ${reconciledService}, removed from the queue`
+          : `Successfully processed "${item.title}" in ${duration}ms (action: ${action}, overseerr reset: ${overseerrReset})`
+      );
+
+      emit({
+        stage: 'complete',
+        message: reconciled
+          ? `"${item.title}" was already deleted in ${reconciledService}; removed from the queue`
+          : `"${item.title}" deleted successfully`,
+        result: { success: true, fileSizeFreed, overseerrReset, reconciled, ...(overseerrError ? { overseerrError } : {}) },
+      });
 
       return {
         success: true,
@@ -506,10 +635,56 @@ export class DeletionService {
         deletedAt: new Date(),
         overseerrReset,
         overseerrError,
+        reconciled,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Failed to delete "${item.title}":`, error);
+      const failedAt = inFlight.current;
+      const status = upstreamStatus(error);
+      logger.error(`Failed to delete "${item.title}" at step ${failedAt?.step ?? 'unknown'} (${failedAt?.service ?? 'Prunerr'}${status ? `, HTTP ${status}` : ''}): ${errorMessage}`);
+
+      // Every failure is visible in the activity log, with enough detail to
+      // act on: which step, which service, and what it answered.
+      try {
+        const { actorType, actorId, actorName } = await this.actorFor(options.ruleId, deletionType);
+        logActivity({
+          eventType: 'error',
+          action: 'deletion_failed',
+          actorType,
+          actorId,
+          actorName,
+          targetType: 'media_item',
+          targetId: item.id,
+          targetTitle: item.title,
+          metadata: JSON.stringify({
+            mediaType: item.type,
+            fileSize: item.file_size,
+            deletionAction: action,
+            deletionType,
+            step: failedAt?.step ?? null,
+            service: failedAt?.service ?? null,
+            upstreamStatus: status ?? null,
+            message: errorMessage,
+          }),
+        });
+      } catch (activityError) {
+        logger.warn('Failed to log activity for deletion failure:', activityError);
+      }
+
+      emit({
+        stage: 'error',
+        message: failedAt
+          ? `Failed while ${describeStep(failedAt.step)} in ${failedAt.service}: ${errorMessage}`
+          : `Failed to delete: ${errorMessage}`,
+        ...(failedAt ? { step: failedAt.step, service: failedAt.service } : {}),
+        result: {
+          success: false,
+          error: errorMessage,
+          ...(failedAt ? { step: failedAt.step, service: failedAt.service } : {}),
+          ...(status !== undefined ? { upstreamStatus: status } : {}),
+          overseerrReset,
+        },
+      });
 
       return {
         success: false,
@@ -519,106 +694,141 @@ export class DeletionService {
         error: errorMessage,
         overseerrReset,
         overseerrError,
+        failedStep: failedAt?.step,
+        failedService: failedAt?.service,
+        upstreamStatus: status,
       };
     }
   }
 
-  // ============================================================================
-  // Deletion Action Implementations
-  // ============================================================================
-
-  /**
-   * Only unmonitor the item, keep all files and metadata
-   */
-  private async unmonitorOnly(item: MediaItem): Promise<void> {
-    logger.debug(`Unmonitoring "${item.title}" (keeping files)`);
-
-    // Unmonitor in Sonarr
-    if (item.sonarr_id && this.dependencies.sonarrService) {
-      await this.dependencies.sonarrService.unmonitorSeries(item.sonarr_id);
-      logger.debug(`Unmonitored series ${item.sonarr_id} in Sonarr`);
+  /** Attribution for history and activity entries. */
+  private async actorFor(
+    ruleId: number | undefined,
+    deletionType: DeletionType
+  ): Promise<{ actorType: 'rule' | 'user'; actorId: string | null; actorName: string }> {
+    if (!ruleId) {
+      return {
+        actorType: 'user',
+        actorId: null,
+        actorName: deletionType === 'manual' ? 'Manual deletion' : 'Scheduled deletion',
+      };
     }
-
-    // Unmonitor in Radarr
-    if (item.radarr_id && this.dependencies.radarrService) {
-      await this.dependencies.radarrService.unmonitorMovie(item.radarr_id);
-      logger.debug(`Unmonitored movie ${item.radarr_id} in Radarr`);
+    let ruleName: string | undefined;
+    if (this.dependencies.ruleRepository) {
+      try {
+        const rule = await this.dependencies.ruleRepository.getById(ruleId);
+        ruleName = rule?.name;
+      } catch (ruleLookupError) {
+        logger.warn(`Failed to resolve rule name for ruleId ${ruleId}:`, ruleLookupError);
+      }
     }
+    return { actorType: 'rule', actorId: String(ruleId), actorName: ruleName || `Rule #${ruleId}` };
   }
 
-  /**
-   * Delete only the media files, keep metadata in arr apps
-   */
-  private async deleteFilesOnly(item: MediaItem): Promise<void> {
-    logger.debug(`Deleting files only for "${item.title}"`);
+  // ============================================================================
+  // Upstream steps
+  // ============================================================================
 
-    // Delete physical file if path exists
-    if (item.file_path && this.dependencies.fileService) {
-      const deleted = await this.dependencies.fileService.deleteFile(item.file_path);
-      if (!deleted) {
-        logger.warn(`Could not delete file at: ${item.file_path}`);
+  /**
+   * Talk to Sonarr/Radarr for the given action, reporting each step.
+   *
+   * Returns as soon as either app says it no longer has the item: the rest of
+   * the upstream work is moot and the caller finishes the bookkeeping as a
+   * reconciliation. Throws on a real failure, with the failing step already
+   * reported through `report`.
+   */
+  private async runUpstreamSteps(
+    item: MediaItem,
+    action: DeletionAction,
+    report: StepReporter
+  ): Promise<UpstreamOutcome> {
+    const unmonitor = action === DeletionAction.UNMONITOR_ONLY || action === DeletionAction.UNMONITOR_AND_DELETE;
+    const deleteFiles = action === DeletionAction.DELETE_FILES_ONLY || action === DeletionAction.UNMONITOR_AND_DELETE;
+    const remove = action === DeletionAction.FULL_REMOVAL;
+    if (!unmonitor && !deleteFiles && !remove) {
+      throw new Error(`Unknown deletion action: ${action}`);
+    }
+
+    const sonarr = this.dependencies.sonarrService;
+    const radarr = this.dependencies.radarrService;
+    let filesDeleted = false;
+    let touchedUpstream = false;
+
+    if (item.sonarr_id && sonarr) {
+      touchedUpstream = true;
+      const seriesId = item.sonarr_id;
+      if (unmonitor) {
+        report('unmonitor', 'Sonarr', 'unmonitoring', `Unmonitoring "${item.title}" in Sonarr...`);
+        if ((await sonarr.unmonitorSeries(seriesId)) === 'not_found') {
+          return { reconciled: true, filesDeleted: false, service: 'Sonarr' };
+        }
+      }
+      if (deleteFiles) {
+        report('delete_files', 'Sonarr', 'deleting_files', 'Looking up episode files in Sonarr...');
+        const result = await sonarr.deleteAllEpisodeFiles(seriesId, (progress) =>
+          report('delete_files', 'Sonarr', progress.status === 'verifying' ? 'verifying' : 'deleting_files', fileMessage('Sonarr', progress), progress)
+        );
+        if (result.outcome === 'not_found') {
+          return { reconciled: true, filesDeleted: false, service: 'Sonarr' };
+        }
+        if (result.failed > 0) {
+          const detail = result.errors.slice(0, 3).join('; ');
+          throw new Error(
+            `Sonarr could not delete ${result.failed} of ${result.deleted + result.failed} episode files${detail ? `: ${detail}` : ''}`
+          );
+        }
+        filesDeleted = filesDeleted || result.deleted > 0;
+      }
+      if (remove) {
+        report('remove', 'Sonarr', 'deleting_files', `Removing "${item.title}" and its files from Sonarr...`);
+        if ((await sonarr.removeSeries(seriesId, true)) === 'not_found') {
+          return { reconciled: true, filesDeleted: false, service: 'Sonarr' };
+        }
+        filesDeleted = true;
       }
     }
 
-    // Delete from Sonarr - sonarr_id is the series ID, so delete all episode files
-    if (item.sonarr_id && this.dependencies.sonarrService) {
-      await this.dependencies.sonarrService.deleteAllEpisodeFiles(item.sonarr_id);
+    if (item.radarr_id && radarr) {
+      touchedUpstream = true;
+      const movieId = item.radarr_id;
+      if (unmonitor) {
+        report('unmonitor', 'Radarr', 'unmonitoring', `Unmonitoring "${item.title}" in Radarr...`);
+        if ((await radarr.unmonitorMovie(movieId)) === 'not_found') {
+          return { reconciled: true, filesDeleted: false, service: 'Radarr' };
+        }
+      }
+      if (deleteFiles) {
+        report('delete_files', 'Radarr', 'deleting_files', 'Looking up the movie file in Radarr...');
+        const result = await radarr.deleteMovieFilesByMovieId(movieId, (progress) =>
+          report('delete_files', 'Radarr', progress.status === 'verifying' ? 'verifying' : 'deleting_files', fileMessage('Radarr', progress), progress)
+        );
+        if (result.outcome === 'not_found') {
+          return { reconciled: true, filesDeleted: false, service: 'Radarr' };
+        }
+        filesDeleted = filesDeleted || result.outcome === 'deleted';
+      }
+      if (remove) {
+        report('remove', 'Radarr', 'deleting_files', `Removing "${item.title}" and its file from Radarr...`);
+        if ((await radarr.removeMovie(movieId, true)) === 'not_found') {
+          return { reconciled: true, filesDeleted: false, service: 'Radarr' };
+        }
+        filesDeleted = true;
+      }
     }
 
-    // Delete from Radarr - radarr_id is the movie ID, so get and delete the movie file
-    if (item.radarr_id && this.dependencies.radarrService) {
-      await this.dependencies.radarrService.deleteMovieFilesByMovieId(item.radarr_id);
-    }
-  }
-
-  /**
-   * Unmonitor in arr apps and delete files
-   */
-  private async unmonitorAndDelete(item: MediaItem): Promise<void> {
-    logger.debug(`Unmonitoring and deleting "${item.title}"`);
-
-    // Unmonitor and delete in Sonarr - sonarr_id is the series ID
-    if (item.sonarr_id && this.dependencies.sonarrService) {
-      await this.dependencies.sonarrService.unmonitorSeries(item.sonarr_id);
-      await this.dependencies.sonarrService.deleteAllEpisodeFiles(item.sonarr_id);
+    if (!touchedUpstream) {
+      logger.warn(`"${item.title}" is not linked to Sonarr or Radarr; nothing to ${remove ? 'remove' : deleteFiles ? 'delete' : 'unmonitor'} upstream`);
     }
 
-    // Unmonitor and delete in Radarr - radarr_id is the movie ID
-    if (item.radarr_id && this.dependencies.radarrService) {
-      await this.dependencies.radarrService.unmonitorMovie(item.radarr_id);
-      await this.dependencies.radarrService.deleteMovieFilesByMovieId(item.radarr_id);
+    // Delete the physical file directly when a file service is wired up (none
+    // is by default; Sonarr/Radarr own the files).
+    if ((deleteFiles || remove) && item.file_path && this.dependencies.fileService) {
+      const deleted = await this.dependencies.fileService.deleteFile(item.file_path);
+      if (deleted) filesDeleted = true;
+      else logger.warn(`Could not delete file at: ${item.file_path}`);
     }
 
-    // Delete physical file as fallback
-    if (item.file_path && this.dependencies.fileService) {
-      await this.dependencies.fileService.deleteFile(item.file_path);
-    }
-  }
-
-  /**
-   * Completely remove from arr apps (including metadata).
-   *
-   * The local media_items row is kept (as a `deleted` tombstone, set by
-   * executeDelete) rather than removed, so the next Plex sync doesn't
-   * re-import the still-lingering Plex entry and re-queue it.
-   */
-  private async fullRemoval(item: MediaItem): Promise<void> {
-    logger.debug(`Performing full removal of "${item.title}"`);
-
-    // Remove from Sonarr completely
-    if (item.sonarr_id && this.dependencies.sonarrService) {
-      await this.dependencies.sonarrService.removeSeries(item.sonarr_id, true);
-    }
-
-    // Remove from Radarr completely
-    if (item.radarr_id && this.dependencies.radarrService) {
-      await this.dependencies.radarrService.removeMovie(item.radarr_id, true);
-    }
-
-    // Delete physical file as fallback
-    if (item.file_path && this.dependencies.fileService) {
-      await this.dependencies.fileService.deleteFile(item.file_path);
-    }
+    return { reconciled: false, filesDeleted };
   }
 
   // ============================================================================

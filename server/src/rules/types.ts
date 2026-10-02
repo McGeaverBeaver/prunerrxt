@@ -231,6 +231,12 @@ export interface QueueItem {
 /**
  * Result of a deletion operation
  */
+/** The steps a deletion walks through against the downstream services. */
+export type DeletionStep = 'unmonitor' | 'delete_files' | 'remove' | 'overseerr_reset';
+
+/** The service a step talks to. */
+export type UpstreamService = 'Sonarr' | 'Radarr' | 'Overseerr';
+
 export interface DeletionResult {
   success: boolean;
   itemId: number;
@@ -243,6 +249,12 @@ export interface DeletionResult {
   overseerrReset?: boolean;
   /** Error when trying to reset in Overseerr (non-fatal) */
   overseerrError?: string;
+  /** Sonarr/Radarr had already deleted it; Prunerr only caught up its records. */
+  reconciled?: boolean;
+  /** On failure: the step and service it failed at, and the HTTP status if any. */
+  failedStep?: DeletionStep;
+  failedService?: UpstreamService;
+  upstreamStatus?: number;
 }
 
 // ============================================================================

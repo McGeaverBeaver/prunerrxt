@@ -36,6 +36,8 @@
     "collectionProtected": "Collection protected",
     "collectionUnprotected": "Collection unprotected",
     "deleted": "Deleted",
+    "deletionFailed": "Deletion failed",
+    "episodeDeletionFailed": "Episode deletion failed",
     "episodesDeleted_one": "{{count}} episode deleted",
     "episodesDeleted_other": "{{count}} episodes deleted",
     "episodesQueued_one": "{{count}} episode queued for deletion",
@@ -51,6 +53,8 @@
     "protectionRemoved": "Protection removed",
     "queuedForDeletion": "Queued for deletion",
     "reason": "Reason: {{reason}}",
+    "reconciled": "Already deleted in {{service}}",
+    "reconciledDescription": "Removed from the queue; nothing left to delete",
     "removedFromQueue": "Removed from queue",
     "scanCompleted": "Library scan completed",
     "scanFailed": "Library scan failed",
@@ -64,6 +68,12 @@
   "pagination": {
     "pageOf": "Page {{page}} of {{total}}",
     "showing": "Showing {{from}} to {{to}} of {{total}} activities"
+  },
+  "steps": {
+    "deleteFiles": "Deleting files",
+    "remove": "Removing",
+    "resetSeerr": "Resetting in Seerr",
+    "unmonitor": "Unmonitoring"
   },
   "table": {
     "actor": "Actor",

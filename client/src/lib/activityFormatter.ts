@@ -59,6 +59,22 @@ const deletionActionChip = (meta: Record<string, unknown> | null): ActivityChip 
   return { label: deletionActionLabel(a), variant: 'default' };
 };
 
+/** Which step of a deletion a failure happened at. */
+const deletionStepLabel = (step: string): string => {
+  switch (step) {
+    case 'unmonitor':
+      return i18n.t('activityLog:steps.unmonitor', 'Unmonitoring');
+    case 'delete_files':
+      return i18n.t('activityLog:steps.deleteFiles', 'Deleting files');
+    case 'remove':
+      return i18n.t('activityLog:steps.remove', 'Removing');
+    case 'overseerr_reset':
+      return i18n.t('activityLog:steps.resetSeerr', 'Resetting in Seerr');
+    default:
+      return humanize(step);
+  }
+};
+
 const sizeChip = (meta: Record<string, unknown> | null): ActivityChip | undefined => {
   const bytes = readNumber(meta, 'fileSize');
   if (bytes === undefined || bytes <= 0) return undefined;
@@ -164,6 +180,21 @@ export function formatActivity(entry: ActivityLogEntry): FormattedActivity {
           chips,
         };
       }
+      if (entry.action === 'reconciled') {
+        // Sonarr/Radarr no longer had the item: it was deleted there by hand,
+        // and Prunerr only caught its records up.
+        const service = readString(meta, 'service') ?? 'Sonarr/Radarr';
+        const chips: ActivityChip[] = [];
+        const action = deletionActionChip(meta);
+        if (action) chips.push(action);
+        return {
+          title: i18n.t('activityLog:formatter.reconciled', 'Already deleted in {{service}}', { service }),
+          description:
+            ruleDescription(entry) ??
+            i18n.t('activityLog:formatter.reconciledDescription', 'Removed from the queue; nothing left to delete'),
+          chips,
+        };
+      }
       return {
         title: humanize(entry.action),
         description: ruleDescription(entry),
@@ -221,6 +252,25 @@ export function formatActivity(entry: ActivityLogEntry): FormattedActivity {
 
     case 'error': {
       const err = readString(meta, 'error') ?? readString(meta, 'message');
+      if (entry.action === 'deletion_failed' || entry.action === 'episode_deletion_failed') {
+        const service = readString(meta, 'service');
+        const step = readString(meta, 'step');
+        const status = readNumber(meta, 'upstreamStatus');
+        const chips: ActivityChip[] = [];
+        if (service) chips.push({ label: service, variant: 'danger' });
+        if (step) chips.push({ label: deletionStepLabel(step), variant: 'warning' });
+        if (status !== undefined) chips.push({ label: `HTTP ${status}`, variant: 'default' });
+        const action = deletionActionChip(meta);
+        if (action) chips.push(action);
+        return {
+          title:
+            entry.action === 'episode_deletion_failed'
+              ? i18n.t('activityLog:formatter.episodeDeletionFailed', 'Episode deletion failed')
+              : i18n.t('activityLog:formatter.deletionFailed', 'Deletion failed'),
+          description: err,
+          chips,
+        };
+      }
       return {
         title: humanize(entry.action) || i18n.t('activityLog:formatter.error', 'Error'),
         description: err,

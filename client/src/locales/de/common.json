@@ -1,4 +1,18 @@
 {
+  "deleteNowModal": {
+    "steps": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    },
+    "stepVerb": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    }
+  },
   "dismissNotification": "Benachrichtigung schließen",
   "dropdown": {
     "noMatches": "Keine Treffer",
@@ -47,6 +61,8 @@
       "addedToPlex": "Zu {{name}} hinzugefügt",
       "collectionProtected": "Sammlung geschützt",
       "collectionUnprotected": "Sammlungsschutz aufgehoben",
+      "deletionFailed": "",
+      "episodeDeletionFailed": "",
       "episodesDeleted_one": "",
       "episodesDeleted_other": "",
       "episodesFailed_one": "",
@@ -70,6 +86,7 @@
       "itemQueued": "Zum Löschen vorgemerkt",
       "itemRestored": "Wiederhergestellt",
       "protected": "Element geschützt",
+      "reconciled": "",
       "ruleMatched": "Von Regel erfasst",
       "scanned": "Bibliotheks-Scan",
       "unprotected": "Elementschutz aufgehoben"

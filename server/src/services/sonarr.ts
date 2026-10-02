@@ -8,12 +8,34 @@ import type {
   SonarrQueueRecord,
   SonarrHistoryRecord,
 } from './types';
+import {
+  ARR_REQUEST_TIMEOUT_MS,
+  isNotFound,
+  isTimeout,
+  resolveArrTiming,
+  waitUntilGone,
+  type ArrTimingOptions,
+} from './arrHttp';
+import type { FileDeletionProgress } from './arrHttp';
+
+/** How a whole-series file deletion went. */
+export interface SeriesFileDeletionResult {
+  outcome: 'deleted' | 'no_files' | 'not_found';
+  deleted: number;
+  failed: number;
+  /** Bytes Sonarr reported for the files that were deleted. */
+  freedBytes: number;
+  /** Messages for the files that could not be deleted, for the error report. */
+  errors: string[];
+}
 
 export class SonarrService {
   private client: AxiosInstance;
+  private timing: Required<ArrTimingOptions>;
 
-  constructor(url: string, apiKey: string) {
+  constructor(url: string, apiKey: string, timing?: ArrTimingOptions) {
     const baseUrl = url.replace(/\/$/, ''); // Remove trailing slash
+    this.timing = resolveArrTiming(timing);
 
     this.client = axios.create({
       baseURL: `${baseUrl}/api/v3`,
@@ -21,7 +43,7 @@ export class SonarrService {
         'X-Api-Key': apiKey,
         'Content-Type': 'application/json',
       },
-      timeout: 30000,
+      timeout: ARR_REQUEST_TIMEOUT_MS,
     });
 
     // Add response interceptor for rate limiting
@@ -85,6 +107,34 @@ export class SonarrService {
   }
 
   /**
+   * Look a series up, answering null when Sonarr no longer has it. The plain
+   * getSeriesById treats a 404 as an error; for deletions it is an answer.
+   */
+  async findSeriesById(id: number): Promise<SonarrSeries | null> {
+    try {
+      const response = await this.client.get<SonarrSeries>(`/series/${id}`);
+      return response.data;
+    } catch (error) {
+      if (isNotFound(error)) {
+        logger.info(`Series ${id} is not in Sonarr (already removed)`);
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  /** Whether Sonarr still has an episode file with this id. */
+  private async episodeFileExists(fileId: number): Promise<boolean> {
+    try {
+      await this.client.get(`/episodefile/${fileId}`);
+      return true;
+    } catch (error) {
+      if (isNotFound(error)) return false;
+      throw error;
+    }
+  }
+
+  /**
    * Get a specific series by ID
    */
   async getSeriesById(id: number): Promise<SonarrSeries> {
@@ -142,21 +192,37 @@ export class SonarrService {
   }
 
   /**
-   * Delete a series
+   * Delete a series. Resolves to 'not_found' when Sonarr had already let it go.
+   *
+   * With deleteFiles Sonarr removes every file inside this one request, which
+   * can outlast any sensible HTTP timeout, so the call gets the delete timeout
+   * and is verified against Sonarr if even that is exceeded.
    */
-  async deleteSeries(id: number, deleteFiles: boolean = false): Promise<void> {
+  async deleteSeries(id: number, deleteFiles: boolean = false): Promise<'deleted' | 'not_found'> {
     try {
       await this.client.delete(`/series/${id}`, {
         params: { deleteFiles },
+        timeout: this.timing.deleteTimeoutMs,
       });
       logger.info(`Deleted series ${id} from Sonarr`, { deleteFiles });
+      return 'deleted';
     } catch (error) {
-      const axiosError = error as AxiosError;
-      // 404 means series doesn't exist - treat as success (already deleted)
-      if (axiosError.response?.status === 404) {
+      if (isNotFound(error)) {
         logger.info(`Series ${id} not found in Sonarr (already deleted)`);
-        return;
+        return 'not_found';
       }
+      if (isTimeout(error)) {
+        logger.warn(`Sonarr did not answer the delete of series ${id} within ${this.timing.deleteTimeoutMs}ms; checking whether it finished`);
+        const gone = await waitUntilGone(async () => (await this.findSeriesById(id)) === null, this.timing);
+        if (gone) {
+          logger.info(`Sonarr finished removing series ${id} after the request timed out`);
+          return 'deleted';
+        }
+        throw new Error(
+          `Sonarr did not finish removing series ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s; it may still be working on it`
+        );
+      }
+      const axiosError = error as AxiosError;
       logger.error(`Failed to delete series ${id} from Sonarr`, {
         status: axiosError.response?.status,
         message: axiosError.message,
@@ -168,24 +234,40 @@ export class SonarrService {
   /**
    * Remove a series completely (alias for deleteSeries with deleteFiles=true)
    */
-  async removeSeries(id: number, deleteFiles: boolean = true): Promise<void> {
+  async removeSeries(id: number, deleteFiles: boolean = true): Promise<'deleted' | 'not_found'> {
     return this.deleteSeries(id, deleteFiles);
   }
 
   /**
-   * Delete an episode file
+   * Delete an episode file.
+   *
+   * Sonarr deletes the file inside this request. When that outlasts the delete
+   * timeout the file is polled until it is gone (or the verification window
+   * runs out) instead of failing a delete that is still in progress.
+   * `onVerifying` fires when that wait begins.
    */
-  async deleteEpisodeFile(id: number): Promise<void> {
+  async deleteEpisodeFile(id: number, onVerifying?: () => void): Promise<void> {
     try {
-      await this.client.delete(`/episodefile/${id}`);
+      await this.client.delete(`/episodefile/${id}`, { timeout: this.timing.deleteTimeoutMs });
       logger.info(`Deleted episode file ${id} from Sonarr`);
     } catch (error) {
-      const axiosError = error as AxiosError;
-      // 404 means file doesn't exist - treat as success (already deleted)
-      if (axiosError.response?.status === 404) {
+      if (isNotFound(error)) {
         logger.info(`Episode file ${id} not found in Sonarr (already deleted)`);
         return;
       }
+      if (isTimeout(error)) {
+        logger.warn(`Sonarr did not answer the delete of episode file ${id} within ${this.timing.deleteTimeoutMs}ms; waiting for it to finish`);
+        onVerifying?.();
+        const gone = await waitUntilGone(async () => !(await this.episodeFileExists(id)), this.timing);
+        if (gone) {
+          logger.info(`Sonarr finished deleting episode file ${id} after the request timed out`);
+          return;
+        }
+        throw new Error(
+          `Sonarr did not finish deleting episode file ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s; it may still be working on it. Raise ARR_DELETE_TIMEOUT_MS if your storage is slow.`
+        );
+      }
+      const axiosError = error as AxiosError;
       logger.error(`Failed to delete episode file ${id} from Sonarr`, {
         status: axiosError.response?.status,
         message: axiosError.message,
@@ -200,78 +282,86 @@ export class SonarrService {
   public static readonly ProgressCallback = Symbol('ProgressCallback');
 
   /**
-   * Delete all episode files for a series (keeps series metadata)
+   * Delete every episode file of a series while keeping the series in Sonarr.
+   *
+   * Resolves rather than throws for the "nothing to do" cases (no files, or
+   * Sonarr no longer has the series). Files that fail are counted and their
+   * errors collected, so the caller can decide that a half-deleted show is
+   * not a finished deletion.
    */
   async deleteAllEpisodeFiles(
     seriesId: number,
-    onProgress?: (progress: { current: number; total: number; fileName: string; status: 'deleting' | 'deleted' | 'failed' }) => void
-  ): Promise<{ deleted: number; failed: number }> {
-    try {
-      const episodeFiles = await this.getEpisodeFiles(seriesId);
-
-      if (episodeFiles.length === 0) {
-        logger.info(`No episode files found for series ${seriesId}`);
-        return { deleted: 0, failed: 0 };
-      }
-
-      let deleted = 0;
-      let failed = 0;
-      const total = episodeFiles.length;
-
-      for (let i = 0; i < episodeFiles.length; i++) {
-        const file = episodeFiles[i];
-        if (!file) continue;
-        const fileName = file.relativePath || file.path || `Episode file ${file.id}`;
-
-        // Emit "deleting" progress
-        onProgress?.({ current: i + 1, total, fileName, status: 'deleting' });
-
-        try {
-          await this.deleteEpisodeFile(file.id);
-          deleted++;
-          // Emit "deleted" progress
-          onProgress?.({ current: i + 1, total, fileName, status: 'deleted' });
-        } catch (error) {
-          logger.warn(`Failed to delete episode file ${file.id} for series ${seriesId}`);
-          failed++;
-          // Emit "failed" progress
-          onProgress?.({ current: i + 1, total, fileName, status: 'failed' });
-        }
-      }
-
-      logger.info(`Deleted ${deleted}/${episodeFiles.length} episode files for series ${seriesId}`);
-      return { deleted, failed };
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      // 404 means series doesn't exist
-      if (axiosError.response?.status === 404) {
-        logger.info(`Series ${seriesId} not found in Sonarr`);
-        return { deleted: 0, failed: 0 };
-      }
-      logger.error(`Failed to delete episode files for series ${seriesId}`, {
-        status: axiosError.response?.status,
-        message: axiosError.message,
-      });
-      throw error;
+    onProgress?: (progress: FileDeletionProgress) => void
+  ): Promise<SeriesFileDeletionResult> {
+    // Sonarr answers an unknown series id with an empty list here, so ask for
+    // the series itself first: that is the only way to tell "no files" from
+    // "already removed".
+    const series = await this.findSeriesById(seriesId);
+    if (!series) {
+      return { outcome: 'not_found', deleted: 0, failed: 0, freedBytes: 0, errors: [] };
     }
+
+    const episodeFiles = await this.getEpisodeFiles(seriesId);
+
+    if (episodeFiles.length === 0) {
+      logger.info(`No episode files found for series ${seriesId}`);
+      return { outcome: 'no_files', deleted: 0, failed: 0, freedBytes: 0, errors: [] };
+    }
+
+    let deleted = 0;
+    let failed = 0;
+    let freedBytes = 0;
+    const errors: string[] = [];
+    const total = episodeFiles.length;
+
+    for (let i = 0; i < episodeFiles.length; i++) {
+      const file = episodeFiles[i];
+      if (!file) continue;
+      const fileName = file.relativePath || file.path || `Episode file ${file.id}`;
+
+      onProgress?.({ current: i + 1, total, fileName, status: 'deleting' });
+
+      try {
+        await this.deleteEpisodeFile(file.id, () =>
+          onProgress?.({ current: i + 1, total, fileName, status: 'verifying' })
+        );
+        deleted++;
+        freedBytes += file.size || 0;
+        onProgress?.({ current: i + 1, total, fileName, status: 'deleted' });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logger.warn(`Failed to delete episode file ${file.id} for series ${seriesId}: ${message}`);
+        failed++;
+        errors.push(`${fileName}: ${message}`);
+        onProgress?.({ current: i + 1, total, fileName, status: 'failed' });
+      }
+    }
+
+    logger.info(`Deleted ${deleted}/${episodeFiles.length} episode files for series ${seriesId}`);
+    return { outcome: 'deleted', deleted, failed, freedBytes, errors };
   }
 
   /**
-   * Unmonitor a series
+   * Unmonitor a series. Resolves to 'not_found' when Sonarr no longer has it,
+   * so callers can stop there instead of failing on the follow-up calls.
    */
-  async unmonitorSeries(id: number): Promise<void> {
-    try {
-      // First get the current series data
-      const series = await this.getSeriesById(id);
+  async unmonitorSeries(id: number): Promise<'unmonitored' | 'not_found'> {
+    const series = await this.findSeriesById(id);
+    if (!series) return 'not_found';
 
-      // Update monitored status
+    try {
       await this.client.put(`/series/${id}`, {
         ...series,
         monitored: false,
       });
 
       logger.info(`Unmonitored series ${id} in Sonarr`);
+      return 'unmonitored';
     } catch (error) {
+      if (isNotFound(error)) {
+        logger.info(`Series ${id} disappeared from Sonarr while unmonitoring it`);
+        return 'not_found';
+      }
       const axiosError = error as AxiosError;
       logger.error(`Failed to unmonitor series ${id} in Sonarr`, {
         status: axiosError.response?.status,

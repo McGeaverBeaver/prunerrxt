@@ -1,4 +1,18 @@
 {
+  "deleteNowModal": {
+    "steps": {
+      "deleteFiles": "Delete files in {{service}}",
+      "remove": "Remove from {{service}} with its files",
+      "resetSeerr": "Reset in Seerr",
+      "unmonitor": "Unmonitor in {{service}}"
+    },
+    "stepVerb": {
+      "deleteFiles": "deleting files",
+      "remove": "removing it",
+      "resetSeerr": "resetting the request",
+      "unmonitor": "unmonitoring"
+    }
+  },
   "dismissNotification": "Dismiss notification",
   "dropdown": {
     "noMatches": "No matches",
@@ -47,6 +61,8 @@
       "addedToPlex": "Added to {{name}}",
       "collectionProtected": "Collection protected",
       "collectionUnprotected": "Collection unprotected",
+      "deletionFailed": "Deletion failed",
+      "episodeDeletionFailed": "Episode deletion failed",
       "episodesDeleted_one": "{{count}} episode deleted",
       "episodesDeleted_other": "{{count}} episodes deleted",
       "episodesFailed_one": "{{count}} episode download failed",
@@ -70,6 +86,7 @@
       "itemQueued": "Queued for deletion",
       "itemRestored": "Restored",
       "protected": "Item protected",
+      "reconciled": "Already deleted upstream; removed from the queue",
       "ruleMatched": "Matched by rule",
       "scanned": "Library scan",
       "unprotected": "Item unprotected"

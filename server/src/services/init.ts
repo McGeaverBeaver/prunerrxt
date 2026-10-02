@@ -200,34 +200,16 @@ export async function initializeServices(): Promise<void> {
 
     // Sonarr service (if configured)
     sonarrService: sonarr ? {
-      async unmonitorSeries(seriesId: number): Promise<void> {
-        await sonarr.unmonitorSeries(seriesId);
-      },
-      async deleteEpisodeFile(episodeFileId: number): Promise<void> {
-        await sonarr.deleteEpisodeFile(episodeFileId);
-      },
-      async deleteAllEpisodeFiles(seriesId: number): Promise<{ deleted: number; failed: number }> {
-        return await sonarr.deleteAllEpisodeFiles(seriesId);
-      },
-      async removeSeries(seriesId: number, deleteFiles: boolean): Promise<void> {
-        await sonarr.removeSeries(seriesId, deleteFiles);
-      },
+      unmonitorSeries: (seriesId) => sonarr.unmonitorSeries(seriesId),
+      deleteAllEpisodeFiles: (seriesId, onProgress) => sonarr.deleteAllEpisodeFiles(seriesId, onProgress),
+      removeSeries: (seriesId, deleteFiles) => sonarr.removeSeries(seriesId, deleteFiles),
     } : undefined,
 
     // Radarr service (if configured)
     radarrService: radarr ? {
-      async unmonitorMovie(movieId: number): Promise<void> {
-        await radarr.unmonitorMovie(movieId);
-      },
-      async deleteMovieFile(movieFileId: number): Promise<void> {
-        await radarr.deleteMovieFile(movieFileId);
-      },
-      async deleteMovieFilesByMovieId(movieId: number): Promise<boolean> {
-        return await radarr.deleteMovieFilesByMovieId(movieId);
-      },
-      async removeMovie(movieId: number, deleteFiles: boolean): Promise<void> {
-        await radarr.removeMovie(movieId, deleteFiles);
-      },
+      unmonitorMovie: (movieId) => radarr.unmonitorMovie(movieId),
+      deleteMovieFilesByMovieId: (movieId, onProgress) => radarr.deleteMovieFilesByMovieId(movieId, onProgress),
+      removeMovie: (movieId, deleteFiles) => radarr.removeMovie(movieId, deleteFiles),
     } : undefined,
 
     // Overseerr service (if configured)

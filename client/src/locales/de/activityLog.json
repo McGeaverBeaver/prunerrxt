@@ -36,6 +36,8 @@
     "collectionProtected": "Sammlung geschützt",
     "collectionUnprotected": "Sammlungsschutz aufgehoben",
     "deleted": "Gelöscht",
+    "deletionFailed": "",
+    "episodeDeletionFailed": "",
     "episodesDeleted_one": "",
     "episodesDeleted_other": "",
     "episodesQueued_one": "",
@@ -51,6 +53,8 @@
     "protectionRemoved": "Schutz entfernt",
     "queuedForDeletion": "Zur Löschung eingereiht",
     "reason": "Grund: {{reason}}",
+    "reconciled": "",
+    "reconciledDescription": "",
     "removedFromQueue": "Aus der Warteschlange entfernt",
     "scanCompleted": "Bibliotheksscan abgeschlossen",
     "scanFailed": "Bibliotheksscan fehlgeschlagen",
@@ -64,6 +68,12 @@
   "pagination": {
     "pageOf": "Seite {{page}} von {{total}}",
     "showing": "Zeige {{from}} bis {{to}} von {{total}} Aktivitäten"
+  },
+  "steps": {
+    "deleteFiles": "",
+    "remove": "",
+    "resetSeerr": "",
+    "unmonitor": ""
   },
   "table": {
     "actor": "Akteur",

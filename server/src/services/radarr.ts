@@ -3,12 +3,32 @@ import logger from '../utils/logger';
 import type { RadarrMovie, RadarrMovieFile, RadarrCollectionResource } from './types';
 import collectionsRepo from '../db/repositories/collections';
 import { getDatabase } from '../db/index';
+import {
+  ARR_REQUEST_TIMEOUT_MS,
+  isNotFound,
+  isTimeout,
+  resolveArrTiming,
+  waitUntilGone,
+  type ArrTimingOptions,
+  type FileDeletionProgress,
+} from './arrHttp';
+
+export type { FileDeletionProgress } from './arrHttp';
+
+/** Did the movie's file go, or was there nothing (left) to delete? */
+export interface MovieFileDeletionResult {
+  outcome: 'deleted' | 'no_file' | 'not_found';
+  fileName?: string;
+  fileSize?: number;
+}
 
 export class RadarrService {
   private client: AxiosInstance;
+  private timing: Required<ArrTimingOptions>;
 
-  constructor(url: string, apiKey: string) {
+  constructor(url: string, apiKey: string, timing?: ArrTimingOptions) {
     const baseUrl = url.replace(/\/$/, ''); // Remove trailing slash
+    this.timing = resolveArrTiming(timing);
 
     this.client = axios.create({
       baseURL: `${baseUrl}/api/v3`,
@@ -16,7 +36,7 @@ export class RadarrService {
         'X-Api-Key': apiKey,
         'Content-Type': 'application/json',
       },
-      timeout: 30000,
+      timeout: ARR_REQUEST_TIMEOUT_MS,
     });
 
     // Add response interceptor for rate limiting
@@ -97,24 +117,69 @@ export class RadarrService {
   }
 
   /**
-   * Delete a movie
+   * Look a movie up, answering null when Radarr no longer has it. The plain
+   * getMovieById treats a 404 as an error; for deletions it is an answer.
    */
-  async deleteMovie(id: number, deleteFiles: boolean = false): Promise<void> {
+  async findMovieById(id: number): Promise<RadarrMovie | null> {
+    try {
+      const response = await this.client.get<RadarrMovie>(`/movie/${id}`);
+      return response.data;
+    } catch (error) {
+      if (isNotFound(error)) {
+        logger.info(`Movie ${id} is not in Radarr (already removed)`);
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  /** Whether Radarr still has a movie file with this id. */
+  private async movieFileExists(fileId: number): Promise<boolean> {
+    try {
+      await this.client.get(`/moviefile/${fileId}`);
+      return true;
+    } catch (error) {
+      if (isNotFound(error)) return false;
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a movie. Resolves to 'not_found' when Radarr had already let it go.
+   *
+   * With deleteFiles this is the same call Radarr's own UI makes and it can
+   * run long for a big file, so it gets the delete timeout and, if even that
+   * is exceeded, Radarr is asked whether the movie is gone before the call is
+   * declared a failure.
+   */
+  async deleteMovie(id: number, deleteFiles: boolean = false): Promise<'deleted' | 'not_found'> {
     try {
       await this.client.delete(`/movie/${id}`, {
         params: {
           deleteFiles,
           addImportExclusion: false,
         },
+        timeout: this.timing.deleteTimeoutMs,
       });
       logger.info(`Deleted movie ${id} from Radarr`, { deleteFiles });
+      return 'deleted';
     } catch (error) {
-      const axiosError = error as AxiosError;
-      // 404 means movie doesn't exist - treat as success (already deleted)
-      if (axiosError.response?.status === 404) {
+      if (isNotFound(error)) {
         logger.info(`Movie ${id} not found in Radarr (already deleted)`);
-        return;
+        return 'not_found';
       }
+      if (isTimeout(error)) {
+        logger.warn(`Radarr did not answer the delete of movie ${id} within ${this.timing.deleteTimeoutMs}ms; checking whether it finished`);
+        const gone = await waitUntilGone(async () => (await this.findMovieById(id)) === null, this.timing);
+        if (gone) {
+          logger.info(`Radarr finished removing movie ${id} after the request timed out`);
+          return 'deleted';
+        }
+        throw new Error(
+          `Radarr did not finish removing movie ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s; it may still be working on it`
+        );
+      }
+      const axiosError = error as AxiosError;
       logger.error(`Failed to delete movie ${id} from Radarr`, {
         status: axiosError.response?.status,
         message: axiosError.message,
@@ -126,26 +191,31 @@ export class RadarrService {
   /**
    * Remove a movie completely (alias for deleteMovie with deleteFiles=true)
    */
-  async removeMovie(id: number, deleteFiles: boolean = true): Promise<void> {
+  async removeMovie(id: number, deleteFiles: boolean = true): Promise<'deleted' | 'not_found'> {
     return this.deleteMovie(id, deleteFiles);
   }
 
   /**
-   * Unmonitor a movie
+   * Unmonitor a movie. Resolves to 'not_found' when Radarr no longer has it,
+   * so callers can stop there instead of failing on the follow-up calls.
    */
-  async unmonitorMovie(id: number): Promise<void> {
-    try {
-      // First get the current movie data
-      const movie = await this.getMovieById(id);
+  async unmonitorMovie(id: number): Promise<'unmonitored' | 'not_found'> {
+    const movie = await this.findMovieById(id);
+    if (!movie) return 'not_found';
 
-      // Update monitored status
+    try {
       await this.client.put(`/movie/${id}`, {
         ...movie,
         monitored: false,
       });
 
       logger.info(`Unmonitored movie ${id} in Radarr`);
+      return 'unmonitored';
     } catch (error) {
+      if (isNotFound(error)) {
+        logger.info(`Movie ${id} disappeared from Radarr while unmonitoring it`);
+        return 'not_found';
+      }
       const axiosError = error as AxiosError;
       logger.error(`Failed to unmonitor movie ${id} in Radarr`, {
         status: axiosError.response?.status,
@@ -179,19 +249,36 @@ export class RadarrService {
   }
 
   /**
-   * Delete a movie file by file ID
+   * Delete a movie file by file ID.
+   *
+   * Radarr deletes the file synchronously inside this request, and a large
+   * file on a network share can take it longer than any sensible HTTP timeout.
+   * When the request times out, the file is polled until it is gone (or the
+   * verification window runs out) rather than reporting a failure for a delete
+   * that is still in progress. `onVerifying` fires when that wait begins.
    */
-  async deleteMovieFile(id: number): Promise<void> {
+  async deleteMovieFile(id: number, onVerifying?: () => void): Promise<void> {
     try {
-      await this.client.delete(`/moviefile/${id}`);
+      await this.client.delete(`/moviefile/${id}`, { timeout: this.timing.deleteTimeoutMs });
       logger.info(`Deleted movie file ${id} from Radarr`);
     } catch (error) {
-      const axiosError = error as AxiosError;
-      // 404 means file doesn't exist - treat as success (already deleted)
-      if (axiosError.response?.status === 404) {
+      if (isNotFound(error)) {
         logger.info(`Movie file ${id} not found in Radarr (already deleted)`);
         return;
       }
+      if (isTimeout(error)) {
+        logger.warn(`Radarr did not answer the delete of movie file ${id} within ${this.timing.deleteTimeoutMs}ms; waiting for it to finish`);
+        onVerifying?.();
+        const gone = await waitUntilGone(async () => !(await this.movieFileExists(id)), this.timing);
+        if (gone) {
+          logger.info(`Radarr finished deleting movie file ${id} after the request timed out`);
+          return;
+        }
+        throw new Error(
+          `Radarr did not finish deleting movie file ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s; it may still be working on it. Raise ARR_DELETE_TIMEOUT_MS if your storage is slow.`
+        );
+      }
+      const axiosError = error as AxiosError;
       logger.error(`Failed to delete movie file ${id} from Radarr`, {
         status: axiosError.response?.status,
         message: axiosError.message,
@@ -201,45 +288,41 @@ export class RadarrService {
   }
 
   /**
-   * Delete movie files for a movie by movie ID (keeps movie metadata)
+   * Delete the movie's file while keeping the movie in Radarr.
+   *
+   * Resolves rather than throws for the two "nothing to do" cases: the movie
+   * has no file, or Radarr no longer has the movie at all.
    */
   async deleteMovieFilesByMovieId(
     movieId: number,
-    onProgress?: (progress: { current: number; total: number; fileName: string; status: 'deleting' | 'deleted' | 'failed' }) => void
-  ): Promise<boolean> {
+    onProgress?: (progress: FileDeletionProgress) => void
+  ): Promise<MovieFileDeletionResult> {
+    const movie = await this.findMovieById(movieId);
+    if (!movie) return { outcome: 'not_found' };
+
+    if (!movie.movieFile) {
+      logger.info(`No movie file found for movie ${movieId}`);
+      return { outcome: 'no_file' };
+    }
+
+    const file = movie.movieFile;
+    const fileName = file.relativePath || file.path || `Movie file ${file.id}`;
+
+    onProgress?.({ current: 1, total: 1, fileName, status: 'deleting' });
+
     try {
-      const movie = await this.getMovieById(movieId);
-
-      if (!movie.movieFile) {
-        logger.info(`No movie file found for movie ${movieId}`);
-        return true;
-      }
-
-      const fileName = movie.movieFile.relativePath || movie.movieFile.path || `Movie file ${movie.movieFile.id}`;
-
-      // Emit "deleting" progress
-      onProgress?.({ current: 1, total: 1, fileName, status: 'deleting' });
-
-      await this.deleteMovieFile(movie.movieFile.id);
-      logger.info(`Deleted movie file for movie ${movieId} (file ID: ${movie.movieFile.id})`);
-
-      // Emit "deleted" progress
-      onProgress?.({ current: 1, total: 1, fileName, status: 'deleted' });
-
-      return true;
+      await this.deleteMovieFile(file.id, () =>
+        onProgress?.({ current: 1, total: 1, fileName, status: 'verifying' })
+      );
     } catch (error) {
-      const axiosError = error as AxiosError;
-      // 404 means movie doesn't exist
-      if (axiosError.response?.status === 404) {
-        logger.info(`Movie ${movieId} not found in Radarr`);
-        return true;
-      }
-      logger.error(`Failed to delete movie file for movie ${movieId}`, {
-        status: axiosError.response?.status,
-        message: axiosError.message,
-      });
+      onProgress?.({ current: 1, total: 1, fileName, status: 'failed' });
       throw error;
     }
+
+    logger.info(`Deleted movie file for movie ${movieId} (file ID: ${file.id})`);
+    onProgress?.({ current: 1, total: 1, fileName, status: 'deleted' });
+
+    return { outcome: 'deleted', fileName, fileSize: file.size };
   }
 
   /**

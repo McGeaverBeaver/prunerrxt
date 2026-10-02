@@ -22,7 +22,19 @@ export interface SseStream {
   close(): void;
 }
 
-export function openSseStream(req: Request, res: Response): SseStream {
+export interface SseOptions {
+  /**
+   * Interval for `: keep-alive` comment lines, which every parser ignores.
+   * A deletion can sit on one upstream call for minutes; without traffic a
+   * reverse proxy's idle timeout cuts the connection and the browser never
+   * hears how it ended. 0 disables.
+   */
+  heartbeatMs?: number;
+}
+
+export const DEFAULT_SSE_HEARTBEAT_MS = 15_000;
+
+export function openSseStream(req: Request, res: Response, options: SseOptions = {}): SseStream {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -32,9 +44,24 @@ export function openSseStream(req: Request, res: Response): SseStream {
   let open = true;
   const closers: Array<() => void> = [];
 
+  const heartbeatMs = options.heartbeatMs ?? DEFAULT_SSE_HEARTBEAT_MS;
+  const heartbeat =
+    heartbeatMs > 0
+      ? setInterval(() => {
+          if (!open || res.writableEnded || res.destroyed) return;
+          try {
+            res.write(': keep-alive\n\n');
+          } catch {
+            markClosed();
+          }
+        }, heartbeatMs)
+      : null;
+  heartbeat?.unref();
+
   const markClosed = () => {
     if (!open) return;
     open = false;
+    if (heartbeat) clearInterval(heartbeat);
     for (const fn of closers.splice(0)) {
       try {
         fn();

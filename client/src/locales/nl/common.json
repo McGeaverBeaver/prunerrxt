@@ -1,4 +1,18 @@
 {
+  "deleteNowModal": {
+    "steps": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    },
+    "stepVerb": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    }
+  },
   "dismissNotification": "Melding sluiten",
   "dropdown": {
     "noMatches": "Geen resultaten",
@@ -47,6 +61,8 @@
       "addedToPlex": "Toegevoegd aan {{name}}",
       "collectionProtected": "Collectie beschermd",
       "collectionUnprotected": "Bescherming collectie opgeheven",
+      "deletionFailed": "",
+      "episodeDeletionFailed": "",
       "episodesDeleted_one": "",
       "episodesDeleted_other": "",
       "episodesFailed_one": "",
@@ -70,6 +86,7 @@
       "itemQueued": "In wachtrij voor verwijdering",
       "itemRestored": "Hersteld",
       "protected": "Item beschermd",
+      "reconciled": "",
       "ruleMatched": "Overeenkomst met regel",
       "scanned": "Bibliotheekscan",
       "unprotected": "Bescherming item opgeheven"

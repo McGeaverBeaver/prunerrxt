@@ -61,4 +61,32 @@ describe('openSseStream', () => {
     expect(() => latest!.close()).not.toThrow();
     expect(closedCalls).toBe(1);
   });
+
+  it('sends keep-alive comments while an upstream call is in flight', async () => {
+    // A deletion can sit on one Sonarr/Radarr call for minutes; the comments
+    // keep a reverse proxy from cutting an otherwise silent connection.
+    const app = express();
+    app.get('/quiet', (req, res) => {
+      const stream = openSseStream(req, res, { heartbeatMs: 30 });
+      stream.send({ stage: 'starting' });
+      setTimeout(() => {
+        stream.send({ stage: 'complete' });
+        stream.close();
+      }, 150);
+    });
+    const quiet = await new Promise<Server>((resolve) => {
+      const s = app.listen(0, () => resolve(s));
+    });
+    const addr = quiet.address();
+    const url = `http://127.0.0.1:${typeof addr === 'object' && addr ? addr.port : 0}/quiet`;
+
+    try {
+      const body = await (await fetch(url)).text();
+      expect(body).toContain('"stage":"starting"');
+      expect(body).toContain('"stage":"complete"');
+      expect(body.split(': keep-alive').length - 1).toBeGreaterThanOrEqual(2);
+    } finally {
+      await new Promise<void>((resolve) => quiet.close(() => resolve()));
+    }
+  });
 });
