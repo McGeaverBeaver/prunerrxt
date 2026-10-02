@@ -63,6 +63,7 @@ interface DeletionProgress {
     step?: DeletionStepKey;
     service?: UpstreamService;
     upstreamStatus?: number;
+    stepDurationsMs?: Partial<Record<DeletionStepKey, number>>;
   };
 }
 
@@ -158,6 +159,23 @@ export default function Queue() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletedFiles, setDeletedFiles] = useState<Array<{ name: string; status: 'deleted' | 'deleting' | 'failed' }>>([]);
   const fileListRef = useRef<HTMLDivElement>(null);
+
+  // Seconds spent on the current step, so a slow Sonarr/Radarr reads as
+  // "Unmonitor in Radarr · 42s" rather than a spinner that may have died.
+  const [stepTimer, setStepTimer] = useState<{ key: string; seconds: number } | null>(null);
+  const activeStepKey = deletionProgress?.step ?? null;
+  const activeStage = deletionProgress?.stage ?? null;
+  useEffect(() => {
+    if (!isDeleting || !activeStepKey || activeStage === 'complete' || activeStage === 'error') return;
+    const startedAt = Date.now();
+    const key = activeStepKey;
+    const timer = setInterval(
+      () => setStepTimer({ key, seconds: Math.floor((Date.now() - startedAt) / 1000) }),
+      1000
+    );
+    return () => clearInterval(timer);
+  }, [activeStepKey, activeStage, isDeleting]);
+  const stepElapsed = stepTimer && stepTimer.key === activeStepKey ? stepTimer.seconds : 0;
 
   // Auto-scroll file list to bottom when new files are added
   useEffect(() => {
@@ -873,6 +891,9 @@ export default function Queue() {
                         }
                       >
                         {step.label}
+                        {step.status === 'active' && stepElapsed >= 3 && (
+                          <span className="ml-2 text-xs text-surface-500">{t('deleteNowModal.stepElapsed', '{{seconds}}s', { seconds: stepElapsed })}</span>
+                        )}
                         {step.status === 'skipped' && (
                           <span className="ml-2 no-underline text-xs text-surface-500">{t('deleteNowModal.stepSkipped', 'skipped')}</span>
                         )}

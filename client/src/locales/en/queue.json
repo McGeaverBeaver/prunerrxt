@@ -40,6 +40,7 @@
     "reconciledBody": "This item was no longer in {{service}}; it had been deleted there already. Prunerr removed it from the queue and marked it deleted. No space was freed by this run.",
     "reconciledTitle": "Already deleted",
     "resetInSeerrSuffix": " • Reset in Seerr",
+    "stepElapsed": "{{seconds}}s",
     "stepSkipped": "skipped",
     "title": "Delete Now",
     "titleDeleting": "Deleting...",

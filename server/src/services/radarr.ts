@@ -202,19 +202,38 @@ export class RadarrService {
   async unmonitorMovie(id: number): Promise<'unmonitored' | 'not_found'> {
     const movie = await this.findMovieById(id);
     if (!movie) return 'not_found';
+    if (!movie.monitored) {
+      // A retry after an earlier attempt got this far: nothing to do.
+      logger.info(`Movie ${id} is already unmonitored in Radarr`);
+      return 'unmonitored';
+    }
 
+    // The bulk editor endpoint is what Radarr's own UI uses to toggle
+    // monitoring. It changes just that flag, instead of a full PUT of the
+    // movie object, which Radarr re-validates (path, root folder, files) and
+    // which has been seen to take it the better part of a minute.
+    const started = Date.now();
     try {
-      await this.client.put(`/movie/${id}`, {
-        ...movie,
-        monitored: false,
-      });
-
-      logger.info(`Unmonitored movie ${id} in Radarr`);
+      await this.client.put(
+        '/movie/editor',
+        { movieIds: [id], monitored: false },
+        { timeout: this.timing.deleteTimeoutMs }
+      );
+      logger.info(`Unmonitored movie ${id} in Radarr in ${Date.now() - started}ms`);
       return 'unmonitored';
     } catch (error) {
       if (isNotFound(error)) {
         logger.info(`Movie ${id} disappeared from Radarr while unmonitoring it`);
         return 'not_found';
+      }
+      if (isTimeout(error)) {
+        logger.warn(`Radarr did not answer the unmonitor of movie ${id} within ${this.timing.deleteTimeoutMs}ms; checking whether it applied`);
+        const done = await waitUntilGone(async () => {
+          const current = await this.findMovieById(id);
+          return current === null || !current.monitored;
+        }, this.timing);
+        if (done) return 'unmonitored';
+        throw new Error(`Radarr did not finish unmonitoring movie ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s`);
       }
       const axiosError = error as AxiosError;
       logger.error(`Failed to unmonitor movie ${id} in Radarr`, {

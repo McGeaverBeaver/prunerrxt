@@ -348,19 +348,37 @@ export class SonarrService {
   async unmonitorSeries(id: number): Promise<'unmonitored' | 'not_found'> {
     const series = await this.findSeriesById(id);
     if (!series) return 'not_found';
+    if (!series.monitored) {
+      // A retry after an earlier attempt got this far: nothing to do.
+      logger.info(`Series ${id} is already unmonitored in Sonarr`);
+      return 'unmonitored';
+    }
 
+    // The bulk editor endpoint is what Sonarr's own UI uses to toggle
+    // monitoring. It changes just that flag, instead of a full PUT of the
+    // series object, which Sonarr re-validates (path, root folder, seasons).
+    const started = Date.now();
     try {
-      await this.client.put(`/series/${id}`, {
-        ...series,
-        monitored: false,
-      });
-
-      logger.info(`Unmonitored series ${id} in Sonarr`);
+      await this.client.put(
+        '/series/editor',
+        { seriesIds: [id], monitored: false },
+        { timeout: this.timing.deleteTimeoutMs }
+      );
+      logger.info(`Unmonitored series ${id} in Sonarr in ${Date.now() - started}ms`);
       return 'unmonitored';
     } catch (error) {
       if (isNotFound(error)) {
         logger.info(`Series ${id} disappeared from Sonarr while unmonitoring it`);
         return 'not_found';
+      }
+      if (isTimeout(error)) {
+        logger.warn(`Sonarr did not answer the unmonitor of series ${id} within ${this.timing.deleteTimeoutMs}ms; checking whether it applied`);
+        const done = await waitUntilGone(async () => {
+          const current = await this.findSeriesById(id);
+          return current === null || !current.monitored;
+        }, this.timing);
+        if (done) return 'unmonitored';
+        throw new Error(`Sonarr did not finish unmonitoring series ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s`);
       }
       const axiosError = error as AxiosError;
       logger.error(`Failed to unmonitor series ${id} in Sonarr`, {

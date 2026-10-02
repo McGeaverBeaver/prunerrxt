@@ -39,6 +39,8 @@ export interface DeletionProgressResult {
   service?: UpstreamService;
   /** HTTP status the service answered with, when it answered. */
   upstreamStatus?: number;
+  /** How long each step took, for the record. */
+  stepDurationsMs?: Partial<Record<DeletionStep, number>>;
 }
 
 export interface DeletionProgress {
@@ -483,6 +485,15 @@ export class DeletionService {
     // The step in flight, so a failure can say where it happened. Kept on an
     // object because it is written from a callback, which narrowing can't see.
     const inFlight: { current: { step: DeletionStep; service: UpstreamService } | null } = { current: null };
+    // How long each step took, so a slow Sonarr/Radarr shows up in the activity
+    // log with numbers rather than as a vague "it hung for a while".
+    const stepDurations: Partial<Record<DeletionStep, number>> = {};
+    let stepStartedAt = Date.now();
+    const closeStep = (): void => {
+      if (!inFlight.current) return;
+      const step = inFlight.current.step;
+      stepDurations[step] = (stepDurations[step] ?? 0) + (Date.now() - stepStartedAt);
+    };
 
     const emit = (progress: DeletionProgress): void => {
       try {
@@ -492,6 +503,10 @@ export class DeletionService {
       }
     };
     const report: StepReporter = (step, service, stage, message, fileProgress) => {
+      if (inFlight.current?.step !== step) {
+        closeStep();
+        stepStartedAt = Date.now();
+      }
       inFlight.current = { step, service };
       emit(fileProgress ? { stage, step, service, message, fileProgress } : { stage, step, service, message });
     };
@@ -533,6 +548,7 @@ export class DeletionService {
           // Don't fail the deletion, just log the error
         }
       }
+      closeStep();
       inFlight.current = null;
 
       // The Sonarr/Radarr work is done above. Each post-delete step (history
@@ -577,6 +593,7 @@ export class DeletionService {
             deletionAction: action,
             deletionType,
             overseerrReset,
+            stepDurationsMs: stepDurations,
             ...(reconciled
               ? {
                   reconciled: true,
@@ -612,10 +629,11 @@ export class DeletionService {
       }
 
       const duration = Date.now() - startTime;
+      const timings = Object.entries(stepDurations).map(([step, ms]) => `${step} ${ms}ms`).join(', ');
       logger.info(
         reconciled
           ? `Reconciled "${item.title}" in ${duration}ms: already deleted in ${reconciledService}, removed from the queue`
-          : `Successfully processed "${item.title}" in ${duration}ms (action: ${action}, overseerr reset: ${overseerrReset})`
+          : `Successfully processed "${item.title}" in ${duration}ms (action: ${action}, overseerr reset: ${overseerrReset}; ${timings || 'no upstream steps'})`
       );
 
       emit({
@@ -623,7 +641,7 @@ export class DeletionService {
         message: reconciled
           ? `"${item.title}" was already deleted in ${reconciledService}; removed from the queue`
           : `"${item.title}" deleted successfully`,
-        result: { success: true, fileSizeFreed, overseerrReset, reconciled, ...(overseerrError ? { overseerrError } : {}) },
+        result: { success: true, fileSizeFreed, overseerrReset, reconciled, stepDurationsMs: stepDurations, ...(overseerrError ? { overseerrError } : {}) },
       });
 
       return {
@@ -639,6 +657,7 @@ export class DeletionService {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
+      closeStep();
       const failedAt = inFlight.current;
       const status = upstreamStatus(error);
       logger.error(`Failed to delete "${item.title}" at step ${failedAt?.step ?? 'unknown'} (${failedAt?.service ?? 'Prunerr'}${status ? `, HTTP ${status}` : ''}): ${errorMessage}`);
@@ -665,6 +684,7 @@ export class DeletionService {
             service: failedAt?.service ?? null,
             upstreamStatus: status ?? null,
             message: errorMessage,
+            stepDurationsMs: stepDurations,
           }),
         });
       } catch (activityError) {

@@ -30,7 +30,11 @@ const state = {
   deleteDurationMs: 400,
   /** Whether hanging deletes ever complete at all. */
   deleteCompletes: true,
+  /** Whether the movie editor call never answers. */
+  unmonitorHangs: false,
+  seriesMonitored: true,
   calls: [] as string[],
+  editorBodies: [] as unknown[],
 };
 
 const movie = { id: 601, title: 'Big File', hasFile: true, monitored: true, movieFile: { id: 9001, relativePath: 'Big File (2024)/big.mkv', size: 42 } };
@@ -48,9 +52,12 @@ beforeAll(async () => {
     if (!state.movieExists) return res.status(404).json({ message: 'NotFound' });
     return res.json(state.movieFileExists ? movie : { ...movie, hasFile: false, movieFile: undefined });
   });
-  app.put('/api/v3/movie/:id', (req, res) => {
+  app.put('/api/v3/movie/editor', (req, res) => {
+    state.editorBodies.push(req.body);
     if (!state.movieExists) return res.status(404).json({ message: 'NotFound' });
-    return res.json(req.body);
+    if (state.unmonitorHangs) return undefined;
+    movie.monitored = false;
+    return res.json([movie]);
   });
   app.get('/api/v3/moviefile/:id', (_req, res) => {
     if (!state.movieFileExists) return res.status(404).json({ message: 'NotFound' });
@@ -72,7 +79,13 @@ beforeAll(async () => {
   // Sonarr
   app.get('/api/v3/series/:id', (_req, res) => {
     if (!state.seriesExists) return res.status(404).json({ message: 'NotFound' });
-    return res.json({ id: 77, title: 'Show', monitored: true });
+    return res.json({ id: 77, title: 'Show', monitored: state.seriesMonitored });
+  });
+  app.put('/api/v3/series/editor', (req, res) => {
+    state.editorBodies.push(req.body);
+    if (!state.seriesExists) return res.status(404).json({ message: 'NotFound' });
+    state.seriesMonitored = false;
+    return res.json([{ id: 77, monitored: false }]);
   });
   app.get('/api/v3/episodefile', (_req, res) => {
     return res.json(state.episodeFileExists ? [{ id: 9, seriesId: 77, relativePath: 'S01E01.mkv', size: 7 }] : []);
@@ -112,7 +125,11 @@ function reset(): void {
   state.seriesExists = true;
   state.deleteDurationMs = 400;
   state.deleteCompletes = true;
+  state.unmonitorHangs = false;
+  state.seriesMonitored = true;
+  movie.monitored = true;
   state.calls = [];
+  state.editorBodies = [];
 }
 
 // Short timings so the tests run in well under a second: the delete call is
@@ -154,6 +171,31 @@ describe('RadarrService deletes', () => {
     expect(await radarr.deleteMovieFilesByMovieId(602)).toEqual({ outcome: 'not_found' });
     expect(state.calls.filter((c) => c.startsWith('PUT'))).toHaveLength(0);
     expect(state.calls.filter((c) => c.startsWith('DELETE'))).toHaveLength(0);
+  });
+
+  it('unmonitors through the editor endpoint and skips it when already unmonitored', async () => {
+    reset();
+    const radarr = new RadarrService(baseUrl, 'key', fast);
+
+    expect(await radarr.unmonitorMovie(601)).toBe('unmonitored');
+    expect(state.editorBodies).toEqual([{ movieIds: [601], monitored: false }]);
+    expect(state.calls.filter((c) => c === 'PUT /api/v3/movie/601')).toHaveLength(0);
+
+    // Second run (a retry): the GET already says unmonitored, so no PUT at all.
+    expect(await radarr.unmonitorMovie(601)).toBe('unmonitored');
+    expect(state.editorBodies).toHaveLength(1);
+  });
+
+  it('verifies an unmonitor that timed out by reading the flag back', async () => {
+    reset();
+    state.unmonitorHangs = true;
+    const radarr = new RadarrService(baseUrl, 'key', { ...fast, verifyWindowMs: 300 });
+    // Radarr applies the change but never answers; a later GET shows it.
+    setTimeout(() => {
+      movie.monitored = false;
+    }, 150);
+
+    expect(await radarr.unmonitorMovie(601)).toBe('unmonitored');
   });
 
   it('waits for a slow file delete to finish after the request times out', async () => {
@@ -199,6 +241,16 @@ describe('SonarrService deletes', () => {
 
     expect(await sonarr.unmonitorSeries(77)).toBe('not_found');
     expect((await sonarr.deleteAllEpisodeFiles(77)).outcome).toBe('not_found');
+  });
+
+  it('unmonitors a series through the editor endpoint', async () => {
+    reset();
+    const sonarr = new SonarrService(baseUrl, 'key', fast);
+
+    expect(await sonarr.unmonitorSeries(77)).toBe('unmonitored');
+    expect(state.editorBodies).toEqual([{ seriesIds: [77], monitored: false }]);
+    expect(await sonarr.unmonitorSeries(77)).toBe('unmonitored');
+    expect(state.editorBodies).toHaveLength(1);
   });
 
   it('waits for a slow episode file delete and reports the bytes it freed', async () => {
