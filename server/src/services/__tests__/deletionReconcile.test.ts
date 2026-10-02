@@ -15,7 +15,10 @@ vi.mock('../../utils/logger', () => ({
   default: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-import { DeletionService, type DeletionProgress } from '../deletion';
+import { DeletionService, type DeletionProgress, type DeletionServiceDependencies } from '../deletion';
+
+type RadarrDeps = NonNullable<DeletionServiceDependencies['radarrService']>;
+type SonarrDeps = NonNullable<DeletionServiceDependencies['sonarrService']>;
 import { DeletionAction } from '../../rules/types';
 
 const movie = {
@@ -53,14 +56,14 @@ function buildService(overrides: Record<string, unknown> = {}) {
   const historyCreate = vi.fn(async () => ({}) as never);
   const resetMediaByTmdbId = vi.fn(async () => true);
   const radarr = {
-    unmonitorMovie: vi.fn(async () => 'unmonitored' as const),
-    deleteMovieFilesByMovieId: vi.fn(async () => ({ outcome: 'deleted' as const })),
-    removeMovie: vi.fn(async () => 'deleted' as const),
+    unmonitorMovie: vi.fn<RadarrDeps['unmonitorMovie']>(async () => 'unmonitored'),
+    deleteMovieFilesByMovieId: vi.fn<RadarrDeps['deleteMovieFilesByMovieId']>(async () => ({ outcome: 'deleted' })),
+    removeMovie: vi.fn<RadarrDeps['removeMovie']>(async () => 'deleted'),
   };
   const sonarr = {
-    unmonitorSeries: vi.fn(async () => 'unmonitored' as const),
-    deleteAllEpisodeFiles: vi.fn(async () => ({ outcome: 'deleted' as const, deleted: 3, failed: 0, errors: [] })),
-    removeSeries: vi.fn(async () => 'deleted' as const),
+    unmonitorSeries: vi.fn<SonarrDeps['unmonitorSeries']>(async () => 'unmonitored'),
+    deleteAllEpisodeFiles: vi.fn<SonarrDeps['deleteAllEpisodeFiles']>(async () => ({ outcome: 'deleted', deleted: 3, failed: 0, errors: [] })),
+    removeSeries: vi.fn<SonarrDeps['removeSeries']>(async () => 'deleted'),
   };
   const service = new DeletionService({
     mediaItemRepository: {
@@ -240,11 +243,11 @@ describe('executeDelete progress', () => {
 
   it('names the right service and step for each stage of a movie deletion', async () => {
     const { service, radarr } = buildService();
-    radarr.deleteMovieFilesByMovieId.mockImplementation(async (_id: number, onProgress?: (p: unknown) => void) => {
+    radarr.deleteMovieFilesByMovieId.mockImplementation(async (_id, onProgress) => {
       onProgress?.({ current: 1, total: 1, fileName: 'Movie (2024)/movie.mkv', status: 'deleting' });
       onProgress?.({ current: 1, total: 1, fileName: 'Movie (2024)/movie.mkv', status: 'verifying' });
       onProgress?.({ current: 1, total: 1, fileName: 'Movie (2024)/movie.mkv', status: 'deleted' });
-      return { outcome: 'deleted' as const };
+      return { outcome: 'deleted' };
     });
 
     const events: DeletionProgress[] = [];
