@@ -137,6 +137,12 @@ protection, requester; sorted and paged), `get_media_item`,
 skipped), `protect_items`, `unprotect_items`, `queue_episodes_for_deletion`,
 `cancel_episode_deletions`, `get_deletion_defaults`
 
+**Troubleshooting** — `get_service_logs`, `get_service_health`,
+`get_service_activity`, `get_deletion_setup` read Sonarr's and Radarr's own
+logs, health checks, command queue and recycling-bin/root-folder setup, so a
+slow or failed deletion can be explained without leaving the chat. A failed
+deletion job also carries the matching log lines from the service.
+
 **Deletion queue** — `list_queue`, `remove_from_queue`, `process_queue`
 (dry run by default), `delete_now` (needs the opt-in), `list_deletion_jobs`.
 Real deletions run as background jobs: `delete_now` and a real `process_queue`

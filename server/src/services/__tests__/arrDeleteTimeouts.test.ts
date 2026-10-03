@@ -16,6 +16,13 @@ vi.mock('../../db/index', () => ({ getDatabase: () => ({}) }));
 import { RadarrService } from '../radarr';
 import { SonarrService } from '../sonarr';
 import { isNotFound, isTimeout, resolveArrTiming } from '../arrHttp';
+import { getDeletionSetup } from '../serviceDiagnostics';
+
+vi.mock('../init', () => ({
+  getRadarrService: () => radarrForDiagnostics,
+  getSonarrService: () => null,
+}));
+let radarrForDiagnostics: RadarrService | null = null;
 
 let server: Server;
 let baseUrl: string;
@@ -35,6 +42,9 @@ const state = {
   seriesMonitored: true,
   calls: [] as string[],
   editorBodies: [] as unknown[],
+  /** Log records the fake app answers with (newest first). */
+  logRecords: [] as Array<Record<string, unknown>>,
+  recycleBin: '',
 };
 
 const movie = { id: 601, title: 'Big File', hasFile: true, monitored: true, movieFile: { id: 9001, relativePath: 'Big File (2024)/big.mkv', size: 42 } };
@@ -75,6 +85,18 @@ beforeAll(async () => {
     }
     return undefined;
   });
+
+  // Shared diagnostics endpoints (same shape in both apps)
+  app.get('/api/v3/log', (_req, res) => {
+    return res.json({ page: 1, pageSize: 100, totalRecords: state.logRecords.length, records: state.logRecords });
+  });
+  app.get('/api/v3/config/mediamanagement', (_req, res) => res.json({ recycleBin: state.recycleBin, recycleBinCleanupDays: 0 }));
+  app.get('/api/v3/rootfolder', (_req, res) =>
+    res.json([
+      { id: 1, path: '/movies', accessible: true, freeSpace: 10 },
+      { id: 2, path: '/poolfull_movies', accessible: true, freeSpace: 5 },
+    ])
+  );
 
   // Sonarr
   app.get('/api/v3/series/:id', (_req, res) => {
@@ -130,6 +152,8 @@ function reset(): void {
   movie.monitored = true;
   state.calls = [];
   state.editorBodies = [];
+  state.logRecords = [];
+  state.recycleBin = '';
 }
 
 // Short timings so the tests run in well under a second: the delete call is
@@ -231,6 +255,30 @@ describe('RadarrService deletes', () => {
     expect(progress).toEqual(['deleting', 'verifying', 'failed']);
   });
 
+  it('stops waiting as soon as Radarr logs that the delete failed, and says why', async () => {
+    reset();
+    state.deleteCompletes = false;
+    const radarr = new RadarrService(baseUrl, 'key', { ...fast, verifyWindowMs: 10_000 });
+    // Radarr gives up on the recycle-bin move shortly after the request times out.
+    setTimeout(() => {
+      state.logRecords = [
+        {
+          id: 1,
+          time: new Date().toISOString(),
+          level: 'error',
+          logger: 'RecycleBinProvider',
+          message: "Unable to move '/poolfull_movies/Big File (2024)/big.mkv' to the recycling bin: '/movies/.Recycle.Bin/Big File (2024)/big.mkv'",
+          exception: 'System.IO.FileNotFoundException: File doesn\'t exist: /movies/.Recycle.Bin/Big File (2024)/big.mkv\n   at NzbDrone...',
+        },
+      ];
+    }, 120);
+
+    const startedAt = Date.now();
+    await expect(radarr.deleteMovieFilesByMovieId(601)).rejects.toThrow(/Its log says: .*RecycleBinProvider: Unable to move .*FileNotFoundException/);
+    // Well inside the 10 s window: the log ended the wait, not the clock.
+    expect(Date.now() - startedAt).toBeLessThan(3_000);
+  });
+
   it('answers no_file when the movie has nothing on disk', async () => {
     reset();
     state.movieFileExists = false;
@@ -280,5 +328,31 @@ describe('SonarrService deletes', () => {
 
     expect(result).toMatchObject({ outcome: 'deleted', deleted: 0, failed: 1 });
     expect(result.errors[0]).toMatch(/S01E01\.mkv: Sonarr did not finish deleting episode file 9/);
+  });
+});
+
+describe('deletion setup diagnostics', () => {
+  it('warns when the recycling bin sits on a different top-level path than a root folder', async () => {
+    reset();
+    state.recycleBin = '/movies/.Recycle.Bin';
+    radarrForDiagnostics = new RadarrService(baseUrl, 'key', fast);
+
+    const setup = await getDeletionSetup('radarr');
+
+    expect(setup.recycleBin).toBe('/movies/.Recycle.Bin');
+    expect(setup.rootFolders.map((f) => [f.path, f.sameMountAsRecycleBin])).toEqual([
+      ['/movies', true],
+      ['/poolfull_movies', false],
+    ]);
+    expect(setup.warnings.some((w) => w.includes('/poolfull_movies') && w.includes('copies the whole file'))).toBe(true);
+    expect(setup.warnings.some((w) => w.includes('never cleaned up'))).toBe(true);
+  });
+
+  it('has nothing to warn about when the bin is off', async () => {
+    reset();
+    radarrForDiagnostics = new RadarrService(baseUrl, 'key', fast);
+    const setup = await getDeletionSetup('radarr');
+    expect(setup.recycleBin).toBeNull();
+    expect(setup.warnings).toEqual([]);
   });
 });

@@ -52,6 +52,8 @@ export interface DeletionJob {
   overseerr_reset: number | null;
   /** JSON: { step: ms } */
   step_durations: string | null;
+  /** JSON: string[] of log lines from Sonarr/Radarr about the failure. */
+  upstream_log: string | null;
   created_at: string;
   started_at: string | null;
   finished_at: string | null;
@@ -90,6 +92,7 @@ export type DeletionJobPatch = Partial<
     | 'file_size_freed'
     | 'overseerr_reset'
     | 'step_durations'
+    | 'upstream_log'
     | 'started_at'
     | 'finished_at'
   >

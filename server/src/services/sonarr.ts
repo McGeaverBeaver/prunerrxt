@@ -17,6 +17,22 @@ import {
   type ArrTimingOptions,
 } from './arrHttp';
 import type { FileDeletionProgress } from './arrHttp';
+import {
+  fetchCommands,
+  fetchHealth,
+  fetchLogs,
+  fetchMediaManagementConfig,
+  fetchRootFolders,
+  fetchSystemStatus,
+  recentDeleteFailure,
+  type ArrCommand,
+  type ArrHealthItem,
+  type ArrLogRecord,
+  type ArrMediaManagementConfig,
+  type ArrRootFolder,
+  type ArrSystemStatus,
+  type FetchLogsOptions,
+} from './arrDiagnostics';
 
 /** How a whole-series file deletion went. */
 export interface SeriesFileDeletionResult {
@@ -199,6 +215,7 @@ export class SonarrService {
    * and is verified against Sonarr if even that is exceeded.
    */
   async deleteSeries(id: number, deleteFiles: boolean = false): Promise<'deleted' | 'not_found'> {
+    const started = new Date();
     try {
       await this.client.delete(`/series/${id}`, {
         params: { deleteFiles },
@@ -213,10 +230,17 @@ export class SonarrService {
       }
       if (isTimeout(error)) {
         logger.warn(`Sonarr did not answer the delete of series ${id} within ${this.timing.deleteTimeoutMs}ms; checking whether it finished`);
-        const gone = await waitUntilGone(async () => (await this.findSeriesById(id)) === null, this.timing);
-        if (gone) {
+        const outcome = await waitUntilGone(
+          async () => (await this.findSeriesById(id)) === null,
+          this.timing,
+          () => recentDeleteFailure(this.client, started)
+        );
+        if (outcome.status === 'gone') {
           logger.info(`Sonarr finished removing series ${id} after the request timed out`);
           return 'deleted';
+        }
+        if (outcome.status === 'failed') {
+          throw new Error(`Sonarr could not remove series ${id}. Its log says: ${outcome.reason}`);
         }
         throw new Error(
           `Sonarr did not finish removing series ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s; it may still be working on it`
@@ -246,7 +270,8 @@ export class SonarrService {
    * runs out) instead of failing a delete that is still in progress.
    * `onVerifying` fires when that wait begins.
    */
-  async deleteEpisodeFile(id: number, onVerifying?: () => void): Promise<void> {
+  async deleteEpisodeFile(id: number, onVerifying?: () => void, fileName?: string): Promise<void> {
+    const started = new Date();
     try {
       await this.client.delete(`/episodefile/${id}`, { timeout: this.timing.deleteTimeoutMs });
       logger.info(`Deleted episode file ${id} from Sonarr`);
@@ -258,10 +283,17 @@ export class SonarrService {
       if (isTimeout(error)) {
         logger.warn(`Sonarr did not answer the delete of episode file ${id} within ${this.timing.deleteTimeoutMs}ms; waiting for it to finish`);
         onVerifying?.();
-        const gone = await waitUntilGone(async () => !(await this.episodeFileExists(id)), this.timing);
-        if (gone) {
+        const outcome = await waitUntilGone(
+          async () => !(await this.episodeFileExists(id)),
+          this.timing,
+          () => recentDeleteFailure(this.client, started, fileName)
+        );
+        if (outcome.status === 'gone') {
           logger.info(`Sonarr finished deleting episode file ${id} after the request timed out`);
           return;
+        }
+        if (outcome.status === 'failed') {
+          throw new Error(`Sonarr could not delete episode file ${id}. Its log says: ${outcome.reason}`);
         }
         throw new Error(
           `Sonarr did not finish deleting episode file ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s; it may still be working on it. Raise ARR_DELETE_TIMEOUT_MS if your storage is slow.`
@@ -322,8 +354,10 @@ export class SonarrService {
       onProgress?.({ current: i + 1, total, fileName, status: 'deleting' });
 
       try {
-        await this.deleteEpisodeFile(file.id, () =>
-          onProgress?.({ current: i + 1, total, fileName, status: 'verifying' })
+        await this.deleteEpisodeFile(
+          file.id,
+          () => onProgress?.({ current: i + 1, total, fileName, status: 'verifying' }),
+          fileName
         );
         deleted++;
         freedBytes += file.size || 0;
@@ -377,7 +411,7 @@ export class SonarrService {
           const current = await this.findSeriesById(id);
           return current === null || !current.monitored;
         }, this.timing);
-        if (done) return 'unmonitored';
+        if (done.status === 'gone') return 'unmonitored';
         throw new Error(`Sonarr did not finish unmonitoring series ${id} within ${Math.round((this.timing.deleteTimeoutMs + this.timing.verifyWindowMs) / 1000)}s`);
       }
       const axiosError = error as AxiosError;
@@ -630,6 +664,39 @@ export class SonarrService {
       });
       throw error;
     }
+  }
+
+  // ==========================================================================
+  // Diagnostics (read-only)
+  // ==========================================================================
+
+  /** The underlying HTTP client, for the shared diagnostics helpers. */
+  get httpClient(): AxiosInstance {
+    return this.client;
+  }
+
+  getLogs(options?: FetchLogsOptions): Promise<ArrLogRecord[]> {
+    return fetchLogs(this.client, options);
+  }
+
+  getHealth(): Promise<ArrHealthItem[]> {
+    return fetchHealth(this.client);
+  }
+
+  getSystemStatus(): Promise<ArrSystemStatus> {
+    return fetchSystemStatus(this.client);
+  }
+
+  getCommands(): Promise<ArrCommand[]> {
+    return fetchCommands(this.client);
+  }
+
+  getRootFolders(): Promise<ArrRootFolder[]> {
+    return fetchRootFolders(this.client);
+  }
+
+  getMediaManagementConfig(): Promise<ArrMediaManagementConfig> {
+    return fetchMediaManagementConfig(this.client);
   }
 }
 

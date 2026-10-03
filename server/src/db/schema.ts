@@ -595,6 +595,15 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_deletion_jobs_batch ON deletion_jobs(batch_id);
     `,
   },
+  {
+    version: 25,
+    name: 'deletion_jobs_upstream_log',
+    up: `
+      -- What Sonarr/Radarr logged about a failed deletion, captured when the
+      -- job fails so the reason is on the job itself.
+      ALTER TABLE deletion_jobs ADD COLUMN upstream_log TEXT;
+    `,
+  },
 ];
 
 // Schema version tracking table

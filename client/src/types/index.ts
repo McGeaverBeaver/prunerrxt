@@ -183,6 +183,8 @@ export interface DeletionJob {
   fileSizeFreed: number | null;
   overseerrReset: boolean | null;
   stepDurationsMs: Record<string, number>;
+  /** Lines from Sonarr/Radarr's own log explaining a failure. */
+  upstreamLog?: string[];
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;

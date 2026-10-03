@@ -146,6 +146,18 @@ function JobRow({ job, now, busy, onCancel, onRetry }: { job: DeletionJob; now: 
               {job.upstreamStatus !== null && job.upstreamStatus !== undefined ? ` (HTTP ${job.upstreamStatus})` : ''}: {job.error}
             </p>
           )}
+          {job.status === 'failed' && job.upstreamLog && job.upstreamLog.length > 0 && (
+            <details className="mt-1 text-xs">
+              <summary className="cursor-pointer text-surface-400 hover:text-surface-200">
+                {t('jobs.panel.upstreamLog', 'From the {{service}} log', { service: job.failedService ?? job.service ?? 'Sonarr/Radarr' })}
+              </summary>
+              <ul className="mt-1 space-y-1 rounded bg-surface-900/60 p-2 font-mono text-2xs text-surface-300">
+                {job.upstreamLog.map((line, idx) => (
+                  <li key={idx} className="break-words">{line}</li>
+                ))}
+              </ul>
+            </details>
+          )}
           {durations.length > 0 && (
             <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-2xs text-surface-500">
               {durations.map(([step, ms]) => (

@@ -9,6 +9,13 @@ import { TracearrService } from '../../services/tracearr';
 import { JellyfinService } from '../../services/jellyfin';
 import { allowsImmediateDeletion } from '../config';
 import { EXTERNAL_READ, READ_ONLY, defineTool, fail, ok } from '../helpers';
+import {
+  ServiceNotConfiguredError,
+  getDeletionSetup,
+  getServiceActivity,
+  getServiceHealth,
+  getServiceLogs,
+} from '../../services/serviceDiagnostics';
 
 const SERVICES = ['plex', 'jellyfin', 'emby', 'tautulli', 'tracearr', 'sonarr', 'radarr', 'overseerr', 'unraid'] as const;
 
@@ -141,4 +148,117 @@ export function registerSystemTools(server: McpServer): void {
       return ok({ service, url, connected, responseTimeMs: Date.now() - started }, `${service} at ${url}: ${connected ? 'connected' : 'not reachable'}.`);
     }
   );
+
+  const diagService = z.enum(['sonarr', 'radarr']).describe('Which app to ask.');
+  const diagError = (error: unknown) =>
+    fail(error instanceof ServiceNotConfiguredError ? error.message : `Could not reach the service: ${error instanceof Error ? error.message : String(error)}`);
+
+  defineTool(
+    server,
+    {
+      name: 'get_service_logs',
+      title: 'Read Sonarr/Radarr logs',
+      description:
+        "Recent entries from Sonarr's or Radarr's own log, newest first, for troubleshooting a deletion that is slow or failed. Filter by level (info, warn, error), text (a title or file name) and time. Deletion problems show up under MediaFileDeletionService, RecycleBinProvider and DiskTransferService.",
+      group: 'system',
+      inputSchema: {
+        service: diagService,
+        level: z.enum(['info', 'warn', 'error']).optional().describe('Lowest level to include (default warn).'),
+        search: z.string().max(200).optional().describe('Case-insensitive text to match in message, logger or exception.'),
+        sinceMinutes: z.number().int().min(1).max(10080).optional().describe('Only entries from the last N minutes.'),
+        limit: z.number().int().min(1).max(200).optional().describe('Default 50.'),
+      },
+      annotations: EXTERNAL_READ,
+    },
+    async ({ service, level, search, sinceMinutes, limit }) => {
+      try {
+        const result = await getServiceLogs(service, {
+          level: level ?? 'warn',
+          search,
+          limit: limit ?? 50,
+          since: sinceMinutes ? new Date(Date.now() - sinceMinutes * 60_000) : undefined,
+        });
+        const errors = result.records.filter((r) => r.level.toLowerCase() === 'error').length;
+        return ok(
+          { service, level: result.level, count: result.records.length, lines: result.lines, records: result.records },
+          `${result.records.length} ${result.level}+ log entries from ${service} (${errors} errors).${result.lines.length > 0 ? ` Newest: ${result.lines[0]}` : ''}`
+        );
+      } catch (error) {
+        return diagError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'get_service_health',
+      title: 'Sonarr/Radarr health checks',
+      description: "The app's own health check results (root folders, indexers, download clients, updates) plus its version and start time.",
+      group: 'system',
+      inputSchema: { service: diagService },
+      annotations: EXTERNAL_READ,
+    },
+    async ({ service }) => {
+      try {
+        const result = await getServiceHealth(service);
+        return ok(
+          result,
+          result.health.length === 0
+            ? `${service} ${result.version ?? ''} reports no health problems.`
+            : `${service} ${result.version ?? ''} reports ${result.health.length} health item(s): ${result.health.map((h) => `[${h.type}] ${h.message}`).join('; ')}`
+        );
+      } catch (error) {
+        return diagError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'get_service_activity',
+      title: "What Sonarr/Radarr is doing",
+      description: "The app's command queue: tasks running right now (a long-running file delete, a rescan, an RSS sync), tasks waiting, and the last few finished ones with their durations.",
+      group: 'system',
+      inputSchema: { service: diagService },
+      annotations: EXTERNAL_READ,
+    },
+    async ({ service }) => {
+      try {
+        const result = await getServiceActivity(service);
+        return ok(
+          result,
+          `${service}: ${result.running.length} running (${result.running.map((c) => c.name).join(', ') || 'none'}), ${result.queued.length} queued.`
+        );
+      } catch (error) {
+        return diagError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'get_deletion_setup',
+      title: 'How Sonarr/Radarr deletes files',
+      description:
+        "The app's recycling bin setting and root folders, with warnings when the setup makes deletes slow or fragile — typically a recycling bin on a different filesystem than a root folder, which turns every delete into a full copy of the file.",
+      group: 'system',
+      inputSchema: { service: diagService },
+      annotations: EXTERNAL_READ,
+    },
+    async ({ service }) => {
+      try {
+        const result = await getDeletionSetup(service);
+        return ok(
+          result,
+          `${service}: recycling bin ${result.recycleBin ?? 'off (files are deleted directly)'}; ${result.rootFolders.length} root folder(s). ${result.warnings.length > 0 ? `Warnings: ${result.warnings.join(' ')}` : 'No warnings.'}`
+        );
+      } catch (error) {
+        return diagError(error);
+      }
+    }
+  );
+
 }

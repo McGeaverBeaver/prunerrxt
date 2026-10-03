@@ -80,7 +80,8 @@
       "recent": "",
       "retry": "",
       "retryFailed": "",
-      "title": ""
+      "title": "",
+      "upstreamLog": ""
     },
     "status": {
       "cancelled": "",

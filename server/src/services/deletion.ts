@@ -899,6 +899,16 @@ export class DeletionService {
     }
 
     if (!touchedUpstream) {
+      // The service that should own this item is configured, but the item
+      // has no id there: marking it deleted would leave the file on disk and
+      // the queue none the wiser. Fail it so somebody looks.
+      const expected: UpstreamService | null = item.type === 'movie' ? 'Radarr' : item.type === 'show' ? 'Sonarr' : null;
+      const configured = expected === 'Radarr' ? Boolean(radarr) : expected === 'Sonarr' ? Boolean(sonarr) : false;
+      if (expected && configured && !this.dependencies.fileService) {
+        throw new Error(
+          `"${item.title}" is not linked to ${expected} (no ${expected} match was found for it during sync), so Prunerr cannot ${remove ? 'remove' : deleteFiles ? 'delete its files' : 'unmonitor it'}. Check the title exists in ${expected}, then run a library sync.`
+        );
+      }
       logger.warn(`"${item.title}" is not linked to Sonarr or Radarr; nothing to ${remove ? 'remove' : deleteFiles ? 'delete' : 'unmonitor'} upstream`);
     }
 

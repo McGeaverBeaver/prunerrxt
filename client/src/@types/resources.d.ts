@@ -949,7 +949,8 @@ export default interface Resources {
         "recent": "Recently finished",
         "retry": "Retry",
         "retryFailed": "Could not retry",
-        "title": "Deletion jobs"
+        "title": "Deletion jobs",
+        "upstreamLog": "From the {{service}} log"
       },
       "status": {
         "cancelled": "Cancelled",

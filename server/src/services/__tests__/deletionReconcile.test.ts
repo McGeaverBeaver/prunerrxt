@@ -206,6 +206,19 @@ describe('executeDelete failures', () => {
     expect(errorEvent.result).toMatchObject({ success: false, step: 'delete_files', service: 'Radarr', upstreamStatus: 500 });
   });
 
+  it('refuses to mark an item deleted when Radarr is configured but the item is not linked to it', async () => {
+    const { service, update, radarr } = buildService();
+    const unlinked = { ...(movie as object), radarr_id: null } as never;
+
+    const result = await service.executeDelete(unlinked, DeletionAction.UNMONITOR_AND_DELETE);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not linked to Radarr');
+    expect(radarr.unmonitorMovie).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalledWith(101, expect.objectContaining({ status: 'deleted' }));
+    expect(activityEntries()[0]).toMatchObject({ eventType: 'error', action: 'deletion_failed' });
+  });
+
   it('fails a show whose episode files only partly deleted, so it is retried', async () => {
     const { service, sonarr } = buildService();
     sonarr.deleteAllEpisodeFiles.mockResolvedValue({

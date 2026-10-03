@@ -107,19 +107,33 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export type VerifyOutcome =
+  | { status: 'gone' }
+  | { status: 'timeout' }
+  | { status: 'failed'; reason: string };
+
 /**
  * Keep asking `isGone` until it says yes or the window runs out. Used after a
  * delete timed out: the upstream app is usually still working, so give it the
  * verification window before calling the deletion a failure.
+ *
+ * `hasFailed`, when given, is asked on every round for evidence that the app
+ * has already given up (a delete error in its own log); a non-null answer
+ * ends the wait at once with that reason, instead of sitting out the window.
  */
 export async function waitUntilGone(
   isGone: () => Promise<boolean>,
-  timing: Required<ArrTimingOptions>
-): Promise<boolean> {
+  timing: Required<ArrTimingOptions>,
+  hasFailed?: () => Promise<string | null>
+): Promise<VerifyOutcome> {
   const deadline = Date.now() + timing.verifyWindowMs;
   for (;;) {
-    if (await isGone()) return true;
-    if (Date.now() >= deadline) return false;
+    if (await isGone()) return { status: 'gone' };
+    if (hasFailed) {
+      const reason = await hasFailed();
+      if (reason) return { status: 'failed', reason };
+    }
+    if (Date.now() >= deadline) return { status: 'timeout' };
     await sleep(Math.min(timing.verifyIntervalMs, Math.max(0, deadline - Date.now())));
   }
 }

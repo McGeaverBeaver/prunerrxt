@@ -22,6 +22,7 @@ import deletionJobsRepo, {
 } from '../db/repositories/deletionJobs';
 import logger from '../utils/logger';
 import type { DeletionProgress } from './deletion';
+import { getServiceLogs } from './serviceDiagnostics';
 import {
   deleteQueueItemNow,
   inspectQueueItem,
@@ -64,6 +65,8 @@ export interface DeletionJobView {
   fileSizeFreed: number | null;
   overseerrReset: boolean | null;
   stepDurationsMs: Record<string, number>;
+  /** Lines from the service's own log explaining a failure, newest first. */
+  upstreamLog: string[];
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
@@ -150,11 +153,22 @@ export function toJobView(job: DeletionJob): DeletionJobView {
     fileSizeFreed: job.file_size_freed,
     overseerrReset: job.overseerr_reset === null ? null : Boolean(job.overseerr_reset),
     stepDurationsMs,
+    upstreamLog: parseLines(job.upstream_log),
     createdAt: job.created_at,
     startedAt: job.started_at,
     finishedAt: job.finished_at,
     updatedAt: job.updated_at,
   };
+}
+
+function parseLines(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((l): l is string => typeof l === 'string') : [];
+  } catch {
+    return [];
+  }
 }
 
 const events = new EventEmitter();
@@ -485,6 +499,7 @@ async function runJob(job: DeletionJob): Promise<void> {
       });
       logger.info(`Deletion job #${id} ${status}: "${job.title}"`);
     } else {
+      const upstreamLog = await upstreamLogFor(job, result.service ?? job.service);
       patch(id, {
         status: 'failed',
         stage: 'error',
@@ -494,9 +509,10 @@ async function runJob(job: DeletionJob): Promise<void> {
         failed_step: result.step ?? null,
         failed_service: result.service ?? null,
         step_durations: JSON.stringify(result.stepDurationsMs ?? {}),
+        upstream_log: upstreamLog.length > 0 ? JSON.stringify(upstreamLog) : null,
         finished_at: new Date().toISOString(),
       });
-      logger.error(`Deletion job #${id} failed: "${job.title}": ${result.error}`);
+      logger.error(`Deletion job #${id} failed: "${job.title}": ${result.error}${upstreamLog.length > 0 ? ` | ${job.service} log: ${upstreamLog[0]}` : ''}`);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -511,6 +527,26 @@ async function runJob(job: DeletionJob): Promise<void> {
   }
 
   if (job.batch_id) await finishBatchIfDone(job.batch_id);
+}
+
+/**
+ * What Sonarr/Radarr logged (warnings and errors) since the job started that
+ * mentions the item, so a failed job carries the real reason, not just
+ * "timed out". Never throws; no log means an empty list.
+ */
+async function upstreamLogFor(job: DeletionJob, service: string | null): Promise<string[]> {
+  if (service !== 'Sonarr' && service !== 'Radarr') return [];
+  try {
+    const since = job.started_at ? new Date(job.started_at) : new Date(Date.now() - 60 * 60 * 1000);
+    const { lines } = await getServiceLogs(service === 'Sonarr' ? 'sonarr' : 'radarr', { level: 'warn', limit: 100, since });
+    const needles = [job.title.toLowerCase()];
+    const mentioned = lines.filter((line) => needles.some((n) => line.toLowerCase().includes(n)));
+    const picked = mentioned.length > 0 ? mentioned : lines.filter((line) => /delet|recycl|DiskTransfer/i.test(line));
+    return picked.slice(0, 8);
+  } catch (error) {
+    logger.debug(`Could not read the ${service} log for job #${job.id}: ${error instanceof Error ? error.message : String(error)}`);
+    return [];
+  }
 }
 
 /** One DELETION_COMPLETE notification per Delete All, once its last job ends. */
