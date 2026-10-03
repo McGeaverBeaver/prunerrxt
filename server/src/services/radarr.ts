@@ -557,6 +557,41 @@ export class RadarrService {
   }
 
   // ==========================================================================
+  // Catalogue lookup and adding (for importing unmanaged folders)
+  // ==========================================================================
+
+  /** Search Radarr's catalogue; `tmdb:123` and `imdb:tt123` look up by id. */
+  async lookupMovies(term: string): Promise<RadarrMovie[]> {
+    const response = await this.client.get<RadarrMovie[]>('/movie/lookup', { params: { term } });
+    return Array.isArray(response.data) ? response.data : [];
+  }
+
+  /** Quality profiles as a list, for pickers. */
+  async getQualityProfileList(): Promise<Array<{ id: number; name: string }>> {
+    const response = await this.client.get<Array<{ id: number; name: string }>>('/qualityprofile');
+    return (Array.isArray(response.data) ? response.data : []).map((p) => ({ id: p.id, name: p.name }));
+  }
+
+  /**
+   * Add a movie. Pass a lookup result with qualityProfileId, rootFolderPath
+   * and path filled in; with `path` pointing at an existing folder Radarr
+   * scans it on add and imports what it finds.
+   */
+  async addMovie(movie: RadarrMovie): Promise<RadarrMovie> {
+    try {
+      const response = await this.client.post<RadarrMovie>('/movie', movie);
+      logger.info(`Added movie "${movie.title}" to Radarr at ${movie.path}`);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<unknown>;
+      const detail = Array.isArray(axiosError.response?.data)
+        ? (axiosError.response!.data as Array<{ errorMessage?: string }>).map((e) => e.errorMessage).filter(Boolean).join('; ')
+        : '';
+      throw new Error(`Radarr refused to add "${movie.title}"${axiosError.response?.status ? ` (HTTP ${axiosError.response.status})` : ''}${detail ? `: ${detail}` : `: ${axiosError.message}`}`);
+    }
+  }
+
+  // ==========================================================================
   // Diagnostics (read-only)
   // ==========================================================================
 

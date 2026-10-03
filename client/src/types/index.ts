@@ -153,6 +153,61 @@ export interface QueueItem {
   episodeNumber?: number;
 }
 
+// Unmanaged folders (GET /api/folders)
+export interface FolderMapping {
+  remotePath: string;
+  localPath: string;
+}
+
+export interface OrphanFolder {
+  id: string;
+  service: 'sonarr' | 'radarr';
+  serviceLabel: 'Sonarr' | 'Radarr';
+  rootFolder: string;
+  name: string;
+  path: string;
+  localPath: string | null;
+  sizeBytes: number | null;
+  fileCount: number | null;
+  videoFiles: string[];
+  modifiedAt: string | null;
+  ignored: boolean;
+  canDelete: boolean;
+  guess: { title: string; year: number | null; tmdbId: number | null; tvdbId: number | null; imdbId: string | null };
+}
+
+export interface OrphanServiceState {
+  service: 'sonarr' | 'radarr';
+  serviceLabel: 'Sonarr' | 'Radarr';
+  configured: boolean;
+  rootFolders: Array<{ path: string; accessible: boolean; localPath: string | null; unmapped: number }>;
+  error: string | null;
+}
+
+export interface OrphanFolderListing {
+  folders: OrphanFolder[];
+  services: OrphanServiceState[];
+  mappings: FolderMapping[];
+  totalSizeBytes: number;
+  unsized: number;
+  scannedAt: string;
+}
+
+export interface FolderCandidate {
+  id: number;
+  title: string;
+  year: number | null;
+  overview: string | null;
+  posterUrl: string | null;
+  inLibrary: boolean;
+  existingId: number | null;
+}
+
+export interface QualityProfile {
+  id: number;
+  name: string;
+}
+
 // Background deletion jobs (GET /api/deletion-jobs)
 export type DeletionJobStatus = 'pending' | 'running' | 'verifying' | 'done' | 'reconciled' | 'failed' | 'cancelled';
 

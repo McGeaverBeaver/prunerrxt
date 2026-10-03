@@ -22,6 +22,7 @@ import {
   GithubIcon,
   MessageCircleIcon,
   ContainerIcon,
+  FoldersIcon,
 } from './NavIcons';
 import { cn } from '@/lib/utils';
 import { useUnraidStats, useDeletionQueue, useVersion, useStats } from '@/hooks/useApi';
@@ -54,6 +55,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
     { id: 'dashboard', label: t('nav.dashboard', 'Dashboard'), href: '/', icon: DashboardIcon },
     { id: 'library', label: t('nav.library', 'Library'), href: '/library', icon: LibraryIcon },
     { id: 'collections', label: t('nav.collections', 'Collections'), href: '/collections', icon: CollectionsIcon },
+    { id: 'folders', label: t('nav.folders', 'Folders'), href: '/folders', icon: FoldersIcon },
     { id: 'rules', label: t('nav.rules', 'Rules'), href: '/rules', icon: RulesIcon },
     { id: 'queue', label: t('nav.queue', 'Queue'), href: '/queue', icon: QueueIcon },
     { id: 'history', label: t('nav.history', 'History'), href: '/history', icon: HistoryIcon },

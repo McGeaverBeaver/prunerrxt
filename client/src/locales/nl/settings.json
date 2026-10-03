@@ -344,6 +344,23 @@
     "unavailableTitle": "",
     "updateFailed": ""
   },
+  "mediaFolders": {
+    "add": "",
+    "description": "",
+    "help": "",
+    "localPlaceholder": "",
+    "mappedTo": "",
+    "mapThis": "",
+    "none": "",
+    "remotePlaceholder": "",
+    "remove": "",
+    "rootFolders": "",
+    "save": "",
+    "saved": "",
+    "saveFailed": "",
+    "saving": "",
+    "title": ""
+  },
   "mediaServer": {
     "description": "De server waarvan Prunerr je bibliotheek leest",
     "playbackReportingHint": "Tip: installeer de Playback Reporting-plug-in op je server. Zonder deze plug-in wordt alleen de meest recente weergave van elk item vastgelegd, waardoor herhaalde weergaven ontbreken en afspeeltellingen te laag zijn.",

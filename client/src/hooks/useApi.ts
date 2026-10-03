@@ -13,6 +13,7 @@ import {
   webhooksApi,
   authSettingsApi,
   mcpApi,
+  foldersApi,
 } from '@/services/api';
 import { mediaServerName } from '@/lib/mediaServer';
 import type {
@@ -23,6 +24,7 @@ import type {
   Rule,
   Settings,
   ServiceConnection,
+  FolderMapping,
 } from '@/types';
 
 // Query Keys
@@ -44,6 +46,10 @@ export const queryKeys = {
   unraidStats: ['unraid', 'stats'] as const,
   healthStatus: ['health', 'status'] as const,
   scanCadence: (days: number) => ['scan', 'cadence', days] as const,
+  folders: (includeIgnored: boolean) => ['folders', includeIgnored] as const,
+  folderMappings: ['folders', 'mappings'] as const,
+  folderCandidates: (id: string, term?: string) => ['folders', 'candidates', id, term ?? ''] as const,
+  qualityProfiles: (service: string) => ['folders', 'profiles', service] as const,
 };
 
 // Dashboard Hooks
@@ -559,6 +565,76 @@ export function useUpdateMcp() {
     mutationFn: (body: { enabled?: boolean; allowImmediateDeletion?: boolean }) => mcpApi.update(body),
     onSuccess: (info) => {
       queryClient.setQueryData(['settings', 'mcp'], info);
+    },
+  });
+}
+
+// Unmanaged folders
+export function useOrphanFolders(includeIgnored = false) {
+  return useQuery({
+    queryKey: queryKeys.folders(includeIgnored),
+    // A manual refetch (the Refresh button) asks the apps again; the first
+    // load may use the server's one-minute cache.
+    queryFn: ({ meta }) => foldersApi.list({ includeIgnored, refresh: meta?.['refresh'] === true }),
+    staleTime: 30_000,
+  });
+}
+
+export function useFolderMappings() {
+  return useQuery({ queryKey: queryKeys.folderMappings, queryFn: foldersApi.mappings });
+}
+
+export function useSaveFolderMappings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (mappings: FolderMapping[]) => foldersApi.saveMappings(mappings),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+    },
+  });
+}
+
+export function useFolderCandidates(id: string, term?: string) {
+  return useQuery({
+    queryKey: queryKeys.folderCandidates(id, term),
+    queryFn: () => foldersApi.candidates(id, term),
+    staleTime: 60_000,
+  });
+}
+
+export function useQualityProfiles(service: 'sonarr' | 'radarr') {
+  return useQuery({ queryKey: queryKeys.qualityProfiles(service), queryFn: () => foldersApi.profiles(service), staleTime: 5 * 60_000 });
+}
+
+export function useImportFolder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: string; candidateId: number; qualityProfileId?: number; monitored?: boolean }) => foldersApi.importFolder(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['activity'] });
+    },
+  });
+}
+
+export function useDeleteFolder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => foldersApi.remove(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['activity'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+    },
+  });
+}
+
+export function useIgnoreFolder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ignored }: { id: string; ignored: boolean }) => foldersApi.setIgnored(id, ignored),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
     },
   });
 }

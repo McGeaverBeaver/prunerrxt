@@ -105,6 +105,11 @@ identity is ever different (`git config user.email`), set it before committing.
   `/api/deletion-jobs/stream` (`contexts/DeletionJobsContext.tsx`). A Sonarr or
   Radarr delete that outlasts `ARR_DELETE_TIMEOUT_MS` is verified by polling,
   not failed; see `services/arrHttp.ts`.
+- Unmanaged folders (`services/orphanFolders.ts`, the Folders page, the
+  `folders` MCP tools) come from Sonarr's and Radarr's own unmapped-folder
+  lists. Deleting one needs a folder mapping (`media_folder_mappings`) and
+  stays strictly inside the mapped path; importing adds the title to the app
+  with the folder as its path. See docs/folders.md.
 
 ## Key Patterns
 - Client uses `camelCase`, server/database uses `snake_case`

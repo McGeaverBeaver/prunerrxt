@@ -37,11 +37,12 @@ export const SETTINGS_NAV: NavCategory[] = [
       { id: 'watch-history', labelKey: 'nav.sub.watchHistory', fallback: 'Watch history' },
       { id: 'overseerr', labelKey: 'nav.sub.overseerr', fallback: 'Seerr' },
       { id: 'unraid', labelKey: 'nav.sub.unraid', fallback: 'Unraid' },
+      { id: 'media-folders', labelKey: 'nav.sub.mediaFolders', fallback: 'Media folders' },
     ],
     // "overseerr"/"jellyseerr" stay searchable: the card is labelled Seerr, but
     // that is what people have installed and what they will type.
     keywords:
-      'plex jellyfin emby token api key url server tautulli tracearr connect test seerr overseerr jellyseerr',
+      'plex jellyfin emby token api key url server tautulli tracearr connect test seerr overseerr jellyseerr folders mapping path mount orphan unmanaged root folder',
   },
   {
     id: 'automation',

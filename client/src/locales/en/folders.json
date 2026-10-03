@@ -1,0 +1,72 @@
+{
+  "deleteModal": {
+    "confirm": "Delete folder",
+    "message": "\"{{name}}\" and everything in it ({{files}} files, {{size}}) will be removed from disk. There is no recycle bin for this.",
+    "title": "Delete this folder?"
+  },
+  "description": "Folders inside your Sonarr and Radarr root folders that no series or movie owns: leftovers from moves, failed imports or titles removed without their files. Import them into the right app, or clean them up.",
+  "empty": {
+    "body": "Every folder under your root folders belongs to a series or movie. Nice and tidy.",
+    "notConfiguredBody": "Unmanaged folders are read from the apps that own the root folders.",
+    "notConfiguredTitle": "Connect Sonarr or Radarr first",
+    "title": "Nothing unmanaged"
+  },
+  "filter": {
+    "all": "All"
+  },
+  "importModal": {
+    "cancel": "Cancel",
+    "confirm": "Import",
+    "importing": "Importing…",
+    "inLibrary": "already in {{service}}",
+    "intro": "{{service}} will add the title with this folder as its path and scan it in place. Nothing is moved.",
+    "monitored": "Monitor after import",
+    "noMatches": "No matches. Try another search term.",
+    "qualityProfile": "Quality profile",
+    "search": "Search",
+    "searching": "Searching {{service}}…",
+    "searchPlaceholder": "Search by title, tmdb:123 or tvdb:123",
+    "title": "Import into {{service}}"
+  },
+  "loading": "Asking Sonarr and Radarr for their unmapped folders…",
+  "mappingNotice": {
+    "body": "Prunerr can list these folders through Sonarr and Radarr, but it can only measure or delete them when it can see the files itself. Map the root folder's path to the path where Prunerr sees it.",
+    "link": "Add a mapping in Settings",
+    "title": "Sizes and deletion need a folder mapping"
+  },
+  "refresh": "Re-read from Sonarr and Radarr",
+  "row": {
+    "delete": "Delete folder",
+    "deleteDisabled": "Add a folder mapping in Settings so Prunerr can reach this folder",
+    "files_one": "{{count}} files",
+    "files_other": "{{count}} files",
+    "ignore": "Ignore",
+    "ignored": "Ignored",
+    "import": "Import into {{service}}",
+    "importShort": "Import",
+    "looksLike": "Looks like: {{title}}",
+    "modified": "changed {{when}}",
+    "unignore": "Show again",
+    "unmeasured": "size unknown",
+    "unmeasuredHint": "No folder mapping covers this path"
+  },
+  "searchPlaceholder": "Filter by name or path",
+  "showIgnored": "Show ignored",
+  "summary": {
+    "count_one": "{{count}} folders",
+    "count_other": "{{count}} folders",
+    "size": "{{size}} measured",
+    "unsized_one": "{{count}} unmeasured",
+    "unsized_other": "{{count}} unmeasured"
+  },
+  "title": "Unmanaged folders",
+  "toasts": {
+    "deletedMsg": "\"{{name}}\" removed, {{size}} freed",
+    "deletedTitle": "Folder deleted",
+    "deleteFailed": "Could not delete folder",
+    "importedMsg": "\"{{title}}\" added to {{service}}",
+    "importedTitle": "Imported",
+    "importFailed": "Import failed",
+    "updateFailed": "Could not update folder"
+  }
+}

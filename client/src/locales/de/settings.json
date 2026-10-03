@@ -344,6 +344,23 @@
     "unavailableTitle": "",
     "updateFailed": ""
   },
+  "mediaFolders": {
+    "add": "",
+    "description": "",
+    "help": "",
+    "localPlaceholder": "",
+    "mappedTo": "",
+    "mapThis": "",
+    "none": "",
+    "remotePlaceholder": "",
+    "remove": "",
+    "rootFolders": "",
+    "save": "",
+    "saved": "",
+    "saveFailed": "",
+    "saving": "",
+    "title": ""
+  },
   "mediaServer": {
     "description": "Der Server, von dem Prunerr deine Bibliothek liest",
     "playbackReportingHint": "Tipp: Installiere das Playback-Reporting-Plugin auf deinem Server. Ohne es wird nur die letzte Wiedergabe jedes Elements erfasst, sodass wiederholte Ansichten fehlen und die Wiedergabezähler zu niedrig sind.",

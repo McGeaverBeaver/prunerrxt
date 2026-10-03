@@ -27,6 +27,7 @@ import type { MediaServerType, ServiceConnection } from '@/types';
 
 import { MediaServerLogo } from '../components/MediaServerLogo';
 import { PanelSection } from '../components/PanelSection';
+import { FolderMappingsSection } from './connections/FolderMappingsSection';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { SettingsCard } from '../components/SettingsCard';
 import { StatusDot, type StatusDotState } from '../components/StatusDot';
@@ -479,6 +480,9 @@ export default function ConnectionsPanel({
           extra={<UnraidApiKeyHelper />}
         />
       </PanelSection>
+
+      {/* --------------------------- media folders -------------------------- */}
+      <FolderMappingsSection registerSection={registerSection} />
     </>
   );
 }

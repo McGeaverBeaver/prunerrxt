@@ -50,6 +50,10 @@ export default interface Resources {
       "episodesUnqueued_other": "{{count}} episodes taken out of the queue",
       "error": "Error",
       "flaggedForReview": "Flagged for review",
+      "folderDeleted": "Folder deleted{{size}}",
+      "folderIgnored": "Folder ignored",
+      "folderImported": "Folder imported into {{service}}",
+      "folderUnignored": "Folder shown again",
       "matchedRule": "Matched rule: {{rule}}",
       "overseerrResetFailed": "Seerr reset failed",
       "protected": "Protected",
@@ -406,6 +410,78 @@ export default interface Resources {
       "title": "Welcome to Prunerr"
     }
   },
+  "folders": {
+    "deleteModal": {
+      "confirm": "Delete folder",
+      "message": "\"{{name}}\" and everything in it ({{files}} files, {{size}}) will be removed from disk. There is no recycle bin for this.",
+      "title": "Delete this folder?"
+    },
+    "description": "Folders inside your Sonarr and Radarr root folders that no series or movie owns: leftovers from moves, failed imports or titles removed without their files. Import them into the right app, or clean them up.",
+    "empty": {
+      "body": "Every folder under your root folders belongs to a series or movie. Nice and tidy.",
+      "notConfiguredBody": "Unmanaged folders are read from the apps that own the root folders.",
+      "notConfiguredTitle": "Connect Sonarr or Radarr first",
+      "title": "Nothing unmanaged"
+    },
+    "filter": {
+      "all": "All"
+    },
+    "importModal": {
+      "cancel": "Cancel",
+      "confirm": "Import",
+      "importing": "Importing…",
+      "inLibrary": "already in {{service}}",
+      "intro": "{{service}} will add the title with this folder as its path and scan it in place. Nothing is moved.",
+      "monitored": "Monitor after import",
+      "noMatches": "No matches. Try another search term.",
+      "qualityProfile": "Quality profile",
+      "search": "Search",
+      "searchPlaceholder": "Search by title, tmdb:123 or tvdb:123",
+      "searching": "Searching {{service}}…",
+      "title": "Import into {{service}}"
+    },
+    "loading": "Asking Sonarr and Radarr for their unmapped folders…",
+    "mappingNotice": {
+      "body": "Prunerr can list these folders through Sonarr and Radarr, but it can only measure or delete them when it can see the files itself. Map the root folder's path to the path where Prunerr sees it.",
+      "link": "Add a mapping in Settings",
+      "title": "Sizes and deletion need a folder mapping"
+    },
+    "refresh": "Re-read from Sonarr and Radarr",
+    "row": {
+      "delete": "Delete folder",
+      "deleteDisabled": "Add a folder mapping in Settings so Prunerr can reach this folder",
+      "files_one": "{{count}} files",
+      "files_other": "{{count}} files",
+      "ignore": "Ignore",
+      "ignored": "Ignored",
+      "import": "Import into {{service}}",
+      "importShort": "Import",
+      "looksLike": "Looks like: {{title}}",
+      "modified": "changed {{when}}",
+      "unignore": "Show again",
+      "unmeasured": "size unknown",
+      "unmeasuredHint": "No folder mapping covers this path"
+    },
+    "searchPlaceholder": "Filter by name or path",
+    "showIgnored": "Show ignored",
+    "summary": {
+      "count_one": "{{count}} folders",
+      "count_other": "{{count}} folders",
+      "size": "{{size}} measured",
+      "unsized_one": "{{count}} unmeasured",
+      "unsized_other": "{{count}} unmeasured"
+    },
+    "title": "Unmanaged folders",
+    "toasts": {
+      "deleteFailed": "Could not delete folder",
+      "deletedMsg": "\"{{name}}\" removed, {{size}} freed",
+      "deletedTitle": "Folder deleted",
+      "importFailed": "Import failed",
+      "importedMsg": "\"{{title}}\" added to {{service}}",
+      "importedTitle": "Imported",
+      "updateFailed": "Could not update folder"
+    }
+  },
   "health": {
     "caption": {
       "avgSummary_one": "avg {{mean}} · {{count}}d",
@@ -577,6 +653,7 @@ export default interface Resources {
       "activity": "Activity",
       "collections": "Collections",
       "dashboard": "Dashboard",
+      "folders": "Folders",
       "history": "History",
       "library": "Library",
       "queue": "Queue",
@@ -1670,6 +1747,23 @@ export default interface Resources {
       "unavailableBody": "This server does not expose the MCP connector.",
       "unavailableTitle": "MCP connector not available",
       "updateFailed": "Could not change that setting"
+    },
+    "mediaFolders": {
+      "add": "Add mapping",
+      "description": "Lets Prunerr measure and delete unmanaged folders. Pair each root folder as Sonarr/Radarr see it with the path where this container sees the same files.",
+      "help": "Mount the media share into the Prunerr container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, Prunerr sees /media/movies.",
+      "localPlaceholder": "Path as Prunerr sees it, e.g. /media/movies",
+      "mapThis": "map this",
+      "mappedTo": "mapped to {{path}}",
+      "none": "No mappings yet. Sizes stay unknown and deletion stays off until you add one.",
+      "remotePlaceholder": "Path as Sonarr/Radarr see it, e.g. /movies",
+      "remove": "Remove mapping",
+      "rootFolders": "Root folders reported by your apps",
+      "save": "Save mappings",
+      "saveFailed": "Could not save mappings",
+      "saved": "Folder mappings saved",
+      "saving": "Saving…",
+      "title": "Media folders"
     },
     "mediaServer": {
       "description": "The server Prunerr reads your library from",

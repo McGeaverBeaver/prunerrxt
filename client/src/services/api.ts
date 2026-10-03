@@ -6,6 +6,11 @@ import type {
   Rule,
   QueueItem,
   DeletionJob,
+  OrphanFolder,
+  OrphanFolderListing,
+  FolderMapping,
+  FolderCandidate,
+  QualityProfile,
   HistoryFilters,
   HistoryResponse,
   DashboardStats,
@@ -505,6 +510,50 @@ export interface QueueProcessResult {
   message?: string;
 }
 
+// Unmanaged folders
+export const foldersApi = {
+  list: async (options: { refresh?: boolean; includeIgnored?: boolean } = {}): Promise<OrphanFolderListing> => {
+    const params = new URLSearchParams();
+    if (options.refresh) params.set('refresh', 'true');
+    if (options.includeIgnored) params.set('includeIgnored', 'true');
+    const { data } = await api.get<ApiResponse<OrphanFolderListing>>(`/folders${params.size ? `?${params}` : ''}`);
+    return data.data!;
+  },
+  mappings: async (): Promise<FolderMapping[]> => {
+    const { data } = await api.get<ApiResponse<FolderMapping[]>>('/folders/mappings');
+    return data.data ?? [];
+  },
+  saveMappings: async (mappings: FolderMapping[]): Promise<FolderMapping[]> => {
+    const { data } = await api.put<ApiResponse<FolderMapping[]>>('/folders/mappings', { mappings });
+    return data.data ?? [];
+  },
+  profiles: async (service: 'sonarr' | 'radarr'): Promise<QualityProfile[]> => {
+    const { data } = await api.get<ApiResponse<QualityProfile[]>>(`/folders/profiles/${service}`);
+    return data.data ?? [];
+  },
+  candidates: async (id: string, term?: string): Promise<{ folder: OrphanFolder; term: string; candidates: FolderCandidate[] }> => {
+    const { data } = await api.get<ApiResponse<{ folder: OrphanFolder; term: string; candidates: FolderCandidate[] }>>(
+      `/folders/${encodeURIComponent(id)}/candidates${term ? `?term=${encodeURIComponent(term)}` : ''}`
+    );
+    return data.data!;
+  },
+  importFolder: async (
+    id: string,
+    body: { candidateId: number; qualityProfileId?: number; monitored?: boolean }
+  ): Promise<{ folder: OrphanFolder; addedId: number; title: string; year: number | null; message?: string }> => {
+    const { data } = await api.post<ApiResponse<{ folder: OrphanFolder; addedId: number; title: string; year: number | null }>>(`/folders/${encodeURIComponent(id)}/import`, body);
+    return { ...data.data!, message: data.message };
+  },
+  remove: async (id: string): Promise<{ folder: OrphanFolder; sizeBytes: number; fileCount: number }> => {
+    const { data } = await api.delete<ApiResponse<{ folder: OrphanFolder; sizeBytes: number; fileCount: number }>>(`/folders/${encodeURIComponent(id)}`);
+    return data.data!;
+  },
+  setIgnored: async (id: string, ignored: boolean): Promise<OrphanFolder> => {
+    const { data } = await api.post<ApiResponse<OrphanFolder>>(`/folders/${encodeURIComponent(id)}/ignore`, { ignored });
+    return data.data!;
+  },
+};
+
 // Background deletion jobs
 export const deletionJobsApi = {
   list: async (): Promise<{ active: DeletionJob[]; recent: DeletionJob[] }> => {
@@ -751,6 +800,7 @@ export type McpToolGroup =
   | 'collections'
   | 'scans'
   | 'history'
+  | 'folders'
   | 'system';
 
 export interface McpToolInfo {

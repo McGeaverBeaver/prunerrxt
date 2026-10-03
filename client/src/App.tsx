@@ -16,6 +16,7 @@ import { useAuth } from './contexts/AuthContext';
 const MediaItemDetail = lazy(() => import('./components/Library/MediaItemDetail'));
 const Collections = lazy(() => import('./components/Collections/Collections'));
 const CollectionDetail = lazy(() => import('./components/Collections/CollectionDetail'));
+const Folders = lazy(() => import('./components/Folders/Folders'));
 
 /**
  * AnimatedRoutes fades each page in as you navigate. We key on the first path
@@ -59,6 +60,7 @@ function AnimatedRoutes() {
         <Route path="/recommendations" element={<Recommendations />} />
         <Route path="/collections" element={<Collections />} />
         <Route path="/collections/:id" element={<CollectionDetail />} />
+        <Route path="/folders" element={<Folders />} />
         <Route path="/rules" element={<Rules />} />
         <Route path="/queue" element={<Queue />} />
         <Route path="/history" element={<History />} />

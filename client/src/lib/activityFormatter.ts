@@ -237,6 +237,18 @@ export function formatActivity(entry: ActivityLogEntry): FormattedActivity {
       } else if (entry.action === 'episodes_unqueued') {
         const count = readNumber(meta, 'episodes') ?? 0;
         title = i18n.t('activityLog:formatter.episodesUnqueued', '{{count}} episodes taken out of the queue', { count });
+      } else if (entry.action === 'folder_imported') {
+        title = i18n.t('activityLog:formatter.folderImported', 'Folder imported into {{service}}', { service: readString(meta, 'service') ?? 'Sonarr/Radarr' });
+        description = readString(meta, 'path');
+      } else if (entry.action === 'folder_deleted') {
+        const size = readNumber(meta, 'sizeBytes');
+        title = i18n.t('activityLog:formatter.folderDeleted', 'Folder deleted{{size}}', { size: size ? ` (${formatBytes(size)})` : '' });
+        description = readString(meta, 'path');
+      } else if (entry.action === 'folder_ignored' || entry.action === 'folder_unignored') {
+        title = entry.action === 'folder_ignored'
+          ? i18n.t('activityLog:formatter.folderIgnored', 'Folder ignored')
+          : i18n.t('activityLog:formatter.folderUnignored', 'Folder shown again');
+        description = readString(meta, 'path');
       } else {
         title = humanize(entry.action);
       }

@@ -1,0 +1,75 @@
+{
+  "deleteModal": {
+    "confirm": "",
+    "message": "",
+    "title": ""
+  },
+  "description": "",
+  "empty": {
+    "body": "",
+    "notConfiguredBody": "",
+    "notConfiguredTitle": "",
+    "title": ""
+  },
+  "filter": {
+    "all": ""
+  },
+  "importModal": {
+    "cancel": "",
+    "confirm": "",
+    "importing": "",
+    "inLibrary": "",
+    "intro": "",
+    "monitored": "",
+    "noMatches": "",
+    "qualityProfile": "",
+    "search": "",
+    "searching": "",
+    "searchPlaceholder": "",
+    "title": ""
+  },
+  "loading": "",
+  "mappingNotice": {
+    "body": "",
+    "link": "",
+    "title": ""
+  },
+  "refresh": "",
+  "row": {
+    "delete": "",
+    "deleteDisabled": "",
+    "files_one": "",
+    "files_many": "",
+    "files_other": "",
+    "ignore": "",
+    "ignored": "",
+    "import": "",
+    "importShort": "",
+    "looksLike": "",
+    "modified": "",
+    "unignore": "",
+    "unmeasured": "",
+    "unmeasuredHint": ""
+  },
+  "searchPlaceholder": "",
+  "showIgnored": "",
+  "summary": {
+    "count_one": "",
+    "count_many": "",
+    "count_other": "",
+    "size": "",
+    "unsized_one": "",
+    "unsized_many": "",
+    "unsized_other": ""
+  },
+  "title": "",
+  "toasts": {
+    "deletedMsg": "",
+    "deletedTitle": "",
+    "deleteFailed": "",
+    "importedMsg": "",
+    "importedTitle": "",
+    "importFailed": "",
+    "updateFailed": ""
+  }
+}

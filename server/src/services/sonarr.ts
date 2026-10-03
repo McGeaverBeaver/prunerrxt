@@ -667,6 +667,52 @@ export class SonarrService {
   }
 
   // ==========================================================================
+  // Catalogue lookup and adding (for importing unmanaged folders)
+  // ==========================================================================
+
+  /** Search Sonarr's catalogue; `tvdb:123` and `imdb:tt123` look up by id. */
+  async lookupSeries(term: string): Promise<SonarrSeries[]> {
+    const response = await this.client.get<SonarrSeries[]>('/series/lookup', { params: { term } });
+    return Array.isArray(response.data) ? response.data : [];
+  }
+
+  /** Quality profiles as a list, for pickers. */
+  async getQualityProfileList(): Promise<Array<{ id: number; name: string }>> {
+    const response = await this.client.get<Array<{ id: number; name: string }>>('/qualityprofile');
+    return (Array.isArray(response.data) ? response.data : []).map((p) => ({ id: p.id, name: p.name }));
+  }
+
+  /** Language profiles (Sonarr v3 only; v4 answers 404 and needs none). */
+  async getLanguageProfiles(): Promise<Array<{ id: number; name: string }>> {
+    try {
+      const response = await this.client.get<Array<{ id: number; name: string }>>('/languageprofile');
+      return (Array.isArray(response.data) ? response.data : []).map((p) => ({ id: p.id, name: p.name }));
+    } catch (error) {
+      if (isNotFound(error)) return [];
+      throw error;
+    }
+  }
+
+  /**
+   * Add a series. Pass a lookup result with qualityProfileId, rootFolderPath
+   * and path filled in; with `path` pointing at an existing folder Sonarr
+   * scans it on add and imports what it finds.
+   */
+  async addSeries(series: SonarrSeries): Promise<SonarrSeries> {
+    try {
+      const response = await this.client.post<SonarrSeries>('/series', series);
+      logger.info(`Added series "${series.title}" to Sonarr at ${series.path}`);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<unknown>;
+      const detail = Array.isArray(axiosError.response?.data)
+        ? (axiosError.response!.data as Array<{ errorMessage?: string }>).map((e) => e.errorMessage).filter(Boolean).join('; ')
+        : '';
+      throw new Error(`Sonarr refused to add "${series.title}"${axiosError.response?.status ? ` (HTTP ${axiosError.response.status})` : ''}${detail ? `: ${detail}` : `: ${axiosError.message}`}`);
+    }
+  }
+
+  // ==========================================================================
   // Diagnostics (read-only)
   // ==========================================================================
 

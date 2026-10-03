@@ -137,6 +137,11 @@ protection, requester; sorted and paged), `get_media_item`,
 skipped), `protect_items`, `unprotect_items`, `queue_episodes_for_deletion`,
 `cancel_episode_deletions`, `get_deletion_defaults`
 
+**Unmanaged folders** — `list_orphan_folders`, `lookup_orphan_folder`,
+`import_orphan_folder`, `delete_orphan_folder` (needs the opt-in),
+`ignore_orphan_folder`: folders under Sonarr's and Radarr's root folders that
+no title owns, imported into the right app or cleaned up. See docs/folders.md.
+
 **Troubleshooting** — `get_service_logs`, `get_service_health`,
 `get_service_activity`, `get_deletion_setup` read Sonarr's and Radarr's own
 logs, health checks, command queue and recycling-bin/root-folder setup, so a

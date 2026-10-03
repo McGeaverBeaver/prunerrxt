@@ -13,7 +13,7 @@ import { SettingsEmptyState } from '../../components/SettingsEmptyState';
 import { Toggle } from '../../components/Toggle';
 import type { PanelProps } from '../../types';
 
-const GROUP_ORDER: McpToolGroup[] = ['overview', 'library', 'actions', 'queue', 'rules', 'collections', 'scans', 'history', 'system'];
+const GROUP_ORDER: McpToolGroup[] = ['overview', 'library', 'actions', 'queue', 'rules', 'collections', 'scans', 'history', 'folders', 'system'];
 
 function CopyButton({ value, label }: { value: string; label: string }) {
   const { t } = useTranslation('settings');
@@ -149,6 +149,8 @@ export function McpSection({ registerSection, apiKey }: { registerSection: Panel
         return t('mcp.groups.scans', 'Scans & sync');
       case 'history':
         return t('mcp.groups.history', 'History & users');
+      case 'folders':
+        return t('mcp.groups.folders', 'Unmanaged folders');
       case 'system':
         return t('mcp.groups.system', 'System');
     }

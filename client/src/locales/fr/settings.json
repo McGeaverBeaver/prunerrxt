@@ -347,6 +347,23 @@
     "unavailableTitle": "",
     "updateFailed": ""
   },
+  "mediaFolders": {
+    "add": "",
+    "description": "",
+    "help": "",
+    "localPlaceholder": "",
+    "mappedTo": "",
+    "mapThis": "",
+    "none": "",
+    "remotePlaceholder": "",
+    "remove": "",
+    "rootFolders": "",
+    "save": "",
+    "saved": "",
+    "saveFailed": "",
+    "saving": "",
+    "title": ""
+  },
   "mediaServer": {
     "description": "Le serveur depuis lequel Prunerr lit votre bibliothèque",
     "playbackReportingHint": "Astuce : installez le plugin Playback Reporting sur votre serveur. Sans lui, seule la lecture la plus récente de chaque élément est enregistrée : les visionnages répétés sont ignorés et les compteurs sont sous-évalués.",

@@ -347,6 +347,23 @@
     "unavailableTitle": "",
     "updateFailed": ""
   },
+  "mediaFolders": {
+    "add": "",
+    "description": "",
+    "help": "",
+    "localPlaceholder": "",
+    "mappedTo": "",
+    "mapThis": "",
+    "none": "",
+    "remotePlaceholder": "",
+    "remove": "",
+    "rootFolders": "",
+    "save": "",
+    "saved": "",
+    "saveFailed": "",
+    "saving": "",
+    "title": ""
+  },
   "mediaServer": {
     "description": "El servidor del que Prunerr lee tu biblioteca",
     "playbackReportingHint": "Consejo: instala el complemento Playback Reporting en tu servidor. Sin él solo se registra la reproducción más reciente de cada elemento, por lo que no se detectan las repeticiones y los recuentos quedan bajos.",

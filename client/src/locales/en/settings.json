@@ -344,6 +344,23 @@
     "unavailableTitle": "MCP connector not available",
     "updateFailed": "Could not change that setting"
   },
+  "mediaFolders": {
+    "add": "Add mapping",
+    "description": "Lets Prunerr measure and delete unmanaged folders. Pair each root folder as Sonarr/Radarr see it with the path where this container sees the same files.",
+    "help": "Mount the media share into the Prunerr container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, Prunerr sees /media/movies.",
+    "localPlaceholder": "Path as Prunerr sees it, e.g. /media/movies",
+    "mappedTo": "mapped to {{path}}",
+    "mapThis": "map this",
+    "none": "No mappings yet. Sizes stay unknown and deletion stays off until you add one.",
+    "remotePlaceholder": "Path as Sonarr/Radarr see it, e.g. /movies",
+    "remove": "Remove mapping",
+    "rootFolders": "Root folders reported by your apps",
+    "save": "Save mappings",
+    "saved": "Folder mappings saved",
+    "saveFailed": "Could not save mappings",
+    "saving": "Saving…",
+    "title": "Media folders"
+  },
   "mediaServer": {
     "description": "The server Prunerr reads your library from",
     "playbackReportingHint": "Tip: install the Playback Reporting plugin on your server. Without it only the most recent play of each item is recorded, so repeat views are missed and play counts read low.",

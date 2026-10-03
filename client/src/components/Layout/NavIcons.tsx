@@ -127,6 +127,18 @@ export function CollectionsIcon(props: IconProps) {
   );
 }
 
+/** Folders — the front folder slides out from the stack. */
+export function FoldersIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M2 8v11a2 2 0 0 0 2 2h14"
+        style={{ ...anim(420), transform: 'translate(calc(var(--h, 0) * -1px), calc(var(--h, 0) * 1px))' }} />
+      <path d="M20 17a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.9a2 2 0 0 1-1.69-.9L13.4 4.6A2 2 0 0 0 11.7 4H8a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2Z"
+        style={{ ...anim(420, 60), transform: 'translate(calc(var(--h, 0) * 1.2px), calc(var(--h, 0) * -1.2px))' }} />
+    </Svg>
+  );
+}
+
 /** Rules — the filter lines shuffle as if re-sorting. */
 export function RulesIcon(props: IconProps) {
   return (

@@ -24,6 +24,7 @@ export type ToolGroup =
   | 'collections'
   | 'scans'
   | 'history'
+  | 'folders'
   | 'system';
 
 export interface ToolCatalogEntry {

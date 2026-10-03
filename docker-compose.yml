@@ -19,6 +19,9 @@ services:
     volumes:
       # Persist SQLite database and configuration
       - ./data:/app/data
+      # Optional: the media share, so the Folders page can measure and delete
+      # unmanaged folders (then map it in Settings, Connections, Media folders)
+      # - /path/to/media:/media
     environment:
       # Application Settings
       - NODE_ENV=production

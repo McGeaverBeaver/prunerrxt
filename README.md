@@ -38,6 +38,8 @@ You set up rules like "delete movies nobody's watched in 6 months that are over 
 
 ## Features
 
+- **Unmanaged folders**: list folders Sonarr/Radarr don't own, import them into the right app or clean them up (docs/folders.md)
+
 - **Rules Engine** &mdash; 28 condition fields across quality, ratings, watch history, collections, and metadata. Three ways to build rules: templates, natural language, or a full nested condition editor with live preview. [More &rarr;](https://github.com/helliott20/prunerr/wiki/Rules-Engine)
 
 - **Collections** &mdash; Syncs movie collections from Radarr. Protect entire collections to prevent cleanup, or queue them for bulk deletion. [More &rarr;](https://github.com/helliott20/prunerr/wiki/Collections)

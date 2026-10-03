@@ -14,6 +14,7 @@ import { registerCollectionTools } from './tools/collections';
 import { registerScanTools } from './tools/scans';
 import { registerHistoryTools } from './tools/history';
 import { registerSystemTools } from './tools/system';
+import { registerFolderTools } from './tools/folders';
 import { registerResources } from './resources';
 import { registerPrompts } from './prompts';
 import { allowsImmediateDeletion } from './config';
@@ -57,6 +58,7 @@ export function createMcpServer(): McpServer {
   registerScanTools(server);
   registerHistoryTools(server);
   registerSystemTools(server);
+  registerFolderTools(server);
   registerResources(server);
   registerPrompts(server);
 
