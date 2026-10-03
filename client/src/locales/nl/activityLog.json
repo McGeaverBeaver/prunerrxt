@@ -49,6 +49,7 @@
     "error": "Fout",
     "flaggedForReview": "Gemarkeerd voor beoordeling",
     "matchedRule": "Overeenkomende regel: {{rule}}",
+    "overseerrResetFailed": "",
     "protected": "Beschermd",
     "protectionRemoved": "Bescherming verwijderd",
     "queuedForDeletion": "In wachtrij voor verwijdering",

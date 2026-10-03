@@ -138,16 +138,23 @@ const fast = { deleteTimeoutMs: 100, verifyWindowMs: 2_000, verifyIntervalMs: 50
 
 describe('arrHttp classification', () => {
   it('reads timing from the environment with floors', () => {
-    const prev = { t: process.env['ARR_DELETE_TIMEOUT_MS'], v: process.env['ARR_DELETE_VERIFY_SECONDS'] };
+    const prev = {
+      t: process.env['ARR_DELETE_TIMEOUT_MS'],
+      v: process.env['ARR_DELETE_VERIFY_MINUTES'],
+      i: process.env['ARR_DELETE_VERIFY_INTERVAL_SECONDS'],
+    };
     process.env['ARR_DELETE_TIMEOUT_MS'] = '1';
-    process.env['ARR_DELETE_VERIFY_SECONDS'] = '30';
-    expect(resolveArrTiming()).toMatchObject({ deleteTimeoutMs: 5_000, verifyWindowMs: 30_000 });
+    process.env['ARR_DELETE_VERIFY_MINUTES'] = '5';
+    process.env['ARR_DELETE_VERIFY_INTERVAL_SECONDS'] = '0';
+    expect(resolveArrTiming()).toMatchObject({ deleteTimeoutMs: 5_000, verifyWindowMs: 300_000, verifyIntervalMs: 1_000 });
     delete process.env['ARR_DELETE_TIMEOUT_MS'];
-    delete process.env['ARR_DELETE_VERIFY_SECONDS'];
-    expect(resolveArrTiming()).toMatchObject({ deleteTimeoutMs: 120_000, verifyWindowMs: 90_000 });
-    expect(resolveArrTiming({ deleteTimeoutMs: 7 })).toMatchObject({ deleteTimeoutMs: 7, verifyWindowMs: 90_000 });
+    delete process.env['ARR_DELETE_VERIFY_MINUTES'];
+    delete process.env['ARR_DELETE_VERIFY_INTERVAL_SECONDS'];
+    expect(resolveArrTiming()).toMatchObject({ deleteTimeoutMs: 120_000, verifyWindowMs: 1_800_000, verifyIntervalMs: 15_000 });
+    expect(resolveArrTiming({ deleteTimeoutMs: 7 })).toMatchObject({ deleteTimeoutMs: 7, verifyWindowMs: 1_800_000 });
     if (prev.t !== undefined) process.env['ARR_DELETE_TIMEOUT_MS'] = prev.t;
-    if (prev.v !== undefined) process.env['ARR_DELETE_VERIFY_SECONDS'] = prev.v;
+    if (prev.v !== undefined) process.env['ARR_DELETE_VERIFY_MINUTES'] = prev.v;
+    if (prev.i !== undefined) process.env['ARR_DELETE_VERIFY_INTERVAL_SECONDS'] = prev.i;
   });
 
   it('tells a 404 from a timeout from anything else', () => {

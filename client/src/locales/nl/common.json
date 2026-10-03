@@ -1,18 +1,4 @@
 {
-  "deleteNowModal": {
-    "steps": {
-      "deleteFiles": "",
-      "remove": "",
-      "resetSeerr": "",
-      "unmonitor": ""
-    },
-    "stepVerb": {
-      "deleteFiles": "",
-      "remove": "",
-      "resetSeerr": "",
-      "unmonitor": ""
-    }
-  },
   "dismissNotification": "Melding sluiten",
   "dropdown": {
     "noMatches": "Geen resultaten",
@@ -85,6 +71,7 @@
       "itemDeleted": "Verwijderd",
       "itemQueued": "In wachtrij voor verwijdering",
       "itemRestored": "Hersteld",
+      "overseerrResetFailed": "",
       "protected": "Item beschermd",
       "reconciled": "",
       "ruleMatched": "Overeenkomst met regel",

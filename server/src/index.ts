@@ -18,6 +18,7 @@ import { apiAuthMiddleware, ensureApiKey } from './middleware/apiAuth';
 import { initializeServices } from './services/init';
 import { getScheduler } from './scheduler';
 import { createMcpRouter, closeAllMcpSessions } from './mcp';
+import { startDeletionJobWorker, stopDeletionJobWorker, runningDeletionJobCount } from './services/deletionJobs';
 import oauthRouter from './auth/oauthRoutes';
 import { purgeExpiredOAuth } from './auth/oauthServer';
 import { getAuthConfig } from './auth/config';
@@ -191,6 +192,10 @@ async function startServer(): Promise<void> {
     scheduler.start();
     logger.info('Scheduler started');
 
+    // Background deletions: resume anything interrupted, then run what's queued.
+    startDeletionJobWorker();
+    logger.info('Deletion job worker started');
+
     // Start listening
     const server = app.listen(config.port, () => {
       logger.info(`Server started successfully`);
@@ -207,6 +212,10 @@ async function startServer(): Promise<void> {
       // Stop the scheduler
       scheduler.stop();
       logger.info('Scheduler stopped');
+
+      stopDeletionJobWorker();
+      const inFlight = runningDeletionJobCount();
+      if (inFlight > 0) logger.warn(`${inFlight} deletion job(s) still running; they resume after restart`);
 
       await closeAllMcpSessions();
 

@@ -8,7 +8,7 @@
  * one of the functions below.
  */
 import mediaItemsRepo from '../db/repositories/mediaItems';
-import type { MediaItem } from '../types';
+import type { MediaItem, DeletionType } from '../types';
 import { logActivity } from '../db/repositories/activity';
 import logger from '../utils/logger';
 import { toThumbnailUrl } from '../utils/posterUrl';
@@ -367,7 +367,22 @@ export interface ProcessQueueResult {
  * manual "Process Queue" button); otherwise only items whose grace period has
  * expired go. `dryRun` reports what would happen without touching anything.
  */
-export async function processQueue(options: { dryRun?: boolean; force?: boolean } = {}): Promise<ProcessQueueResult> {
+/**
+ * Queue ids of everything due right now (or everything queued, with `force`):
+ * media items first, then queued episodes. What Delete All turns into jobs.
+ */
+export function readyQueueIds(force: boolean, now: Date = new Date()): string[] {
+  const pendingItems = mediaItemsRepo.getPendingDeletion();
+  const items = force
+    ? pendingItems
+    : pendingItems.filter((item) => item.delete_after && daysUntil(item.delete_after, now) === 0);
+  const episodes = force ? episodeDeletionsRepo.getAllPending() : episodeDeletionsRepo.getDue(now);
+  return [...items.map((item) => String(item.id)), ...episodes.map((row) => `ep-${row.id}`)];
+}
+
+export async function processQueue(
+  options: { dryRun?: boolean; force?: boolean; deletionType?: DeletionType; actorName?: string } = {}
+): Promise<ProcessQueueResult> {
   const dryRun = options.dryRun === true;
   const force = options.force === true;
 
@@ -429,6 +444,8 @@ export async function processQueue(options: { dryRun?: boolean; force?: boolean 
       const result = await deletionService.executeDelete(item as any, deletionAction, {
         resetOverseerr,
         ruleId: matchedRuleId,
+        deletionType: options.deletionType ?? 'automatic',
+        actorName: options.actorName,
       });
 
       if (result.success) {
@@ -520,6 +537,7 @@ export type DeleteNowResult =
       overseerrError?: string;
       /** The item had already been deleted in Sonarr/Radarr; the queue caught up. */
       reconciled?: boolean;
+      stepDurationsMs?: Record<string, number>;
     }
   | {
       ok: false;
@@ -530,11 +548,18 @@ export type DeleteNowResult =
       step?: string;
       service?: string;
       upstreamStatus?: number;
+      stepDurationsMs?: Record<string, number>;
     };
 
 export interface DeleteNowOptions {
   /** Progress events, as streamed to the Queue page's dialog. */
   onProgress?: (progress: DeletionProgress) => void;
+  /** Who asked: a person ('manual', the default) or a scheduled run. */
+  deletionType?: DeletionType;
+  /** Name for the activity log; defaults to "Manual deletion". */
+  actorName?: string;
+  /** Send the DELETION_COMPLETE notification (default true). Batches send one at the end instead. */
+  notify?: boolean;
 }
 
 export type QueueItemInspection =
@@ -610,7 +635,9 @@ export async function deleteQueueItemNow(rawId: string, options: DeleteNowOption
       return { ok: false, status: 500, error, step: 'delete_files', service: 'Sonarr' };
     }
 
-    await sendDeletionCompleteNotification([{ title: outcome.label, type: 'episode' }], result.freedBytes, 0);
+    if (options.notify !== false) {
+      await sendDeletionCompleteNotification([{ title: outcome.label, type: 'episode' }], result.freedBytes, 0);
+    }
 
     emit({
       stage: 'complete',
@@ -641,7 +668,8 @@ export async function deleteQueueItemNow(rawId: string, options: DeleteNowOption
   const result = await deletionService.executeDelete(item as any, deletionAction, {
     resetOverseerr,
     ruleId: matchedRuleId,
-    deletionType: 'manual',
+    deletionType: options.deletionType ?? 'manual',
+    actorName: options.actorName,
     onProgress: emit,
   });
 
@@ -654,6 +682,7 @@ export async function deleteQueueItemNow(rawId: string, options: DeleteNowOption
       step: result.failedStep,
       service: result.failedService,
       upstreamStatus: result.upstreamStatus,
+      stepDurationsMs: result.stepDurationsMs,
     };
   }
 
@@ -664,7 +693,7 @@ export async function deleteQueueItemNow(rawId: string, options: DeleteNowOption
       : `Immediately deleted: "${item.title}" (action: ${deletionAction}, freed: ${freedSpaceGB}GB, overseerr reset: ${result.overseerrReset})`
   );
 
-  if (!result.reconciled) {
+  if (!result.reconciled && options.notify !== false) {
     await sendDeletionCompleteNotification(
       [{ title: item.title, type: item.type, ruleId: matchedRuleId ?? null }],
       result.fileSizeFreed || 0,
@@ -683,5 +712,6 @@ export async function deleteQueueItemNow(rawId: string, options: DeleteNowOption
     overseerrReset: result.overseerrReset,
     overseerrError: result.overseerrError,
     reconciled: result.reconciled,
+    stepDurationsMs: result.stepDurationsMs,
   };
 }

@@ -84,6 +84,7 @@ import { initializeDatabase, getDatabase, closeDatabase } from '../../db/index';
 import { createMediaItem, getMediaItemById } from '../../db/repositories/mediaItems';
 import libraryRouter from '../library';
 import queueRouter from '../queue';
+import { listJobs, startDeletionJobWorker, stopDeletionJobWorker, waitForDeletionJobsIdle } from '../../services/deletionJobs';
 
 let server: Server;
 let baseUrl: string;
@@ -130,6 +131,7 @@ describe('episode and season deletions', () => {
   beforeEach(() => {
     const db = getDatabase();
     db.prepare('DELETE FROM episode_deletions').run();
+    db.prepare('DELETE FROM deletion_jobs').run();
     db.prepare('DELETE FROM deletion_history').run();
     db.prepare('DELETE FROM activity_log').run();
     db.prepare('DELETE FROM media_items').run();
@@ -276,14 +278,30 @@ describe('episode and season deletions', () => {
   it('processes queued episodes when the queue is processed', async () => {
     await post(`/library/${showId}/sonarr/deletions`, { seasonNumbers: [1], gracePeriodDays: 30, mode: 'queue' });
 
-    // Not due for 30 days: a normal run leaves them alone.
+    // Not due for 30 days: a normal run queues nothing.
     const untouched = await post('/queue/process', {});
-    expect(untouched.json.data.episodes?.deleted ?? 0).toBe(0);
+    expect(untouched.status).toBe(202);
+    expect(untouched.json.data.queued).toHaveLength(0);
 
-    // Forcing processes everything pending.
-    const { json } = await post('/queue/process?force=true', {});
-    expect(json.data.episodes).toMatchObject({ processed: 2, deleted: 2, failed: 0 });
-    expect(json.data.freedSpace).toBe(3_000);
+    // Forcing queues everything pending as background jobs and answers at once.
+    const { status, json } = await post('/queue/process?force=true', {});
+    expect(status).toBe(202);
+    expect(json.data.background).toBe(true);
+    expect(json.data.queued).toHaveLength(2);
+    expect(json.data.queued.map((j: any) => j.status)).toEqual(['pending', 'pending']);
+    expect(sonarr.deleteEpisodeFile).not.toHaveBeenCalled();
+
+    // The worker then runs them.
+    startDeletionJobWorker();
+    try {
+      expect(await waitForDeletionJobsIdle(5_000)).toBe(true);
+    } finally {
+      stopDeletionJobWorker();
+    }
+    const jobs = listJobs();
+    expect(jobs.active).toHaveLength(0);
+    expect(jobs.recent.map((j) => j.status)).toEqual(['done', 'done']);
+    expect(jobs.recent.reduce((sum, j) => sum + (j.fileSizeFreed ?? 0), 0)).toBe(3_000);
     expect(sonarr.deleteEpisodeFile).toHaveBeenCalledTimes(2);
   });
 

@@ -252,7 +252,7 @@ export function formatActivity(entry: ActivityLogEntry): FormattedActivity {
 
     case 'error': {
       const err = readString(meta, 'error') ?? readString(meta, 'message');
-      if (entry.action === 'deletion_failed' || entry.action === 'episode_deletion_failed') {
+      if (entry.action === 'deletion_failed' || entry.action === 'episode_deletion_failed' || entry.action === 'overseerr_reset_failed') {
         const service = readString(meta, 'service');
         const step = readString(meta, 'step');
         const status = readNumber(meta, 'upstreamStatus');
@@ -266,7 +266,9 @@ export function formatActivity(entry: ActivityLogEntry): FormattedActivity {
           title:
             entry.action === 'episode_deletion_failed'
               ? i18n.t('activityLog:formatter.episodeDeletionFailed', 'Episode deletion failed')
-              : i18n.t('activityLog:formatter.deletionFailed', 'Deletion failed'),
+              : entry.action === 'overseerr_reset_failed'
+                ? i18n.t('activityLog:formatter.overseerrResetFailed', 'Seerr reset failed')
+                : i18n.t('activityLog:formatter.deletionFailed', 'Deletion failed'),
           description: err,
           chips,
         };

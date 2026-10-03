@@ -41,14 +41,16 @@ function envInt(name: string, fallback: number, min: number): number {
 /**
  * Timing for deletes, from the environment with sane floors. Deleting a file is
  * the one call that legitimately runs long, so it gets its own, longer limit
- * (ARR_DELETE_TIMEOUT_MS, default 120 s) and a verification window after that
- * (ARR_DELETE_VERIFY_SECONDS, default 90 s).
+ * (ARR_DELETE_TIMEOUT_MS, default 120 s). After that the job turns to
+ * verifying: the file is polled every ARR_DELETE_VERIFY_INTERVAL_SECONDS
+ * (default 15) for up to ARR_DELETE_VERIFY_MINUTES (default 30) and counts as
+ * deleted the moment it is gone. Only the end of that window is a failure.
  */
 export function arrTimingFromEnv(): Required<ArrTimingOptions> {
   return {
     deleteTimeoutMs: envInt('ARR_DELETE_TIMEOUT_MS', 120_000, 5_000),
-    verifyWindowMs: envInt('ARR_DELETE_VERIFY_SECONDS', 90, 0) * 1000,
-    verifyIntervalMs: 5_000,
+    verifyWindowMs: envInt('ARR_DELETE_VERIFY_MINUTES', 30, 0) * 60_000,
+    verifyIntervalMs: envInt('ARR_DELETE_VERIFY_INTERVAL_SECONDS', 15, 1) * 1000,
   };
 }
 

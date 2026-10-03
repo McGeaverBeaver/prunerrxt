@@ -54,7 +54,7 @@ function upstreamError(status: number): Error {
 function buildService(overrides: Record<string, unknown> = {}) {
   const update = vi.fn(async () => undefined);
   const historyCreate = vi.fn(async () => ({}) as never);
-  const resetMediaByTmdbId = vi.fn(async () => true);
+  const resetMediaByTmdbId = vi.fn(async () => ({ outcome: 'reset' as const, mediaId: 1 }));
   const radarr = {
     unmonitorMovie: vi.fn<RadarrDeps['unmonitorMovie']>(async () => 'unmonitored'),
     deleteMovieFilesByMovieId: vi.fn<RadarrDeps['deleteMovieFilesByMovieId']>(async () => ({ outcome: 'deleted' })),

@@ -55,6 +55,7 @@
     "error": "Errore",
     "flaggedForReview": "Segnalato per revisione",
     "matchedRule": "Regola corrispondente: {{rule}}",
+    "overseerrResetFailed": "",
     "protected": "Protetto",
     "protectionRemoved": "Protezione rimossa",
     "queuedForDeletion": "In coda per l'eliminazione",

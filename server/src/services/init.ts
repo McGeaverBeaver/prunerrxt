@@ -214,9 +214,7 @@ export async function initializeServices(): Promise<void> {
 
     // Overseerr service (if configured)
     overseerrService: overseerr ? {
-      async resetMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<boolean> {
-        return await overseerr.resetMediaByTmdbId(tmdbId, type);
-      },
+      resetMediaByTmdbId: (tmdbId: number, type: 'movie' | 'tv') => overseerr.resetMediaByTmdbId(tmdbId, type),
       async getRequestedBy(tmdbId: number, type: 'movie' | 'tv'): Promise<string | null> {
         return await overseerr.getRequestedBy(tmdbId, type);
       },

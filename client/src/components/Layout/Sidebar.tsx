@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { useUnraidStats, useDeletionQueue, useVersion, useStats } from '@/hooks/useApi';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { DeletionJobsIndicator } from './DeletionJobsIndicator';
 import { useTranslation } from 'react-i18next';
 import { DiskStatsModal } from './DiskStatsModal';
 import { StorageWidget } from './StorageWidget';
@@ -191,6 +192,9 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
           </div>
         </div>
       )}
+
+      {/* Background deletions, visible on every page */}
+      <DeletionJobsIndicator />
 
       {/* Disk Stats Modal */}
       <DiskStatsModal

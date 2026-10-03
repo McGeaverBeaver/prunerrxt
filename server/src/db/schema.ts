@@ -546,6 +546,55 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_oauth_tokens_expires ON oauth_tokens(expires_at);
     `,
   },
+  {
+    version: 24,
+    name: 'deletion_jobs',
+    up: `
+      -- Background deletions. Delete Now / Delete All create a row per item
+      -- and return; a worker runs them, so the UI never waits on a slow
+      -- Sonarr/Radarr file delete. Rows outlive restarts: anything still
+      -- running when the process stopped is picked up again on boot.
+      CREATE TABLE IF NOT EXISTS deletion_jobs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        queue_id TEXT NOT NULL,
+        kind TEXT NOT NULL CHECK (kind IN ('media', 'episode')),
+        media_item_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        media_type TEXT NOT NULL,
+        service TEXT,
+        file_size INTEGER NOT NULL DEFAULT 0,
+        deletion_action TEXT NOT NULL,
+        reset_overseerr INTEGER NOT NULL DEFAULT 0,
+        rule_id INTEGER,
+        batch_id TEXT,
+        requested_by TEXT NOT NULL,
+        deletion_type TEXT NOT NULL DEFAULT 'manual',
+        status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'verifying', 'done', 'reconciled', 'failed', 'cancelled')),
+        stage TEXT,
+        step TEXT,
+        message TEXT,
+        step_started_at TEXT,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        error TEXT,
+        upstream_status INTEGER,
+        failed_step TEXT,
+        failed_service TEXT,
+        file_size_freed INTEGER,
+        overseerr_reset INTEGER,
+        step_durations TEXT,
+        created_at TEXT NOT NULL,
+        started_at TEXT,
+        finished_at TEXT,
+        updated_at TEXT NOT NULL
+      );
+
+      -- One live job per queue entry: the per-item lock.
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_deletion_jobs_active_queue
+        ON deletion_jobs(queue_id) WHERE status IN ('pending', 'running', 'verifying');
+      CREATE INDEX IF NOT EXISTS idx_deletion_jobs_status ON deletion_jobs(status);
+      CREATE INDEX IF NOT EXISTS idx_deletion_jobs_batch ON deletion_jobs(batch_id);
+    `,
+  },
 ];
 
 // Schema version tracking table

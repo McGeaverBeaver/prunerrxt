@@ -1,11 +1,10 @@
 import { Router, Request, Response } from 'express';
 import mediaItemsRepo from '../db/repositories/mediaItems';
 import logger from '../utils/logger';
-import { openSseStream } from '../utils/sse';
+import { requestActorName } from '../utils/actor';
+import { enqueueDeleteNow, enqueueReadyItems } from '../services/deletionJobs';
 import {
-  deleteQueueItemNow,
   getAllQueueItems,
-  inspectQueueItem,
   listQueue,
   processQueue,
   removeFromQueue,
@@ -94,15 +93,30 @@ router.delete('/:id', (req: Request, res: Response) => {
   }
 });
 
-// POST /api/queue/process - Process the deletion queue (delete items whose grace period has expired)
+// POST /api/queue/process - Process the deletion queue
+//
+// A dry run answers at once with what would go. A real run queues one
+// background job per due item and answers 202: the deletions run in the
+// worker and the UI follows them through /api/deletion-jobs.
 router.post('/process', async (req: Request, res: Response) => {
   try {
     const dryRun = req.query['dryRun'] === 'true';
     const force = req.query['force'] === 'true';
 
-    const { message, ...data } = await processQueue({ dryRun, force });
+    if (dryRun) {
+      const { message, ...data } = await processQueue({ dryRun: true, force });
+      res.json({ success: true, data, message });
+      return;
+    }
 
-    res.json({ success: true, data, message });
+    const batch = enqueueReadyItems({ force, actorName: requestActorName(req) });
+    const message =
+      batch.queued.length > 0
+        ? `Deleting ${batch.queued.length} item(s) in the background`
+        : batch.alreadyQueued > 0
+          ? 'Those items are already being deleted'
+          : 'No items ready for deletion';
+    res.status(202).json({ success: true, data: { ...batch, background: true }, message });
   } catch (error) {
     logger.error('Failed to process deletion queue:', error);
     res.status(500).json({
@@ -112,69 +126,26 @@ router.post('/process', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/queue/:id/delete-now - Immediately delete a single item (bypass grace period)
-router.post('/:id/delete-now', async (req: Request, res: Response) => {
+// POST /api/queue/:id/delete-now - Delete a single item now, in the background.
+// Answers 202 with the job; progress arrives through /api/deletion-jobs.
+router.post('/:id/delete-now', (req: Request, res: Response) => {
   try {
-    const result = await deleteQueueItemNow(req.params['id'] as string);
-
+    const result = enqueueDeleteNow(req.params['id'] as string, { actorName: requestActorName(req) });
     if (!result.ok) {
-      res.status(result.status).json({
-        success: false,
-        error: result.error,
-        ...(result.overseerrError !== undefined ? { data: { overseerrError: result.overseerrError } } : {}),
-      });
+      res.status(result.status).json({ success: false, error: result.error });
       return;
     }
-
-    const { ok: _ok, ...data } = result;
-    res.json({
+    res.status(202).json({
       success: true,
-      data,
-      message: `"${result.title}" deleted successfully`,
+      data: { job: result.job, alreadyQueued: result.alreadyQueued, background: true },
+      message: result.alreadyQueued
+        ? `"${result.job.title}" is already being deleted`
+        : `Deleting "${result.job.title}" in the background`,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error(`Failed to immediately delete item: ${errorMessage}`);
-    res.status(500).json({
-      success: false,
-      error: errorMessage || 'Failed to delete item',
-    });
-  }
-});
-
-// POST /api/queue/:id/delete-now/stream - Delete with SSE progress streaming
-//
-// Validation happens before the stream opens so a bad id still gets a plain
-// JSON status. After that every step, including the final success or failure,
-// travels as an SSE event; the deletion itself runs to completion whether or
-// not the browser is still listening.
-router.post('/:id/delete-now/stream', async (req: Request, res: Response) => {
-  const rawId = req.params['id'] as string;
-  const inspected = inspectQueueItem(rawId);
-  if (!inspected.ok) {
-    res.status(inspected.status).json({ success: false, error: inspected.error });
-    return;
-  }
-
-  const stream = openSseStream(req, res);
-
-  try {
-    const result = await deleteQueueItemNow(rawId, { onProgress: (progress) => stream.send(progress) });
-    if (!result.ok) {
-      logger.error(`Failed to delete "${inspected.title}" via stream: ${result.error}`);
-    }
-  } catch (error) {
-    // deleteQueueItemNow reports its own failures as 'error' events; this is
-    // for anything that escaped it, so the dialog never spins forever.
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error(`Failed to delete "${inspected.title}" via stream: ${errorMessage}`);
-    stream.send({
-      stage: 'error',
-      message: `Failed to delete: ${errorMessage}`,
-      result: { success: false, error: errorMessage },
-    });
-  } finally {
-    stream.close();
+    logger.error(`Failed to queue immediate deletion: ${errorMessage}`);
+    res.status(500).json({ success: false, error: errorMessage || 'Failed to delete item' });
   }
 });
 

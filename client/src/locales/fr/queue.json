@@ -1,7 +1,6 @@
 {
   "actions": {
     "cancel": "Annuler",
-    "close": "Fermer",
     "confirmDelete": "Confirmer la suppression",
     "deleteAll": "Tout supprimer",
     "deleteAllNow": "Tout supprimer maintenant",
@@ -10,6 +9,7 @@
     "process": "Traiter",
     "processing": "Traitement...",
     "processQueue": "Traiter la file d'attente",
+    "queueing": "",
     "removeSelected_one": "Retirer la sélection ({{count}})",
     "removeSelected_many": "Retirer la sélection ({{count}})",
     "removeSelected_other": "Retirer la sélection ({{count}})",
@@ -30,24 +30,8 @@
   },
   "deleteNowModal": {
     "actionLabel": "Action :",
-    "complete": "Suppression terminée !",
-    "connectionLost": "",
-    "connectionLostDetail": "",
-    "failed": "",
-    "failedAtStep": "",
-    "failedHint": "",
-    "fileProgress": "Fichier {{current}} sur {{total}}",
-    "freed": "{{size}} libéré",
-    "initializing": "Initialisation...",
-    "reconciledBody": "",
-    "reconciledTitle": "",
-    "resetInSeerrSuffix": " • Réinitialiser dans Seerr",
-    "stepElapsed": "",
-    "stepSkipped": "",
+    "background": "",
     "title": "Supprimer maintenant",
-    "titleDeleting": "Suppression...",
-    "upstreamStatus": "",
-    "verifying": "",
     "warning": "Cela supprimera immédiatement et définitivement cet élément, en contournant le délai de grâce.",
     "willResetSeerr": "Sera réinitialisé dans Seerr pour une nouvelle demande"
   },
@@ -63,6 +47,78 @@
   "header": {
     "subtitle": "Éléments marqués pour suppression avec compte à rebours du délai de grâce",
     "title": "File d'attente de suppression"
+  },
+  "jobs": {
+    "badge": {
+      "deleting": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "verifying": ""
+    },
+    "indicator": {
+      "deleting": "",
+      "deletingCount_one": "",
+      "deletingCount_many": "",
+      "deletingCount_other": "",
+      "deletingOf": "",
+      "failed_one": "",
+      "failed_many": "",
+      "failed_other": "",
+      "open": ""
+    },
+    "panel": {
+      "active": "",
+      "attempts_one": "",
+      "attempts_many": "",
+      "attempts_other": "",
+      "cancel": "",
+      "cancelFailed": "",
+      "clear": "",
+      "failedAt": "",
+      "freed": "",
+      "intro": "",
+      "nothingActive": "",
+      "nothingRecent": "",
+      "polling": "",
+      "recent": "",
+      "retry": "",
+      "retryFailed": "",
+      "title": ""
+    },
+    "status": {
+      "cancelled": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "running": "",
+      "verifying": ""
+    },
+    "step": {
+      "deleteFiles": "",
+      "pending": "",
+      "remove": "",
+      "resetSeerr": "",
+      "starting": "",
+      "unmonitor": "",
+      "verifying": ""
+    },
+    "stepName": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    },
+    "toast": {
+      "doneMsg": "",
+      "doneTitle": "",
+      "failedMsg": "",
+      "failedTitle": "",
+      "reconciledMsg": "",
+      "reconciledTitle": ""
+    }
   },
   "pagination": {
     "next": "Suivant",
@@ -113,16 +169,19 @@
     "showingRange": "Affichage de {{start}}-{{end}} sur {{total}}"
   },
   "toasts": {
-    "deletedSuccessMsg": "\"{{title}}\" a été supprimé ({{size}} libéré)",
-    "deletedSuccessTitle": "Suppression réussie",
+    "alreadyDeletingTitle": "",
     "deleteFailedMsg": "Échec de la suppression de l'élément",
     "deleteFailedTitle": "Échec de la suppression",
+    "deletingMsg": "",
+    "deletingTitle": "",
     "itemsRemovedMsg_one": "{{count}} élément retiré de la file d'attente",
     "itemsRemovedMsg_many": "{{count}} éléments retirés de la file d'attente",
     "itemsRemovedMsg_other": "{{count}} élément(s) retirés de la file d'attente",
     "itemsRemovedTitle": "Éléments retirés",
-    "reconciledMsg": "",
-    "reconciledTitle": "",
+    "processingMsg_one": "",
+    "processingMsg_many": "",
+    "processingMsg_other": "",
+    "processingTitle": "",
     "someItemsFailedMsg_one": "{{count}} élément n'a pas pu être retiré",
     "someItemsFailedMsg_many": "{{count}} éléments n'ont pas pu être retirés",
     "someItemsFailedMsg_other": "{{count}} élément(s) n'ont pas pu être retirés",

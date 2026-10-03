@@ -2,6 +2,13 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import logger from '../utils/logger';
 import type { OverseerrRequest, OverseerrApiResponse } from './types';
 
+/** What a Seerr reset did, so the caller can tell "done" from "nothing there" from "refused". */
+export type OverseerrResetResult =
+  | { outcome: 'reset'; mediaId: number }
+  | { outcome: 'nothing_to_reset'; message: string }
+  | { outcome: 'failed'; status?: number; message: string };
+
+
 export class OverseerrService {
   private client: AxiosInstance;
 
@@ -358,32 +365,50 @@ export class OverseerrService {
    * Reset media status by TMDB ID - allows content to be re-requested
    * This finds the media entry and deletes it, resetting the availability status
    */
-  async resetMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<boolean> {
+  async resetMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<OverseerrResetResult> {
+    const mediaType = type === 'movie' ? 'movie' : 'tv';
+    let mediaId: number | null;
     try {
-      const mediaType = type === 'movie' ? 'movie' : 'tv';
       const response = await this.client.get(`/${mediaType}/${tmdbId}`);
-
-      if (response.data && response.data.mediaInfo && response.data.mediaInfo.id) {
-        const mediaId = response.data.mediaInfo.id;
-        return await this.deleteMedia(mediaId);
-      }
-
-      logger.warn(`No media entry found in Overseerr for ${type} with TMDB ID ${tmdbId}`);
-      return false;
+      const info = response.data?.mediaInfo;
+      mediaId = info && typeof info.id === 'number' ? info.id : null;
+      logger.info(`Overseerr GET /${mediaType}/${tmdbId} answered ${response.status}: ${mediaId ? `media entry ${mediaId} (status ${info.status ?? '?'})` : 'no media entry'}`);
     } catch (error) {
       const axiosError = error as AxiosError;
-
-      // 404 means no media found, which is fine
+      // 404 means Overseerr has never heard of it: nothing to reset.
       if (axiosError.response?.status === 404) {
-        logger.debug(`No media entry in Overseerr for ${type} with TMDB ID ${tmdbId}`);
-        return true;
+        logger.info(`Overseerr GET /${mediaType}/${tmdbId} answered 404: nothing to reset`);
+        return { outcome: 'nothing_to_reset', message: 'Overseerr has no entry for this title' };
       }
-
-      logger.error(`Failed to reset media for ${type} with TMDB ID ${tmdbId}`, {
+      const message = `Overseerr lookup failed${axiosError.response?.status ? ` (HTTP ${axiosError.response.status})` : ''}: ${axiosError.message}`;
+      logger.error(`Failed to look up ${type} with TMDB ID ${tmdbId} in Overseerr`, {
         status: axiosError.response?.status,
         message: axiosError.message,
       });
-      return false;
+      return { outcome: 'failed', status: axiosError.response?.status, message };
+    }
+
+    if (mediaId === null) {
+      return { outcome: 'nothing_to_reset', message: 'Overseerr knows the title but has no request or media entry for it' };
+    }
+
+    try {
+      const response = await this.client.delete(`/media/${mediaId}`);
+      logger.info(`Overseerr DELETE /media/${mediaId} answered ${response.status}: request reset for ${type} ${tmdbId}`);
+      return { outcome: 'reset', mediaId };
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.status === 404) {
+        logger.info(`Overseerr DELETE /media/${mediaId} answered 404: already cleared`);
+        return { outcome: 'nothing_to_reset', message: 'Overseerr had already cleared the entry' };
+      }
+      const message = `Overseerr refused to reset media ${mediaId}${axiosError.response?.status ? ` (HTTP ${axiosError.response.status})` : ''}: ${axiosError.message}`;
+      logger.error(`Failed to delete media ${mediaId} from Overseerr`, {
+        status: axiosError.response?.status,
+        message: axiosError.message,
+        body: axiosError.response?.data,
+      });
+      return { outcome: 'failed', status: axiosError.response?.status, message };
     }
   }
 

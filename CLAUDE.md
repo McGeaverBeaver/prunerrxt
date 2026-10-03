@@ -91,6 +91,12 @@ from the maintainer.
   `services/mediaActions.ts`, which the REST routes share; put new behaviour
   there, not in a route or a tool.
 - Immediate deletion via MCP is a separate opt-in (`mcp_allow_immediate_deletion`).
+- Delete Now and Delete All never run inside a request: they create rows in
+  `deletion_jobs` and `services/deletionJobs.ts` runs them in the background,
+  one at a time per service, resuming after a restart. The UI follows them over
+  `/api/deletion-jobs/stream` (`contexts/DeletionJobsContext.tsx`). A Sonarr or
+  Radarr delete that outlasts `ARR_DELETE_TIMEOUT_MS` is verified by polling,
+  not failed; see `services/arrHttp.ts`.
 
 ## Key Patterns
 - Client uses `camelCase`, server/database uses `snake_case`

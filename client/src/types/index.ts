@@ -153,6 +153,42 @@ export interface QueueItem {
   episodeNumber?: number;
 }
 
+// Background deletion jobs (GET /api/deletion-jobs)
+export type DeletionJobStatus = 'pending' | 'running' | 'verifying' | 'done' | 'reconciled' | 'failed' | 'cancelled';
+
+export interface DeletionJob {
+  id: number;
+  queueId: string;
+  kind: 'media' | 'episode';
+  mediaItemId: number;
+  title: string;
+  type: string;
+  service: 'Sonarr' | 'Radarr' | null;
+  size: number;
+  deletionAction: string;
+  resetOverseerr: boolean;
+  ruleId: number | null;
+  batchId: string | null;
+  requestedBy: string;
+  status: DeletionJobStatus;
+  stage: string | null;
+  step: string | null;
+  message: string | null;
+  stepStartedAt: string | null;
+  attempts: number;
+  error: string | null;
+  upstreamStatus: number | null;
+  failedStep: string | null;
+  failedService: string | null;
+  fileSizeFreed: number | null;
+  overseerrReset: boolean | null;
+  stepDurationsMs: Record<string, number>;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  updatedAt: string;
+}
+
 // History
 export interface HistoryItem {
   id: string;

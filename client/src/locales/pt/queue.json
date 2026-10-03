@@ -1,7 +1,6 @@
 {
   "actions": {
     "cancel": "Cancelar",
-    "close": "Fechar",
     "confirmDelete": "Confirmar eliminação",
     "deleteAll": "Eliminar tudo",
     "deleteAllNow": "Eliminar tudo agora",
@@ -10,6 +9,7 @@
     "process": "Processar",
     "processing": "A processar...",
     "processQueue": "Processar fila",
+    "queueing": "",
     "removeSelected_one": "Remover selecionado ({{count}})",
     "removeSelected_many": "Remover selecionados ({{count}})",
     "removeSelected_other": "Remover selecionados ({{count}})",
@@ -30,24 +30,8 @@
   },
   "deleteNowModal": {
     "actionLabel": "Ação:",
-    "complete": "Eliminação concluída!",
-    "connectionLost": "",
-    "connectionLostDetail": "",
-    "failed": "",
-    "failedAtStep": "",
-    "failedHint": "",
-    "fileProgress": "Ficheiro {{current}} de {{total}}",
-    "freed": "Libertado {{size}}",
-    "initializing": "A inicializar...",
-    "reconciledBody": "",
-    "reconciledTitle": "",
-    "resetInSeerrSuffix": " • Repor no Seerr",
-    "stepElapsed": "",
-    "stepSkipped": "",
+    "background": "",
     "title": "Eliminar agora",
-    "titleDeleting": "A eliminar...",
-    "upstreamStatus": "",
-    "verifying": "",
     "warning": "Isto irá eliminar imediata e permanentemente este item, ignorando o período de tolerância.",
     "willResetSeerr": "Será reposto no Seerr para novo pedido"
   },
@@ -63,6 +47,78 @@
   "header": {
     "subtitle": "Itens marcados para eliminação com contagem decrescente do período de tolerância",
     "title": "Fila de eliminação"
+  },
+  "jobs": {
+    "badge": {
+      "deleting": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "verifying": ""
+    },
+    "indicator": {
+      "deleting": "",
+      "deletingCount_one": "",
+      "deletingCount_many": "",
+      "deletingCount_other": "",
+      "deletingOf": "",
+      "failed_one": "",
+      "failed_many": "",
+      "failed_other": "",
+      "open": ""
+    },
+    "panel": {
+      "active": "",
+      "attempts_one": "",
+      "attempts_many": "",
+      "attempts_other": "",
+      "cancel": "",
+      "cancelFailed": "",
+      "clear": "",
+      "failedAt": "",
+      "freed": "",
+      "intro": "",
+      "nothingActive": "",
+      "nothingRecent": "",
+      "polling": "",
+      "recent": "",
+      "retry": "",
+      "retryFailed": "",
+      "title": ""
+    },
+    "status": {
+      "cancelled": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "running": "",
+      "verifying": ""
+    },
+    "step": {
+      "deleteFiles": "",
+      "pending": "",
+      "remove": "",
+      "resetSeerr": "",
+      "starting": "",
+      "unmonitor": "",
+      "verifying": ""
+    },
+    "stepName": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    },
+    "toast": {
+      "doneMsg": "",
+      "doneTitle": "",
+      "failedMsg": "",
+      "failedTitle": "",
+      "reconciledMsg": "",
+      "reconciledTitle": ""
+    }
   },
   "pagination": {
     "next": "Seguinte",
@@ -113,16 +169,19 @@
     "showingRange": "A mostrar {{start}}-{{end}} de {{total}}"
   },
   "toasts": {
-    "deletedSuccessMsg": "\"{{title}}\" foi eliminado ({{size}} libertados)",
-    "deletedSuccessTitle": "Eliminado com sucesso",
+    "alreadyDeletingTitle": "",
     "deleteFailedMsg": "Falha ao eliminar o item",
     "deleteFailedTitle": "Falha na eliminação",
+    "deletingMsg": "",
+    "deletingTitle": "",
     "itemsRemovedMsg_one": "{{count}} item removido da fila",
     "itemsRemovedMsg_many": "{{count}} itens removidos da fila",
     "itemsRemovedMsg_other": "{{count}} item(ns) removidos da fila",
     "itemsRemovedTitle": "Itens removidos",
-    "reconciledMsg": "",
-    "reconciledTitle": "",
+    "processingMsg_one": "",
+    "processingMsg_many": "",
+    "processingMsg_other": "",
+    "processingTitle": "",
     "someItemsFailedMsg_one": "{{count}} item não pôde ser removido",
     "someItemsFailedMsg_many": "{{count}} itens não puderam ser removidos",
     "someItemsFailedMsg_other": "{{count}} item(ns) não puderam ser removidos",

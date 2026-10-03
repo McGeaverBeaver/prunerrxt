@@ -77,11 +77,15 @@ services:
       # AI assistant connector (MCP) at /mcp - docs/mcp.md. On by default once
       # login is enabled; set to false for a hard off switch.
       # - MCP_ENABLED=true
+      # Deletions run in the background, one at a time per service.
+      # - DELETION_JOB_CONCURRENCY=1
       # Sonarr/Radarr delete a file inside one request; big files on network
       # storage can take minutes. Wait this long per delete, then keep checking
-      # for the file to disappear for this many seconds before failing.
+      # whether the file is gone (every N seconds, for up to M minutes) before
+      # calling the deletion failed.
       # - ARR_DELETE_TIMEOUT_MS=120000
-      # - ARR_DELETE_VERIFY_SECONDS=90
+      # - ARR_DELETE_VERIFY_MINUTES=30
+      # - ARR_DELETE_VERIFY_INTERVAL_SECONDS=15
 
       # Database Settings
       - DATA_DIR=/app/data

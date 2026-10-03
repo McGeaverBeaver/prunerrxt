@@ -102,6 +102,7 @@ function formatAction(entry: TimelineEntry): string {
     item_deleted: i18n.t('timeline.action.itemDeleted', 'Deleted'),
     reconciled: i18n.t('timeline.action.reconciled', 'Already deleted upstream; removed from the queue'),
     deletion_failed: i18n.t('timeline.action.deletionFailed', 'Deletion failed'),
+    overseerr_reset_failed: i18n.t('timeline.action.overseerrResetFailed', 'Seerr reset failed'),
     episode_deletion_failed: i18n.t('timeline.action.episodeDeletionFailed', 'Episode deletion failed'),
     item_restored: i18n.t('timeline.action.itemRestored', 'Restored'),
     rule_matched: i18n.t('timeline.action.ruleMatched', 'Matched by rule'),

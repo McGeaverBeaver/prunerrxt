@@ -49,6 +49,7 @@
     "error": "Fehler",
     "flaggedForReview": "Zur Überprüfung markiert",
     "matchedRule": "Übereinstimmende Regel: {{rule}}",
+    "overseerrResetFailed": "",
     "protected": "Geschützt",
     "protectionRemoved": "Schutz entfernt",
     "queuedForDeletion": "Zur Löschung eingereiht",

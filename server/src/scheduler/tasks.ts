@@ -7,6 +7,7 @@ import settingsRepo from '../db/repositories/settings';
 import { UnraidService } from '../services/unraid';
 import { getDeletionService } from '../services/deletion';
 import { processDueEpisodeDeletions } from '../services/episodeDeletions';
+import { activeJobMediaItemIds } from '../services/deletionJobs';
 import { PlexUsersService } from '../services/plexUsers';
 import { isSyncInProgress, runLibrarySync } from '../services/syncCoordinator';
 import { logActivity } from '../db/repositories/activity';
@@ -569,7 +570,7 @@ export async function processDeletionQueue(): Promise<DeletionProcessingResult> 
     const snapshotById = new Map(preSnapshot.map((p) => [p.id, p]));
 
     // Process pending deletions (not a dry run)
-    const results = await deletionService.processPendingDeletions(false);
+    const results = await deletionService.processPendingDeletions(false, { excludeItemIds: activeJobMediaItemIds() });
 
     // Queued episode/season deletions expire on the same schedule as whole
     // items. A failure in that queue must not cost us the item deletions that
@@ -1407,7 +1408,7 @@ export async function monitorDiskPressure(): Promise<TaskResult> {
     // Critical + auto-process: reclaim immediately rather than waiting for grace.
     if (severity === 'critical' && cfg.criticalAutoProcess && itemsQueued > 0) {
       try {
-        await deletionService.processPendingDeletions(false);
+        await deletionService.processPendingDeletions(false, { excludeItemIds: activeJobMediaItemIds() });
       } catch (error) {
         logger.error('Disk-pressure: critical auto-process failed:', error);
       }

@@ -9,6 +9,7 @@ import {
 import logger from '../utils/logger';
 import { logActivity } from '../db/repositories/activity';
 import { upstreamStatus, type FileDeletionProgress } from './arrHttp';
+import type { OverseerrResetResult } from './overseerr';
 
 // ============================================================================
 // Types
@@ -154,7 +155,7 @@ export interface DeletionServiceDependencies {
     removeMovie(movieId: number, deleteFiles: boolean): Promise<'deleted' | 'not_found'>;
   };
   overseerrService?: {
-    resetMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<boolean>;
+    resetMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<OverseerrResetResult>;
     getRequestedBy(tmdbId: number, type: 'movie' | 'tv'): Promise<string | null>;
     notifyRequesterOfDeletion(tmdbId: number, type: 'movie' | 'tv', title: string, reason?: string): Promise<boolean>;
   };
@@ -387,10 +388,20 @@ export class DeletionService {
   /**
    * Process all pending deletions
    */
-  async processPendingDeletions(dryRun: boolean = false): Promise<DeletionResult[]> {
+  async processPendingDeletions(
+    dryRun: boolean = false,
+    options: { excludeItemIds?: Set<number> } = {}
+  ): Promise<DeletionResult[]> {
     logger.info(`Processing pending deletions (dryRun: ${dryRun})`);
 
-    const pendingItems = await this.getPendingDeletions();
+    const due = await this.getPendingDeletions();
+    // Items a background job already owns are left to it.
+    const pendingItems = options.excludeItemIds
+      ? due.filter((queueItem) => !options.excludeItemIds!.has(queueItem.mediaItem.id))
+      : due;
+    if (pendingItems.length < due.length) {
+      logger.info(`Skipping ${due.length - pendingItems.length} item(s) already being deleted by a background job`);
+    }
     const results: DeletionResult[] = [];
 
     logger.info(`Found ${pendingItems.length} items ready for deletion`);
@@ -467,6 +478,8 @@ export class DeletionService {
       ruleId?: number;
       /** Who asked: a scheduled run ('automatic') or a person ('manual'). */
       deletionType?: DeletionType;
+      /** The person's name, when known, for the activity log. */
+      actorName?: string;
       onProgress?: (progress: DeletionProgress) => void;
     } = {}
   ): Promise<DeletionResult> {
@@ -527,12 +540,10 @@ export class DeletionService {
         report('overseerr_reset', 'Overseerr', 'resetting_overseerr', 'Resetting in Seerr so it can be requested again...');
         try {
           const mediaType = item.type === 'movie' ? 'movie' : 'tv';
-          overseerrReset = await this.dependencies.overseerrService.resetMediaByTmdbId(
-            item.tmdb_id,
-            mediaType
-          );
+          const reset = await this.dependencies.overseerrService.resetMediaByTmdbId(item.tmdb_id, mediaType);
 
-          if (overseerrReset) {
+          if (reset.outcome === 'reset') {
+            overseerrReset = true;
             logger.info(`Reset "${item.title}" in Overseerr - can be re-requested`);
 
             // Update media item with reset timestamp
@@ -541,10 +552,17 @@ export class DeletionService {
                 overseerr_reset_at: new Date().toISOString(),
               } as any);
             }
+          } else if (reset.outcome === 'nothing_to_reset') {
+            logger.info(`Nothing to reset in Overseerr for "${item.title}": ${reset.message}`);
+          } else {
+            overseerrError = reset.message;
+            logger.warn(`Failed to reset "${item.title}" in Overseerr: ${reset.message}`);
+            await this.logOverseerrFailure(item, options.ruleId, deletionType, options.actorName, reset.message, reset.status);
           }
         } catch (overseerrErr) {
           overseerrError = overseerrErr instanceof Error ? overseerrErr.message : String(overseerrErr);
           logger.warn(`Failed to reset "${item.title}" in Overseerr: ${overseerrError}`);
+          await this.logOverseerrFailure(item, options.ruleId, deletionType, options.actorName, overseerrError, upstreamStatus(overseerrErr));
           // Don't fail the deletion, just log the error
         }
       }
@@ -574,7 +592,7 @@ export class DeletionService {
         }
       }
 
-      const { actorType, actorId, actorName } = await this.actorFor(options.ruleId, deletionType);
+      const { actorType, actorId, actorName } = await this.actorFor(options.ruleId, deletionType, options.actorName);
 
       // Log to activity log
       try {
@@ -654,6 +672,7 @@ export class DeletionService {
         overseerrReset,
         overseerrError,
         reconciled,
+        stepDurationsMs: stepDurations,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -665,7 +684,7 @@ export class DeletionService {
       // Every failure is visible in the activity log, with enough detail to
       // act on: which step, which service, and what it answered.
       try {
-        const { actorType, actorId, actorName } = await this.actorFor(options.ruleId, deletionType);
+        const { actorType, actorId, actorName } = await this.actorFor(options.ruleId, deletionType, options.actorName);
         logActivity({
           eventType: 'error',
           action: 'deletion_failed',
@@ -717,21 +736,26 @@ export class DeletionService {
         failedStep: failedAt?.step,
         failedService: failedAt?.service,
         upstreamStatus: status,
+        stepDurationsMs: stepDurations,
       };
     }
   }
 
-  /** Attribution for history and activity entries. */
+  /**
+   * Attribution for history and activity entries. A manual run is always the
+   * person (by name when login knows it), even when a rule originally queued
+   * the item; a scheduled run is the rule, or the scheduler.
+   */
   private async actorFor(
     ruleId: number | undefined,
-    deletionType: DeletionType
+    deletionType: DeletionType,
+    actorName?: string
   ): Promise<{ actorType: 'rule' | 'user'; actorId: string | null; actorName: string }> {
+    if (deletionType === 'manual') {
+      return { actorType: 'user', actorId: null, actorName: actorName || 'Manual deletion' };
+    }
     if (!ruleId) {
-      return {
-        actorType: 'user',
-        actorId: null,
-        actorName: deletionType === 'manual' ? 'Manual deletion' : 'Scheduled deletion',
-      };
+      return { actorType: 'user', actorId: null, actorName: actorName || 'Scheduled deletion' };
     }
     let ruleName: string | undefined;
     if (this.dependencies.ruleRepository) {
@@ -743,6 +767,44 @@ export class DeletionService {
       }
     }
     return { actorType: 'rule', actorId: String(ruleId), actorName: ruleName || `Rule #${ruleId}` };
+  }
+
+  /**
+   * A Seerr reset that did not happen is worth an error entry of its own: the
+   * deletion still succeeded, but the request is still marked available and
+   * nobody would otherwise know.
+   */
+  private async logOverseerrFailure(
+    item: MediaItem,
+    ruleId: number | undefined,
+    deletionType: DeletionType,
+    actorName: string | undefined,
+    message: string,
+    status: number | undefined
+  ): Promise<void> {
+    try {
+      const actor = await this.actorFor(ruleId, deletionType, actorName);
+      logActivity({
+        eventType: 'error',
+        action: 'overseerr_reset_failed',
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        actorName: actor.actorName,
+        targetType: 'media_item',
+        targetId: item.id,
+        targetTitle: item.title,
+        metadata: JSON.stringify({
+          mediaType: item.type,
+          tmdbId: item.tmdb_id,
+          step: 'overseerr_reset',
+          service: 'Overseerr',
+          upstreamStatus: status ?? null,
+          message,
+        }),
+      });
+    } catch (activityError) {
+      logger.warn('Failed to log activity for Overseerr reset failure:', activityError);
+    }
   }
 
   // ============================================================================

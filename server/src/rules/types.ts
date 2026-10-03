@@ -255,6 +255,8 @@ export interface DeletionResult {
   failedStep?: DeletionStep;
   failedService?: UpstreamService;
   upstreamStatus?: number;
+  /** How long each step took. */
+  stepDurationsMs?: Partial<Record<DeletionStep, number>>;
 }
 
 // ============================================================================

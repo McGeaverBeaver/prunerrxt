@@ -138,7 +138,12 @@ skipped), `protect_items`, `unprotect_items`, `queue_episodes_for_deletion`,
 `cancel_episode_deletions`, `get_deletion_defaults`
 
 **Deletion queue** — `list_queue`, `remove_from_queue`, `process_queue`
-(dry run by default), `delete_now` (needs the opt-in)
+(dry run by default), `delete_now` (needs the opt-in), `list_deletion_jobs`.
+Real deletions run as background jobs: `delete_now` and a real `process_queue`
+return at once with the job(s), and `list_deletion_jobs` reports their step,
+elapsed time and outcome. Sonarr/Radarr can take minutes to delete a large
+file on network storage, so a job may sit in *verifying* for a while before
+it ends as *done*.
 
 **Rules** — `list_rules`, `get_rule`, `describe_rule_fields` (every field,
 operator and example in the exact JSON shape), `preview_rule`, `create_rule`,

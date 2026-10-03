@@ -1,18 +1,4 @@
 {
-  "deleteNowModal": {
-    "steps": {
-      "deleteFiles": "Delete files in {{service}}",
-      "remove": "Remove from {{service}} with its files",
-      "resetSeerr": "Reset in Seerr",
-      "unmonitor": "Unmonitor in {{service}}"
-    },
-    "stepVerb": {
-      "deleteFiles": "deleting files",
-      "remove": "removing it",
-      "resetSeerr": "resetting the request",
-      "unmonitor": "unmonitoring"
-    }
-  },
   "dismissNotification": "Dismiss notification",
   "dropdown": {
     "noMatches": "No matches",
@@ -85,6 +71,7 @@
       "itemDeleted": "Deleted",
       "itemQueued": "Queued for deletion",
       "itemRestored": "Restored",
+      "overseerrResetFailed": "Seerr reset failed",
       "protected": "Item protected",
       "reconciled": "Already deleted upstream; removed from the queue",
       "ruleMatched": "Matched by rule",

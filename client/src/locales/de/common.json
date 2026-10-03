@@ -1,18 +1,4 @@
 {
-  "deleteNowModal": {
-    "steps": {
-      "deleteFiles": "",
-      "remove": "",
-      "resetSeerr": "",
-      "unmonitor": ""
-    },
-    "stepVerb": {
-      "deleteFiles": "",
-      "remove": "",
-      "resetSeerr": "",
-      "unmonitor": ""
-    }
-  },
   "dismissNotification": "Benachrichtigung schließen",
   "dropdown": {
     "noMatches": "Keine Treffer",
@@ -85,6 +71,7 @@
       "itemDeleted": "Gelöscht",
       "itemQueued": "Zum Löschen vorgemerkt",
       "itemRestored": "Wiederhergestellt",
+      "overseerrResetFailed": "",
       "protected": "Element geschützt",
       "reconciled": "",
       "ruleMatched": "Von Regel erfasst",

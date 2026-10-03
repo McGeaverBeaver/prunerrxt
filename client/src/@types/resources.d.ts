@@ -51,6 +51,7 @@ export default interface Resources {
       "error": "Error",
       "flaggedForReview": "Flagged for review",
       "matchedRule": "Matched rule: {{rule}}",
+      "overseerrResetFailed": "Seerr reset failed",
       "protected": "Protected",
       "protectionRemoved": "Protection removed",
       "queuedForDeletion": "Queued for deletion",
@@ -195,20 +196,6 @@ export default interface Resources {
     }
   },
   "common": {
-    "deleteNowModal": {
-      "stepVerb": {
-        "deleteFiles": "deleting files",
-        "remove": "removing it",
-        "resetSeerr": "resetting the request",
-        "unmonitor": "unmonitoring"
-      },
-      "steps": {
-        "deleteFiles": "Delete files in {{service}}",
-        "remove": "Remove from {{service}} with its files",
-        "resetSeerr": "Reset in Seerr",
-        "unmonitor": "Unmonitor in {{service}}"
-      }
-    },
     "dismissNotification": "Dismiss notification",
     "dropdown": {
       "noMatches": "No matches",
@@ -281,6 +268,7 @@ export default interface Resources {
         "itemDeleted": "Deleted",
         "itemQueued": "Queued for deletion",
         "itemRestored": "Restored",
+        "overseerrResetFailed": "Seerr reset failed",
         "protected": "Item protected",
         "reconciled": "Already deleted upstream; removed from the queue",
         "ruleMatched": "Matched by rule",
@@ -882,7 +870,6 @@ export default interface Resources {
   "queue": {
     "actions": {
       "cancel": "Cancel",
-      "close": "Close",
       "confirmDelete": "Confirm Delete",
       "deleteAll": "Delete All",
       "deleteAllNow": "Delete All Now",
@@ -891,6 +878,7 @@ export default interface Resources {
       "process": "Process",
       "processQueue": "Process Queue",
       "processing": "Processing...",
+      "queueing": "Starting...",
       "removeSelected_one": "Remove Selected ({{count}})",
       "removeSelected_other": "Remove Selected ({{count}})",
       "removingProgress": "Removing {{current}}/{{total}}..."
@@ -909,24 +897,8 @@ export default interface Resources {
     },
     "deleteNowModal": {
       "actionLabel": "Action:",
-      "complete": "Deletion complete!",
-      "connectionLost": "Lost the connection to Prunerr before the deletion reported a result.",
-      "connectionLostDetail": "The deletion keeps running on the server. Check the Activity log for the outcome, then refresh the queue.",
-      "failed": "Deletion failed",
-      "failedAtStep": "Failed while {{step}} in {{service}}",
-      "failedHint": "The item stays in the queue. The failure is recorded in the Activity log.",
-      "fileProgress": "File {{current}} of {{total}}",
-      "freed": "Freed {{size}}",
-      "initializing": "Initializing...",
-      "reconciledBody": "This item was no longer in {{service}}; it had been deleted there already. Prunerr removed it from the queue and marked it deleted. No space was freed by this run.",
-      "reconciledTitle": "Already deleted",
-      "resetInSeerrSuffix": " • Reset in Seerr",
-      "stepElapsed": "{{seconds}}s",
-      "stepSkipped": "skipped",
+      "background": "The deletion runs in the background. Keep using Prunerr; progress shows on this row and in the sidebar, and the outcome lands in the Activity log.",
       "title": "Delete Now",
-      "titleDeleting": "Deleting...",
-      "upstreamStatus": "{{service}} answered HTTP {{status}}",
-      "verifying": "Still deleting on the {{service}} side; this can take a few minutes for large files on network storage.",
       "warning": "This will immediately and permanently delete this item, bypassing the grace period.",
       "willResetSeerr": "Will reset in Seerr for re-request"
     },
@@ -942,6 +914,75 @@ export default interface Resources {
     "header": {
       "subtitle": "Items marked for deletion with grace period countdown",
       "title": "Deletion Queue"
+    },
+    "jobs": {
+      "badge": {
+        "deleting": "Deleting",
+        "done": "Deleted",
+        "failed": "Failed",
+        "pending": "Queued to delete",
+        "reconciled": "Already deleted",
+        "verifying": "Verifying"
+      },
+      "indicator": {
+        "deleting": "Deleting",
+        "deletingCount_one": "Deleting {{count}} items",
+        "deletingCount_other": "Deleting {{count}} items",
+        "deletingOf": "Deleting {{index}} of {{total}}",
+        "failed_one": "{{count}} deletion failed",
+        "failed_other": "{{count}} deletion failed",
+        "open": "Show deletion jobs"
+      },
+      "panel": {
+        "active": "In progress",
+        "attempts_one": "attempt {{count}}",
+        "attempts_other": "attempt {{count}}",
+        "cancel": "Cancel",
+        "cancelFailed": "Could not cancel",
+        "clear": "Clear finished",
+        "failedAt": "Failed while {{step}} in {{service}}",
+        "freed": "{{size}} freed",
+        "intro": "Deletions run in the background. A large file on network storage can take Sonarr or Radarr several minutes; the app stays usable meanwhile and the outcome lands here and in the Activity log.",
+        "nothingActive": "Nothing is being deleted right now.",
+        "nothingRecent": "No finished deletions yet.",
+        "polling": "(live updates paused; refreshing every few seconds)",
+        "recent": "Recently finished",
+        "retry": "Retry",
+        "retryFailed": "Could not retry",
+        "title": "Deletion jobs"
+      },
+      "status": {
+        "cancelled": "Cancelled",
+        "done": "Done",
+        "failed": "Failed",
+        "pending": "Pending",
+        "reconciled": "Already deleted",
+        "running": "Deleting",
+        "verifying": "Verifying"
+      },
+      "step": {
+        "deleteFiles": "deleting files in {{service}}",
+        "pending": "waiting to start",
+        "remove": "removing from {{service}}",
+        "resetSeerr": "resetting in Seerr",
+        "starting": "starting",
+        "unmonitor": "unmonitoring in {{service}}",
+        "verifying": "waiting for {{service}} to finish deleting"
+      },
+      "stepName": {
+        "deleteFiles": "Delete files",
+        "remove": "Remove",
+        "resetSeerr": "Reset in Seerr",
+        "unmonitor": "Unmonitor"
+      },
+      "toast": {
+        "doneMsg": "\"{{title}}\" deleted ({{size}} freed)",
+        "doneTitle": "Deleted",
+        "failedMsg": "See the deletion jobs panel for details",
+        "failedTitle": "Deletion failed",
+        "reconciledMsg": "\"{{title}}\" was already gone in {{service}}; removed from the queue",
+        "reconciledTitle": "Already deleted"
+      }
     },
     "pagination": {
       "next": "Next",
@@ -988,15 +1029,17 @@ export default interface Resources {
       "showingRange": "Showing {{start}}-{{end}} of {{total}}"
     },
     "toasts": {
+      "alreadyDeletingTitle": "Already in progress",
       "deleteFailedMsg": "Failed to delete item",
       "deleteFailedTitle": "Delete failed",
-      "deletedSuccessMsg": "\"{{title}}\" has been deleted ({{size}} freed)",
-      "deletedSuccessTitle": "Deleted successfully",
+      "deletingMsg": "\"{{title}}\" is being deleted. Progress shows in the sidebar.",
+      "deletingTitle": "Deleting in the background",
       "itemsRemovedMsg_one": "{{count}} item removed from queue",
       "itemsRemovedMsg_other": "{{count}} item(s) removed from queue",
       "itemsRemovedTitle": "Items removed",
-      "reconciledMsg": "\"{{title}}\" had already been deleted in {{service}}; removed from the queue",
-      "reconciledTitle": "Already deleted",
+      "processingMsg_one": "{{count}} item(s) queued for deletion",
+      "processingMsg_other": "{{count}} item(s) queued for deletion",
+      "processingTitle": "Deleting in the background",
       "someItemsFailedMsg_one": "{{count}} item could not be removed",
       "someItemsFailedMsg_other": "{{count}} item(s) could not be removed",
       "someItemsFailedTitle": "Some items failed"

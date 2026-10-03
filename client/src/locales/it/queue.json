@@ -1,7 +1,6 @@
 {
   "actions": {
     "cancel": "Annulla",
-    "close": "Chiudi",
     "confirmDelete": "Conferma eliminazione",
     "deleteAll": "Elimina tutto",
     "deleteAllNow": "Elimina tutto adesso",
@@ -10,6 +9,7 @@
     "process": "Elabora",
     "processing": "Elaborazione in corso...",
     "processQueue": "Elabora coda",
+    "queueing": "",
     "removeSelected_one": "Rimuovi selezionato ({{count}})",
     "removeSelected_many": "Rimuovi selezionati ({{count}})",
     "removeSelected_other": "Rimuovi selezionati ({{count}})",
@@ -30,24 +30,8 @@
   },
   "deleteNowModal": {
     "actionLabel": "Azione:",
-    "complete": "Eliminazione completata!",
-    "connectionLost": "",
-    "connectionLostDetail": "",
-    "failed": "",
-    "failedAtStep": "",
-    "failedHint": "",
-    "fileProgress": "File {{current}} di {{total}}",
-    "freed": "Liberati {{size}}",
-    "initializing": "Inizializzazione in corso...",
-    "reconciledBody": "",
-    "reconciledTitle": "",
-    "resetInSeerrSuffix": " • Reimposta in Seerr",
-    "stepElapsed": "",
-    "stepSkipped": "",
+    "background": "",
     "title": "Elimina adesso",
-    "titleDeleting": "Eliminazione in corso...",
-    "upstreamStatus": "",
-    "verifying": "",
     "warning": "Questo eliminerà immediatamente e definitivamente questo elemento, ignorando il periodo di tolleranza.",
     "willResetSeerr": "Verrà reimpostato in Seerr per una nuova richiesta"
   },
@@ -63,6 +47,78 @@
   "header": {
     "subtitle": "Elementi contrassegnati per l'eliminazione con conto alla rovescia del periodo di tolleranza",
     "title": "Coda di eliminazione"
+  },
+  "jobs": {
+    "badge": {
+      "deleting": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "verifying": ""
+    },
+    "indicator": {
+      "deleting": "",
+      "deletingCount_one": "",
+      "deletingCount_many": "",
+      "deletingCount_other": "",
+      "deletingOf": "",
+      "failed_one": "",
+      "failed_many": "",
+      "failed_other": "",
+      "open": ""
+    },
+    "panel": {
+      "active": "",
+      "attempts_one": "",
+      "attempts_many": "",
+      "attempts_other": "",
+      "cancel": "",
+      "cancelFailed": "",
+      "clear": "",
+      "failedAt": "",
+      "freed": "",
+      "intro": "",
+      "nothingActive": "",
+      "nothingRecent": "",
+      "polling": "",
+      "recent": "",
+      "retry": "",
+      "retryFailed": "",
+      "title": ""
+    },
+    "status": {
+      "cancelled": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "running": "",
+      "verifying": ""
+    },
+    "step": {
+      "deleteFiles": "",
+      "pending": "",
+      "remove": "",
+      "resetSeerr": "",
+      "starting": "",
+      "unmonitor": "",
+      "verifying": ""
+    },
+    "stepName": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    },
+    "toast": {
+      "doneMsg": "",
+      "doneTitle": "",
+      "failedMsg": "",
+      "failedTitle": "",
+      "reconciledMsg": "",
+      "reconciledTitle": ""
+    }
   },
   "pagination": {
     "next": "Successivo",
@@ -113,16 +169,19 @@
     "showingRange": "Visualizzazione di {{start}}-{{end}} di {{total}}"
   },
   "toasts": {
-    "deletedSuccessMsg": "\"{{title}}\" è stato eliminato ({{size}} liberati)",
-    "deletedSuccessTitle": "Eliminato con successo",
+    "alreadyDeletingTitle": "",
     "deleteFailedMsg": "Impossibile eliminare l'elemento",
     "deleteFailedTitle": "Eliminazione non riuscita",
+    "deletingMsg": "",
+    "deletingTitle": "",
     "itemsRemovedMsg_one": "{{count}} elemento rimosso dalla coda",
     "itemsRemovedMsg_many": "{{count}} elementi rimossi dalla coda",
     "itemsRemovedMsg_other": "{{count}} elementi rimossi dalla coda",
     "itemsRemovedTitle": "Elementi rimossi",
-    "reconciledMsg": "",
-    "reconciledTitle": "",
+    "processingMsg_one": "",
+    "processingMsg_many": "",
+    "processingMsg_other": "",
+    "processingTitle": "",
     "someItemsFailedMsg_one": "{{count}} elemento non è stato possibile rimuovere",
     "someItemsFailedMsg_many": "{{count}} elementi non è stato possibile rimuovere",
     "someItemsFailedMsg_other": "{{count}} elementi non è stato possibile rimuovere",

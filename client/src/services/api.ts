@@ -5,6 +5,7 @@ import type {
   LibraryResponse,
   Rule,
   QueueItem,
+  DeletionJob,
   HistoryFilters,
   HistoryResponse,
   DashboardStats,
@@ -479,26 +480,47 @@ export const queueApi = {
     await api.delete(`/queue/${id}`);
   },
 
-  process: async (force = false): Promise<{ deleted: number; freedSpace: number }> => {
-    const { data } = await api.post<ApiResponse<{ deleted: number; freedSpace: number }>>(`/queue/process${force ? '?force=true' : ''}`);
-    return data.data!;
+  /**
+   * Run the queue. Real runs queue background jobs and answer 202 at once;
+   * follow them through deletionJobsApi / the DeletionJobs context.
+   */
+  process: async (force = false): Promise<QueueProcessResult> => {
+    const { data } = await api.post<ApiResponse<QueueProcessResult>>(`/queue/process${force ? '?force=true' : ''}`);
+    return { ...data.data!, message: data.message };
   },
 
-  deleteNow: async (id: string): Promise<{
-    id: number;
-    title: string;
-    deletionAction: string;
-    fileSizeFreed: number;
-    overseerrReset?: boolean;
-  }> => {
-    const { data } = await api.post<ApiResponse<{
-      id: number;
-      title: string;
-      deletionAction: string;
-      fileSizeFreed: number;
-      overseerrReset?: boolean;
-    }>>(`/queue/${id}/delete-now`);
+  /** Queue one item for deletion now; answers with the background job. */
+  deleteNow: async (id: string): Promise<{ job: DeletionJob; alreadyQueued: boolean; message?: string }> => {
+    const { data } = await api.post<ApiResponse<{ job: DeletionJob; alreadyQueued: boolean }>>(`/queue/${id}/delete-now`);
+    return { ...data.data!, message: data.message };
+  },
+};
+
+export interface QueueProcessResult {
+  batchId: string;
+  queued: DeletionJob[];
+  alreadyQueued: number;
+  skipped: Array<{ queueId: string; error: string }>;
+  background: boolean;
+  message?: string;
+}
+
+// Background deletion jobs
+export const deletionJobsApi = {
+  list: async (): Promise<{ active: DeletionJob[]; recent: DeletionJob[] }> => {
+    const { data } = await api.get<ApiResponse<{ active: DeletionJob[]; recent: DeletionJob[] }>>('/deletion-jobs');
+    return data.data ?? { active: [], recent: [] };
+  },
+  cancel: async (id: number): Promise<DeletionJob> => {
+    const { data } = await api.post<ApiResponse<DeletionJob>>(`/deletion-jobs/${id}/cancel`);
     return data.data!;
+  },
+  retry: async (id: number): Promise<DeletionJob> => {
+    const { data } = await api.post<ApiResponse<DeletionJob>>(`/deletion-jobs/${id}/retry`);
+    return data.data!;
+  },
+  clearFinished: async (): Promise<void> => {
+    await api.delete('/deletion-jobs/finished');
   },
 };
 

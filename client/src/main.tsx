@@ -9,6 +9,7 @@ import { ToastProvider } from './components/common/Toast';
 import { DisplayPreferencesProvider } from './contexts/DisplayPreferencesContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { DeletionJobsProvider } from './contexts/DeletionJobsContext';
 // Fonts ship inside the bundle; the browser never contacts a font CDN.
 import '@fontsource-variable/dm-sans';
 import '@fontsource-variable/dm-sans/wght-italic.css';
@@ -35,7 +36,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <BrowserRouter>
               <ToastProvider>
                 <AuthProvider>
-                  <App />
+                  <DeletionJobsProvider>
+                    <App />
+                  </DeletionJobsProvider>
                 </AuthProvider>
               </ToastProvider>
             </BrowserRouter>

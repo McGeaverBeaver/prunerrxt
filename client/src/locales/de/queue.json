@@ -1,7 +1,6 @@
 {
   "actions": {
     "cancel": "Abbrechen",
-    "close": "Schließen",
     "confirmDelete": "Löschen bestätigen",
     "deleteAll": "Alle löschen",
     "deleteAllNow": "Jetzt alle löschen",
@@ -10,6 +9,7 @@
     "process": "Verarbeiten",
     "processing": "Wird verarbeitet...",
     "processQueue": "Warteschlange verarbeiten",
+    "queueing": "",
     "removeSelected_one": "Auswahl entfernen ({{count}})",
     "removeSelected_other": "Auswahl entfernen ({{count}})",
     "removingProgress": "Wird entfernt {{current}}/{{total}}..."
@@ -28,24 +28,8 @@
   },
   "deleteNowModal": {
     "actionLabel": "Aktion:",
-    "complete": "Löschen abgeschlossen!",
-    "connectionLost": "",
-    "connectionLostDetail": "",
-    "failed": "",
-    "failedAtStep": "",
-    "failedHint": "",
-    "fileProgress": "Datei {{current}} von {{total}}",
-    "freed": "{{size}} freigegeben",
-    "initializing": "Wird initialisiert...",
-    "reconciledBody": "",
-    "reconciledTitle": "",
-    "resetInSeerrSuffix": " • In Seerr zurücksetzen",
-    "stepElapsed": "",
-    "stepSkipped": "",
+    "background": "",
     "title": "Jetzt löschen",
-    "titleDeleting": "Wird gelöscht...",
-    "upstreamStatus": "",
-    "verifying": "",
     "warning": "Dadurch wird dieses Element sofort und dauerhaft gelöscht und die Karenzzeit umgangen.",
     "willResetSeerr": "Wird in Seerr für eine erneute Anfrage zurückgesetzt"
   },
@@ -61,6 +45,75 @@
   "header": {
     "subtitle": "Zum Löschen markierte Elemente mit Countdown der Karenzzeit",
     "title": "Löschwarteschlange"
+  },
+  "jobs": {
+    "badge": {
+      "deleting": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "verifying": ""
+    },
+    "indicator": {
+      "deleting": "",
+      "deletingCount_one": "",
+      "deletingCount_other": "",
+      "deletingOf": "",
+      "failed_one": "",
+      "failed_other": "",
+      "open": ""
+    },
+    "panel": {
+      "active": "",
+      "attempts_one": "",
+      "attempts_other": "",
+      "cancel": "",
+      "cancelFailed": "",
+      "clear": "",
+      "failedAt": "",
+      "freed": "",
+      "intro": "",
+      "nothingActive": "",
+      "nothingRecent": "",
+      "polling": "",
+      "recent": "",
+      "retry": "",
+      "retryFailed": "",
+      "title": ""
+    },
+    "status": {
+      "cancelled": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "running": "",
+      "verifying": ""
+    },
+    "step": {
+      "deleteFiles": "",
+      "pending": "",
+      "remove": "",
+      "resetSeerr": "",
+      "starting": "",
+      "unmonitor": "",
+      "verifying": ""
+    },
+    "stepName": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    },
+    "toast": {
+      "doneMsg": "",
+      "doneTitle": "",
+      "failedMsg": "",
+      "failedTitle": "",
+      "reconciledMsg": "",
+      "reconciledTitle": ""
+    }
   },
   "pagination": {
     "next": "Weiter",
@@ -107,15 +160,17 @@
     "showingRange": "Zeige {{start}}-{{end}} von {{total}}"
   },
   "toasts": {
-    "deletedSuccessMsg": "\"{{title}}\" wurde gelöscht ({{size}} freigegeben)",
-    "deletedSuccessTitle": "Erfolgreich gelöscht",
+    "alreadyDeletingTitle": "",
     "deleteFailedMsg": "Element konnte nicht gelöscht werden",
     "deleteFailedTitle": "Löschen fehlgeschlagen",
+    "deletingMsg": "",
+    "deletingTitle": "",
     "itemsRemovedMsg_one": "{{count}} Element aus der Warteschlange entfernt",
     "itemsRemovedMsg_other": "{{count}} Element(e) aus der Warteschlange entfernt",
     "itemsRemovedTitle": "Elemente entfernt",
-    "reconciledMsg": "",
-    "reconciledTitle": "",
+    "processingMsg_one": "",
+    "processingMsg_other": "",
+    "processingTitle": "",
     "someItemsFailedMsg_one": "{{count}} Element konnte nicht entfernt werden",
     "someItemsFailedMsg_other": "{{count}} Element(e) konnten nicht entfernt werden",
     "someItemsFailedTitle": "Einige Elemente fehlgeschlagen"

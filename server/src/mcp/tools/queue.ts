@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { deleteQueueItemNow, listQueue, processQueue, removeFromQueue } from '../../services/deletionQueue';
+import { listQueue, processQueue, removeFromQueue } from '../../services/deletionQueue';
+import { enqueueDeleteNow, enqueueReadyItems, listJobs } from '../../services/deletionJobs';
 import { formatBytes } from '../../utils/format';
 import { DESTRUCTIVE, MUTATING, READ_ONLY, clampLimit, defineTool, fail, ok } from '../helpers';
 
@@ -88,7 +89,7 @@ export function registerQueueTools(server: McpServer): void {
       name: 'process_queue',
       title: 'Process the deletion queue',
       description:
-        'Run the queue. With dryRun=true (the default) it reports exactly what would be deleted and how much space it would free, touching nothing. With dryRun=false it deletes items whose grace period has expired (force=true deletes every queued item regardless of grace period). Real runs require the "allow immediate deletion" setting and should be confirmed with the user first.',
+        'Run the queue. With dryRun=true (the default) it reports exactly what would be deleted and how much space it would free, touching nothing. With dryRun=false it queues background deletion jobs for items whose grace period has expired (force=true: every queued item regardless of grace period) and returns at once; follow them with list_deletion_jobs. Real runs require the "allow immediate deletion" setting and should be confirmed with the user first.',
       group: 'queue',
       inputSchema: {
         dryRun: z.boolean().optional().describe('Default true. Set false to actually delete.'),
@@ -102,8 +103,57 @@ export function registerQueueTools(server: McpServer): void {
         const { allowsImmediateDeletion, IMMEDIATE_DELETION_REFUSED } = await import('../config');
         if (!allowsImmediateDeletion()) return fail(IMMEDIATE_DELETION_REFUSED);
       }
-      const result = await processQueue({ dryRun: isDryRun, force: force === true });
-      return ok(result, result.message);
+      if (isDryRun) {
+        const result = await processQueue({ dryRun: true, force: force === true });
+        return ok(result, result.message);
+      }
+      const batch = enqueueReadyItems({ force: force === true, actorName: 'MCP connector' });
+      return ok(
+        { ...batch, background: true },
+        batch.queued.length > 0
+          ? `Queued ${batch.queued.length} deletion job(s) (batch ${batch.batchId}); they run in the background. ${batch.alreadyQueued} were already being deleted. Use list_deletion_jobs to follow progress.`
+          : batch.alreadyQueued > 0
+            ? 'Those items are already being deleted.'
+            : 'No items ready for deletion.'
+      );
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'list_deletion_jobs',
+      title: 'List background deletion jobs',
+      description:
+        'Deletions run in the background. This lists the jobs that are pending, running or verifying (waiting for Sonarr/Radarr to finish a slow file delete) and the recently finished ones, with their step, elapsed time, outcome, per-step durations and any error.',
+      group: 'queue',
+      inputSchema: {
+        recentLimit: z.number().int().min(1).max(200).optional().describe('How many finished jobs to include (default 25).'),
+      },
+      annotations: READ_ONLY,
+    },
+    async ({ recentLimit }) => {
+      const jobs = listJobs(clampLimit(recentLimit, 25, 200));
+      const now = Date.now();
+      const describe = (job: (typeof jobs.active)[number]) => ({
+        ...job,
+        sizeFormatted: formatBytes(job.size),
+        fileSizeFreedFormatted: job.fileSizeFreed === null ? null : formatBytes(job.fileSizeFreed),
+        stepElapsedSeconds:
+          job.stepStartedAt && (job.status === 'running' || job.status === 'verifying')
+            ? Math.round((now - new Date(job.stepStartedAt).getTime()) / 1000)
+            : null,
+      });
+      const active = jobs.active.map(describe);
+      const recent = jobs.recent.map(describe);
+      const summary =
+        active.length === 0
+          ? `No deletions in progress; ${recent.length} finished recently (${recent.filter((j) => j.status === 'failed').length} failed).`
+          : `${active.length} deletion job(s) in progress: ${active
+              .slice(0, 5)
+              .map((j) => `"${j.title}" ${j.status}${j.step ? ` (${j.step}${j.stepElapsedSeconds !== null ? `, ${j.stepElapsedSeconds}s` : ''})` : ''}`)
+              .join('; ')}.`;
+      return ok({ active, recent }, summary);
     }
   );
 
@@ -113,7 +163,7 @@ export function registerQueueTools(server: McpServer): void {
       name: 'delete_now',
       title: 'Delete a queued item now',
       description:
-        'Delete one queued item immediately, skipping the rest of its grace period. Only items already in the queue can be deleted this way. Irreversible. Requires the "allow immediate deletion" setting; confirm with the user first.',
+        'Delete one queued item now, skipping the rest of its grace period. The deletion runs as a background job (a large file on slow storage can take minutes); this returns the job at once and list_deletion_jobs reports its progress and outcome. Only items already in the queue can be deleted this way. Irreversible. Requires the "allow immediate deletion" setting; confirm with the user first.',
       group: 'queue',
       inputSchema: {
         queueId: z.string().min(1).describe('Queue id from list_queue (number for an item, "ep-N" for an episode).'),
@@ -122,10 +172,14 @@ export function registerQueueTools(server: McpServer): void {
       requiresImmediateDeletion: true,
     },
     async ({ queueId }) => {
-      const result = await deleteQueueItemNow(queueId);
+      const result = enqueueDeleteNow(queueId, { actorName: 'MCP connector' });
       if (!result.ok) return fail(result.error);
-      const { ok: _ok, ...data } = result;
-      return ok(data, `Deleted "${result.title}" (${result.deletionActionLabel}), freed ${result.fileSizeFreedFormatted}.`);
+      return ok(
+        { job: result.job, alreadyQueued: result.alreadyQueued, background: true },
+        result.alreadyQueued
+          ? `"${result.job.title}" is already being deleted (job #${result.job.id}, ${result.job.status}).`
+          : `Queued "${result.job.title}" for deletion as job #${result.job.id}; it runs in the background. Use list_deletion_jobs to follow it.`
+      );
     }
   );
 }

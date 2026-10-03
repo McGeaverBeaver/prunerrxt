@@ -1,7 +1,6 @@
 {
   "actions": {
     "cancel": "Annuleren",
-    "close": "Sluiten",
     "confirmDelete": "Verwijderen bevestigen",
     "deleteAll": "Alles verwijderen",
     "deleteAllNow": "Alles nu verwijderen",
@@ -10,6 +9,7 @@
     "process": "Verwerken",
     "processing": "Bezig met verwerken...",
     "processQueue": "Wachtrij verwerken",
+    "queueing": "",
     "removeSelected_one": "Geselecteerde verwijderen ({{count}})",
     "removeSelected_other": "Geselecteerde verwijderen ({{count}})",
     "removingProgress": "Bezig met verwijderen {{current}}/{{total}}..."
@@ -28,24 +28,8 @@
   },
   "deleteNowModal": {
     "actionLabel": "Actie:",
-    "complete": "Verwijderen voltooid!",
-    "connectionLost": "",
-    "connectionLostDetail": "",
-    "failed": "",
-    "failedAtStep": "",
-    "failedHint": "",
-    "fileProgress": "Bestand {{current}} van {{total}}",
-    "freed": "{{size}} vrijgemaakt",
-    "initializing": "Bezig met initialiseren...",
-    "reconciledBody": "",
-    "reconciledTitle": "",
-    "resetInSeerrSuffix": " • Resetten in Seerr",
-    "stepElapsed": "",
-    "stepSkipped": "",
+    "background": "",
     "title": "Nu verwijderen",
-    "titleDeleting": "Bezig met verwijderen...",
-    "upstreamStatus": "",
-    "verifying": "",
     "warning": "Hiermee wordt dit item direct en permanent verwijderd, waarbij de respijtperiode wordt omzeild.",
     "willResetSeerr": "Wordt gereset in Seerr om opnieuw aan te vragen"
   },
@@ -61,6 +45,75 @@
   "header": {
     "subtitle": "Items gemarkeerd voor verwijdering met aftelling van de respijtperiode",
     "title": "Verwijderwachtrij"
+  },
+  "jobs": {
+    "badge": {
+      "deleting": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "verifying": ""
+    },
+    "indicator": {
+      "deleting": "",
+      "deletingCount_one": "",
+      "deletingCount_other": "",
+      "deletingOf": "",
+      "failed_one": "",
+      "failed_other": "",
+      "open": ""
+    },
+    "panel": {
+      "active": "",
+      "attempts_one": "",
+      "attempts_other": "",
+      "cancel": "",
+      "cancelFailed": "",
+      "clear": "",
+      "failedAt": "",
+      "freed": "",
+      "intro": "",
+      "nothingActive": "",
+      "nothingRecent": "",
+      "polling": "",
+      "recent": "",
+      "retry": "",
+      "retryFailed": "",
+      "title": ""
+    },
+    "status": {
+      "cancelled": "",
+      "done": "",
+      "failed": "",
+      "pending": "",
+      "reconciled": "",
+      "running": "",
+      "verifying": ""
+    },
+    "step": {
+      "deleteFiles": "",
+      "pending": "",
+      "remove": "",
+      "resetSeerr": "",
+      "starting": "",
+      "unmonitor": "",
+      "verifying": ""
+    },
+    "stepName": {
+      "deleteFiles": "",
+      "remove": "",
+      "resetSeerr": "",
+      "unmonitor": ""
+    },
+    "toast": {
+      "doneMsg": "",
+      "doneTitle": "",
+      "failedMsg": "",
+      "failedTitle": "",
+      "reconciledMsg": "",
+      "reconciledTitle": ""
+    }
   },
   "pagination": {
     "next": "Volgende",
@@ -107,15 +160,17 @@
     "showingRange": "{{start}}-{{end}} van {{total}} weergegeven"
   },
   "toasts": {
-    "deletedSuccessMsg": "\"{{title}}\" is verwijderd ({{size}} vrijgemaakt)",
-    "deletedSuccessTitle": "Succesvol verwijderd",
+    "alreadyDeletingTitle": "",
     "deleteFailedMsg": "Item verwijderen mislukt",
     "deleteFailedTitle": "Verwijderen mislukt",
+    "deletingMsg": "",
+    "deletingTitle": "",
     "itemsRemovedMsg_one": "{{count}} item uit wachtrij verwijderd",
     "itemsRemovedMsg_other": "{{count}} item(s) uit wachtrij verwijderd",
     "itemsRemovedTitle": "Items verwijderd",
-    "reconciledMsg": "",
-    "reconciledTitle": "",
+    "processingMsg_one": "",
+    "processingMsg_other": "",
+    "processingTitle": "",
     "someItemsFailedMsg_one": "{{count}} item kon niet worden verwijderd",
     "someItemsFailedMsg_other": "{{count}} item(s) konden niet worden verwijderd",
     "someItemsFailedTitle": "Sommige items zijn mislukt"
