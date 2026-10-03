@@ -110,6 +110,9 @@ identity is ever different (`git config user.email`), set it before committing.
   lists. Deleting one needs a folder mapping (`media_folder_mappings`) and
   stays strictly inside the mapped path; importing adds the title to the app
   with the folder as its path. See docs/folders.md.
+- Permission repair (`services/permissions.ts`) relies on the Dockerfile
+  granting the Node binary `cap_chown,cap_fowner`; it only ever runs on paths
+  resolved inside a folder mapping.
 
 ## Key Patterns
 - Client uses `camelCase`, server/database uses `snake_case`

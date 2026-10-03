@@ -1,4 +1,7 @@
 {
+  "capabilityNotice": {
+    "title": "Prunerr cannot change ownership on this install. "
+  },
   "deleteModal": {
     "confirm": "Delete folder",
     "message": "\"{{name}}\" and everything in it ({{files}} files, {{size}}) will be removed from disk. There is no recycle bin for this.",
@@ -40,12 +43,19 @@
     "deleteDisabled": "Add a folder mapping in Settings so Prunerr can reach this folder",
     "files_one": "{{count}} files",
     "files_other": "{{count}} files",
+    "fix": "Fix permissions (owner {{owner}})",
+    "fixDisabled": "Prunerr cannot change ownership on this install",
     "ignore": "Ignore",
     "ignored": "Ignored",
     "import": "Import into {{service}}",
     "importShort": "Import",
     "looksLike": "Looks like: {{title}}",
     "modified": "changed {{when}}",
+    "notWritable": "not writable",
+    "notWritableHint": "Prunerr cannot write to this folder as it is; a delete or import would fail with permission denied",
+    "permissionIssues_one": "{{count}} with other owner/mode",
+    "permissionIssues_other": "{{count}} with other owner/mode",
+    "permissionIssuesHint": "Entries not owned by {{owner}} or with other modes than configured",
     "unignore": "Show again",
     "unmeasured": "size unknown",
     "unmeasuredHint": "No folder mapping covers this path"
@@ -64,6 +74,9 @@
     "deletedMsg": "\"{{name}}\" removed, {{size}} freed",
     "deletedTitle": "Folder deleted",
     "deleteFailed": "Could not delete folder",
+    "fixedMsg": "{{changed}} entries changed",
+    "fixedTitle": "Permissions updated",
+    "fixFailed": "Could not fix permissions",
     "importedMsg": "\"{{title}}\" added to {{service}}",
     "importedTitle": "Imported",
     "importFailed": "Import failed",

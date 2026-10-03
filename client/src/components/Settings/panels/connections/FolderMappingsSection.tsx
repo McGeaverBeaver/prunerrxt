@@ -5,7 +5,8 @@ import { Plus, Trash2, Save } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { useToast } from '@/components/common/Toast';
-import { useFolderMappings, useOrphanFolders, useSaveFolderMappings } from '@/hooks/useApi';
+import { useFolderMappings, useFolderPermissions, useOrphanFolders, useSaveFolderMappings, useSavePermissionSettings } from '@/hooks/useApi';
+import { Toggle } from '../../components/Toggle';
 import type { FolderMapping } from '@/types';
 
 import { PanelSection } from '../../components/PanelSection';
@@ -125,7 +126,84 @@ export function FolderMappingsSection({ registerSection }: { registerSection: Pa
           </div>
         </div>
       </SettingsCard>
+
+      <PermissionsCard />
     </PanelSection>
+  );
+}
+
+/**
+ * The owner and modes Prunerr applies when it repairs a folder, and whether
+ * this install is able to. Files written by other users (a DVR as root, a
+ * download client as another id) are the usual reason a delete or import
+ * fails with "permission denied"; repairing them first makes the end state
+ * the same whether the folder is kept or removed.
+ */
+function PermissionsCard() {
+  const { t } = useTranslation('settings');
+  const { addToast } = useToast();
+  const permissions = useFolderPermissions();
+  const save = useSavePermissionSettings();
+  const [form, setForm] = useState<{ uid: string; gid: string; dirMode: string; fileMode: string; autoFix: boolean } | null>(null);
+
+  useEffect(() => {
+    if (permissions.data && form === null) {
+      const s = permissions.data.settings;
+      setForm({ uid: String(s.uid), gid: String(s.gid), dirMode: s.dirMode, fileMode: s.fileMode, autoFix: s.autoFix });
+    }
+  }, [permissions.data, form]);
+
+  const caps = permissions.data?.capabilities;
+  const persist = () => {
+    if (!form) return;
+    save.mutate(
+      { uid: Number(form.uid), gid: Number(form.gid), dirMode: form.dirMode, fileMode: form.fileMode, autoFix: form.autoFix },
+      {
+        onSuccess: () => addToast({ type: 'success', title: t('mediaFolders.permissions.saved', 'Permission settings saved') }),
+        onError: (err) => addToast({ type: 'error', title: t('mediaFolders.permissions.saveFailed', 'Could not save'), message: err instanceof Error ? err.message : String(err) }),
+      }
+    );
+  };
+
+  return (
+    <SettingsCard>
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-surface-50">{t('mediaFolders.permissions.title', 'Ownership and permissions')}</h3>
+          <p className="mt-1 text-sm text-surface-400">
+            {t('mediaFolders.permissions.help', 'What Prunerr sets when it repairs a folder: the owner (normally PUID:PGID, the same ids Sonarr and Radarr run as) and the modes. With automatic repair on, a delete or import that would fail on files owned by someone else repairs the folder first and carries on.')}
+          </p>
+        </div>
+
+        {caps && (
+          <p className={caps.canChown ? 'text-xs text-emerald-text' : 'text-xs text-ruby-text'}>
+            {caps.canChown
+              ? t('mediaFolders.permissions.capable', 'Prunerr runs as {{uid}}:{{gid}} and can change the owner and mode of files it does not own.', { uid: caps.uid, gid: caps.gid })
+              : caps.reason}
+          </p>
+        )}
+
+        {form && (
+          <>
+            <div className="grid gap-3 sm:grid-cols-4">
+              <Input label={t('mediaFolders.permissions.uid', 'Owner uid')} value={form.uid} onChange={(e) => setForm({ ...form, uid: e.target.value })} inputMode="numeric" />
+              <Input label={t('mediaFolders.permissions.gid', 'Group gid')} value={form.gid} onChange={(e) => setForm({ ...form, gid: e.target.value })} inputMode="numeric" />
+              <Input label={t('mediaFolders.permissions.dirMode', 'Folder mode')} value={form.dirMode} onChange={(e) => setForm({ ...form, dirMode: e.target.value })} className="font-mono" />
+              <Input label={t('mediaFolders.permissions.fileMode', 'File mode')} value={form.fileMode} onChange={(e) => setForm({ ...form, fileMode: e.target.value })} className="font-mono" />
+            </div>
+            <Toggle
+              checked={form.autoFix}
+              onChange={(checked) => setForm({ ...form, autoFix: checked })}
+              label={t('mediaFolders.permissions.autoFix', 'Repair automatically when a delete or import hits a permission error')}
+            />
+            <Button size="sm" onClick={persist} disabled={save.isPending}>
+              <Save className="h-4 w-4" />
+              <span className="ml-1">{save.isPending ? t('mediaFolders.saving', 'Saving…') : t('mediaFolders.permissions.save', 'Save permission settings')}</span>
+            </Button>
+          </>
+        )}
+      </div>
+    </SettingsCard>
   );
 }
 

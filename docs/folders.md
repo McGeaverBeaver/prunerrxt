@@ -38,3 +38,26 @@ Deletion is deliberately strict: a folder is removed only when its resolved
 location sits strictly inside a mapped path (so a mapping can never reach a
 root folder, a parent, or a symlink target outside the media tree), and only
 after re-checking with the app that the folder is still unmanaged.
+
+## Ownership and permissions
+
+Media directories collect files owned by whoever wrote them: a DVR running as
+root, a download client as another user. Prunerr runs as PUID:PGID, which is
+also what Sonarr and Radarr usually run as, so such files block a delete
+("permission denied") and would block the app's own renames after an import.
+
+The image gives the Node binary the two Linux capabilities needed to set a
+file's owner and mode without owning it (CAP_CHOWN and CAP_FOWNER), and
+nothing more. On the Folders page a folder whose entries are owned by someone
+else, or that Prunerr cannot write to, shows a badge and a **Fix permissions**
+button. Repairing sets the configured owner and modes on the folder and
+everything in it; with *Repair automatically* on (the default), a delete or
+import that hits a permission error repairs the folder first and carries on,
+so the end state is the same whether the folder is kept or removed. The
+owner, the modes (0775 / 0664 by default) and the automatic repair switch are
+under Settings, Connections, Media folders. Every repair is in the Activity
+log.
+
+If the container is run with capabilities dropped (`--cap-drop ALL`), the
+page says so and repair is unavailable; `--cap-add CHOWN --cap-add FOWNER`
+restores it.

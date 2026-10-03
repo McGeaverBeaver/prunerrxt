@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Film, Tv, FolderX, RefreshCw, Download, Trash2, EyeOff, Eye, AlertTriangle, Search, Loader2, HardDrive } from 'lucide-react';
+import { Film, Tv, FolderX, RefreshCw, Download, Trash2, EyeOff, Eye, AlertTriangle, Search, Loader2, HardDrive, Wrench, Lock } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
@@ -13,7 +13,9 @@ import { useToast } from '@/components/common/Toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   useDeleteFolder,
+  useFixFolderPermissions,
   useFolderCandidates,
+  useFolderPermissions,
   useIgnoreFolder,
   useImportFolder,
   useOrphanFolders,
@@ -43,6 +45,8 @@ export default function Folders() {
   const { data, isLoading, isError, error, refetch, isFetching } = useOrphanFolders(showIgnored);
   const deleteMutation = useDeleteFolder();
   const ignoreMutation = useIgnoreFolder();
+  const fixMutation = useFixFolderPermissions();
+  const permissions = useFolderPermissions();
 
   const folders = useMemo(() => {
     const list = data?.folders ?? [];
@@ -68,6 +72,19 @@ export default function Folders() {
       onError: (err) => {
         addToast({ type: 'error', title: t('toasts.deleteFailed', 'Could not delete folder'), message: err instanceof Error ? err.message : String(err) });
       },
+    });
+  };
+
+  const fixPermissions = (folder: OrphanFolder) => {
+    fixMutation.mutate(folder.id, {
+      onSuccess: (result) => {
+        addToast({
+          type: result.result.failed.length === 0 ? 'success' : 'error',
+          title: t('toasts.fixedTitle', 'Permissions updated'),
+          message: result.message || t('toasts.fixedMsg', '{{changed}} entries changed', { changed: result.result.changed }),
+        });
+      },
+      onError: (err) => addToast({ type: 'error', title: t('toasts.fixFailed', 'Could not fix permissions'), message: err instanceof Error ? err.message : String(err) }),
     });
   };
 
@@ -149,6 +166,15 @@ export default function Folders() {
           </div>
         </div>
       )}
+      {permissions.data && !permissions.data.capabilities.canChown && hasMappings && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm">
+          <Lock className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent-text" />
+          <p className="text-surface-300">
+            <span className="font-medium text-surface-50">{t('capabilityNotice.title', 'Prunerr cannot change ownership on this install. ')}</span>
+            {permissions.data.capabilities.reason}
+          </p>
+        </div>
+      )}
       {serviceErrors.map((s) => (
         <div key={s.service} className="flex items-start gap-3 rounded-xl border border-ruby-500/20 bg-ruby-500/10 p-4 text-sm">
           <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-ruby-text" />
@@ -185,9 +211,13 @@ export default function Folders() {
                 folder={folder}
                 canAct={canAct}
                 busy={ignoreMutation.isPending && ignoreMutation.variables?.id === folder.id}
+                fixing={fixMutation.isPending && fixMutation.variables === folder.id}
+                canFix={permissions.data?.capabilities.canChown ?? false}
+                owner={permissions.data ? `${permissions.data.settings.uid}:${permissions.data.settings.gid}` : ''}
                 onImport={() => setImporting(folder)}
                 onDelete={() => setDeleting(folder)}
                 onToggleIgnore={() => toggleIgnore(folder)}
+                onFix={() => fixPermissions(folder)}
               />
             ))}
           </ul>
@@ -222,19 +252,28 @@ function FolderRow({
   folder,
   canAct,
   busy,
+  fixing,
+  canFix,
+  owner,
   onImport,
   onDelete,
   onToggleIgnore,
+  onFix,
 }: {
   folder: OrphanFolder;
   canAct: boolean;
   busy: boolean;
+  fixing: boolean;
+  canFix: boolean;
+  owner: string;
   onImport: () => void;
   onDelete: () => void;
   onToggleIgnore: () => void;
+  onFix: () => void;
 }) {
   const { t } = useTranslation('folders');
   const Icon = folder.service === 'radarr' ? Film : Tv;
+  const permissionTrouble = folder.localPath !== null && ((folder.permissionIssues ?? 0) > 0 || folder.writable === false);
   return (
     <li className={cn('flex flex-col gap-3 p-4 sm:flex-row sm:items-start', folder.ignored && 'opacity-60')}>
       <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface-800">
@@ -251,6 +290,22 @@ function FolderRow({
           )}
           {folder.fileCount !== null && <Badge variant="muted" size="sm">{t('row.files', '{{count}} files', { count: folder.fileCount })}</Badge>}
           {folder.ignored && <Badge variant="default" size="sm">{t('row.ignored', 'Ignored')}</Badge>}
+          {permissionTrouble && (
+            <Badge
+              variant="danger"
+              size="sm"
+              title={
+                folder.writable === false
+                  ? t('row.notWritableHint', 'Prunerr cannot write to this folder as it is; a delete or import would fail with permission denied')
+                  : t('row.permissionIssuesHint', 'Entries not owned by {{owner}} or with other modes than configured', { owner })
+              }
+            >
+              <Lock className="h-3 w-3" />
+              {folder.writable === false
+                ? t('row.notWritable', 'not writable')
+                : t('row.permissionIssues', '{{count}} with other owner/mode', { count: folder.permissionIssues ?? 0 })}
+            </Badge>
+          )}
         </div>
         <p className="mt-1 truncate font-mono text-xs text-surface-500" title={folder.path}>{folder.path}</p>
         <p className="mt-1 text-xs text-surface-400">
@@ -269,6 +324,17 @@ function FolderRow({
             <Download className="h-4 w-4" />
             <span className="ml-1 hidden sm:inline">{t('row.importShort', 'Import')}</span>
           </Button>
+          {permissionTrouble && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onFix}
+              disabled={!canFix || fixing}
+              title={canFix ? t('row.fix', 'Fix permissions (owner {{owner}})', { owner }) : t('row.fixDisabled', 'Prunerr cannot change ownership on this install')}
+            >
+              {fixing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wrench className="h-4 w-4" />}
+            </Button>
+          )}
           <Button
             variant="danger"
             size="sm"

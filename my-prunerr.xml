@@ -43,7 +43,7 @@ All service connections are configured through the web UI — no config files ne
 
     <Config Name="Data Path" Target="/app/data" Default="/mnt/user/appdata/prunerr" Mode="rw" Description="Path to store Prunerr database and configuration" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/prunerr</Config>
 
-    <Config Name="PUID" Target="PUID" Default="99" Description="User ID for file permissions" Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
+    <Config Name="PUID" Target="PUID" Default="99" Description="User ID Prunerr runs as, and the owner it applies when repairing media folder permissions (Unraid default 99 = nobody). Use the same ids as Sonarr and Radarr." Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
 
     <Config Name="PGID" Target="PGID" Default="100" Description="Group ID for file permissions" Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
 

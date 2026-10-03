@@ -323,6 +323,7 @@
     "groups": {
       "actions": "",
       "collections": "",
+      "folders": "",
       "history": "",
       "library": "",
       "overview": "",
@@ -355,6 +356,19 @@
     "mappedTo": "",
     "mapThis": "",
     "none": "",
+    "permissions": {
+      "autoFix": "",
+      "capable": "",
+      "dirMode": "",
+      "fileMode": "",
+      "gid": "",
+      "help": "",
+      "save": "",
+      "saved": "",
+      "saveFailed": "",
+      "title": "",
+      "uid": ""
+    },
     "remotePlaceholder": "",
     "remove": "",
     "rootFolders": "",

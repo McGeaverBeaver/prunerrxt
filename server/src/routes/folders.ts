@@ -4,7 +4,9 @@ import logger from '../utils/logger';
 import { requestActorName } from '../utils/actor';
 import {
   deleteFolder,
+  fixFolderPermissions,
   getFolderMappings,
+  inspectFolderPermissions,
   getQualityProfiles,
   importFolder,
   listOrphanFolders,
@@ -13,6 +15,7 @@ import {
   setFolderMappings,
 } from '../services/orphanFolders';
 import { ServiceNotConfiguredError, isDiagnosticsService } from '../services/serviceDiagnostics';
+import { getPermissionCapabilities, getPermissionSettings, setPermissionSettings } from '../services/permissions';
 
 const router = Router();
 
@@ -67,6 +70,61 @@ router.put('/mappings', (req: Request, res: Response) => {
     res.json({ success: true, data: saved });
   } catch (error) {
     res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// GET /api/folders/permissions - who Prunerr is, what it can change, and the target owner/modes
+router.get('/permissions', (_req: Request, res: Response) => {
+  res.json({ success: true, data: { capabilities: getPermissionCapabilities(), settings: getPermissionSettings() } });
+});
+
+const PermissionSettingsSchema = z.object({
+  uid: z.number().int().min(0).optional(),
+  gid: z.number().int().min(0).optional(),
+  dirMode: z.string().regex(/^0?[0-7]{3,4}$/).optional(),
+  fileMode: z.string().regex(/^0?[0-7]{3,4}$/).optional(),
+  autoFix: z.boolean().optional(),
+});
+
+// PUT /api/folders/permission-settings (admin: it is a settings change)
+router.put('/permission-settings', (req: Request, res: Response) => {
+  const parsed = PermissionSettingsSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: 'uid/gid must be integers and modes octal strings such as 0775' });
+    return;
+  }
+  try {
+    const saved = setPermissionSettings(parsed.data);
+    logger.info(`Media permission settings updated: ${saved.uid}:${saved.gid}, dirs ${saved.dirMode}, files ${saved.fileMode}, auto-fix ${saved.autoFix ? 'on' : 'off'}`);
+    res.json({ success: true, data: { capabilities: getPermissionCapabilities(), settings: saved } });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// GET /api/folders/:id/permissions - what is wrong with this folder's ownership
+router.get('/:id/permissions', async (req: Request, res: Response) => {
+  try {
+    res.json({ success: true, data: await inspectFolderPermissions(req.params['id'] as string) });
+  } catch (error) {
+    fail(res, 'inspect folder permissions', error);
+  }
+});
+
+// POST /api/folders/:id/permissions/fix
+router.post('/:id/permissions/fix', async (req: Request, res: Response) => {
+  try {
+    const result = await fixFolderPermissions(req.params['id'] as string, { actorName: requestActorName(req, 'Manual action') });
+    res.json({
+      success: true,
+      data: result,
+      message:
+        result.result.failed.length === 0
+          ? `Fixed ${result.result.changed} entries under ${result.folder.name}`
+          : `Fixed ${result.result.changed} entries under ${result.folder.name}; ${result.result.failed.length} could not be changed`,
+    });
+  } catch (error) {
+    fail(res, 'fix folder permissions', error);
   }
 });
 

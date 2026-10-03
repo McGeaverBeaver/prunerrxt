@@ -11,6 +11,10 @@ import type {
   FolderMapping,
   FolderCandidate,
   QualityProfile,
+  PermissionSettings,
+  PermissionCapabilities,
+  PermissionReport,
+  PermissionFixResult,
   HistoryFilters,
   HistoryResponse,
   DashboardStats,
@@ -551,6 +555,22 @@ export const foldersApi = {
   setIgnored: async (id: string, ignored: boolean): Promise<OrphanFolder> => {
     const { data } = await api.post<ApiResponse<OrphanFolder>>(`/folders/${encodeURIComponent(id)}/ignore`, { ignored });
     return data.data!;
+  },
+  permissions: async (): Promise<{ capabilities: PermissionCapabilities; settings: PermissionSettings }> => {
+    const { data } = await api.get<ApiResponse<{ capabilities: PermissionCapabilities; settings: PermissionSettings }>>('/folders/permissions');
+    return data.data!;
+  },
+  savePermissionSettings: async (patch: Partial<PermissionSettings>): Promise<{ capabilities: PermissionCapabilities; settings: PermissionSettings }> => {
+    const { data } = await api.put<ApiResponse<{ capabilities: PermissionCapabilities; settings: PermissionSettings }>>('/folders/permission-settings', patch);
+    return data.data!;
+  },
+  inspectPermissions: async (id: string): Promise<{ folder: OrphanFolder; report: PermissionReport }> => {
+    const { data } = await api.get<ApiResponse<{ folder: OrphanFolder; report: PermissionReport }>>(`/folders/${encodeURIComponent(id)}/permissions`);
+    return data.data!;
+  },
+  fixPermissions: async (id: string): Promise<{ folder: OrphanFolder; result: PermissionFixResult; message?: string }> => {
+    const { data } = await api.post<ApiResponse<{ folder: OrphanFolder; result: PermissionFixResult }>>(`/folders/${encodeURIComponent(id)}/permissions/fix`);
+    return { ...data.data!, message: data.message };
   },
 };
 

@@ -61,8 +61,14 @@ LABEL org.opencontainers.image.vendor="Prunerr"
 LABEL org.opencontainers.image.source="https://github.com/helliott20/prunerr"
 LABEL org.opencontainers.image.licenses="MIT"
 
-# Install su-exec for entrypoint user switching
-RUN apk add --no-cache su-exec
+# su-exec switches to PUID:PGID at startup. libcap's setcap gives the Node
+# binary CAP_CHOWN and CAP_FOWNER so Prunerr, running unprivileged, can still
+# set the owner and mode of media files written by other users (a DVR running
+# as root, a download client as another id) when cleaning up or importing
+# unmanaged folders. Those two capabilities allow exactly that and nothing
+# else; file access checks still apply.
+RUN apk add --no-cache su-exec libcap \
+    && setcap 'cap_chown,cap_fowner+ep' "$(readlink -f "$(command -v node)")"
 
 WORKDIR /app
 

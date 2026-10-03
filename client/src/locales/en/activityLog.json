@@ -51,6 +51,8 @@
     "folderDeleted": "Folder deleted{{size}}",
     "folderIgnored": "Folder ignored",
     "folderImported": "Folder imported into {{service}}",
+    "folderPermissionsFixed_one": "Permissions fixed ({{count}} entries, owner {{owner}})",
+    "folderPermissionsFixed_other": "Permissions fixed ({{count}} entries, owner {{owner}})",
     "folderUnignored": "Folder shown again",
     "matchedRule": "Matched rule: {{rule}}",
     "overseerrResetFailed": "Seerr reset failed",

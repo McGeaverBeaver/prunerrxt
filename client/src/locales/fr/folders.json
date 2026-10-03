@@ -1,4 +1,7 @@
 {
+  "capabilityNotice": {
+    "title": ""
+  },
   "deleteModal": {
     "confirm": "",
     "message": "",
@@ -41,12 +44,20 @@
     "files_one": "",
     "files_many": "",
     "files_other": "",
+    "fix": "",
+    "fixDisabled": "",
     "ignore": "",
     "ignored": "",
     "import": "",
     "importShort": "",
     "looksLike": "",
     "modified": "",
+    "notWritable": "",
+    "notWritableHint": "",
+    "permissionIssues_one": "",
+    "permissionIssues_many": "",
+    "permissionIssues_other": "",
+    "permissionIssuesHint": "",
     "unignore": "",
     "unmeasured": "",
     "unmeasuredHint": ""
@@ -67,6 +78,9 @@
     "deletedMsg": "",
     "deletedTitle": "",
     "deleteFailed": "",
+    "fixedMsg": "",
+    "fixedTitle": "",
+    "fixFailed": "",
     "importedMsg": "",
     "importedTitle": "",
     "importFailed": "",

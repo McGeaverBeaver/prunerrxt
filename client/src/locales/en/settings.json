@@ -320,6 +320,7 @@
     "groups": {
       "actions": "Item actions",
       "collections": "Collections",
+      "folders": "Unmanaged folders",
       "history": "History & users",
       "library": "Library",
       "overview": "Overview",
@@ -352,6 +353,19 @@
     "mappedTo": "mapped to {{path}}",
     "mapThis": "map this",
     "none": "No mappings yet. Sizes stay unknown and deletion stays off until you add one.",
+    "permissions": {
+      "autoFix": "Repair automatically when a delete or import hits a permission error",
+      "capable": "Prunerr runs as {{uid}}:{{gid}} and can change the owner and mode of files it does not own.",
+      "dirMode": "Folder mode",
+      "fileMode": "File mode",
+      "gid": "Group gid",
+      "help": "What Prunerr sets when it repairs a folder: the owner (normally PUID:PGID, the same ids Sonarr and Radarr run as) and the modes. With automatic repair on, a delete or import that would fail on files owned by someone else repairs the folder first and carries on.",
+      "save": "Save permission settings",
+      "saved": "Permission settings saved",
+      "saveFailed": "Could not save",
+      "title": "Ownership and permissions",
+      "uid": "Owner uid"
+    },
     "remotePlaceholder": "Path as Sonarr/Radarr see it, e.g. /movies",
     "remove": "Remove mapping",
     "rootFolders": "Root folders reported by your apps",

@@ -25,6 +25,7 @@ import type {
   Settings,
   ServiceConnection,
   FolderMapping,
+  PermissionSettings,
 } from '@/types';
 
 // Query Keys
@@ -50,6 +51,7 @@ export const queryKeys = {
   folderMappings: ['folders', 'mappings'] as const,
   folderCandidates: (id: string, term?: string) => ['folders', 'candidates', id, term ?? ''] as const,
   qualityProfiles: (service: string) => ['folders', 'profiles', service] as const,
+  folderPermissions: ['folders', 'permissions'] as const,
 };
 
 // Dashboard Hooks
@@ -635,6 +637,31 @@ export function useIgnoreFolder() {
     mutationFn: ({ id, ignored }: { id: string; ignored: boolean }) => foldersApi.setIgnored(id, ignored),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['folders'] });
+    },
+  });
+}
+
+export function useFolderPermissions() {
+  return useQuery({ queryKey: queryKeys.folderPermissions, queryFn: foldersApi.permissions, staleTime: 60_000 });
+}
+
+export function useSavePermissionSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (patch: Partial<PermissionSettings>) => foldersApi.savePermissionSettings(patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+    },
+  });
+}
+
+export function useFixFolderPermissions() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => foldersApi.fixPermissions(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['activity'] });
     },
   });
 }

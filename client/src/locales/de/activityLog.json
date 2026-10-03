@@ -51,6 +51,8 @@
     "folderDeleted": "",
     "folderIgnored": "",
     "folderImported": "",
+    "folderPermissionsFixed_one": "",
+    "folderPermissionsFixed_other": "",
     "folderUnignored": "",
     "matchedRule": "Übereinstimmende Regel: {{rule}}",
     "overseerrResetFailed": "",

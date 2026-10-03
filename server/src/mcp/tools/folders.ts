@@ -3,13 +3,16 @@ import { z } from 'zod';
 import { formatBytes } from '../../utils/format';
 import {
   deleteFolder,
+  fixFolderPermissions,
   getQualityProfiles,
+  inspectFolderPermissions,
   importFolder,
   listOrphanFolders,
   lookupCandidates,
   setFolderIgnored,
 } from '../../services/orphanFolders';
 import { DESTRUCTIVE, EXTERNAL_READ, MUTATING, defineTool, fail, ok } from '../helpers';
+import { getPermissionCapabilities, getPermissionSettings } from '../../services/permissions';
 
 const describeError = (error: unknown) => fail(error instanceof Error ? error.message : String(error));
 
@@ -43,6 +46,8 @@ export function registerFolderTools(server: McpServer): void {
           modifiedAt: f.modifiedAt,
           guess: f.guess,
           canDelete: f.canDelete,
+          permissionIssues: f.permissionIssues,
+          writable: f.writable,
           ignored: f.ignored,
         }));
         const problems = listing.services.filter((s) => s.error).map((s) => `${s.serviceLabel}: ${s.error}`);
@@ -131,6 +136,56 @@ export function registerFolderTools(server: McpServer): void {
       try {
         const result = await deleteFolder(id, { actorName: 'MCP connector' });
         return ok(result, `Deleted ${result.folder.path} (${result.fileCount} file(s), ${formatBytes(result.sizeBytes)} freed).`);
+      } catch (error) {
+        return describeError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'get_folder_permissions',
+      title: 'Check a folder\'s ownership',
+      description:
+        "Who owns the files in an unmanaged folder and with what modes, compared with the owner and modes Prunerr is configured to apply (normally PUID:PGID, 0775/0664). Also reports who Prunerr runs as and whether it is able to change ownership. Files owned by another user are why a delete or an import fails with 'permission denied'.",
+      group: 'folders',
+      inputSchema: { id: z.string().min(1).describe('Folder id from list_orphan_folders.') },
+      annotations: EXTERNAL_READ,
+    },
+    async ({ id }) => {
+      try {
+        const { folder, report } = await inspectFolderPermissions(id);
+        const capabilities = getPermissionCapabilities();
+        const settings = getPermissionSettings();
+        return ok(
+          { folder: { id: folder.id, name: folder.name, path: folder.path, localPath: folder.localPath }, report, capabilities, settings },
+          `${folder.name}: ${report.checked} entries checked, ${report.wrongOwner} with the wrong owner, ${report.wrongMode} with the wrong mode, ${report.writable ? 'writable' : 'NOT writable'} by Prunerr (${capabilities.uid}:${capabilities.gid}). Target is ${settings.uid}:${settings.gid}, dirs ${settings.dirMode}, files ${settings.fileMode}.${capabilities.canChown ? '' : ` ${capabilities.reason}`}`
+        );
+      } catch (error) {
+        return describeError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'fix_folder_permissions',
+      title: 'Fix a folder\'s ownership and modes',
+      description:
+        'Set the configured owner (normally PUID:PGID) and modes on an unmanaged folder and everything in it, so it can be deleted here or imported and then managed by Sonarr/Radarr. Nothing is deleted or moved. Needs a folder mapping.',
+      group: 'folders',
+      inputSchema: { id: z.string().min(1).describe('Folder id from list_orphan_folders.') },
+      annotations: MUTATING,
+    },
+    async ({ id }) => {
+      try {
+        const { folder, result } = await fixFolderPermissions(id, { actorName: 'MCP connector' });
+        return ok(
+          { folder: { id: folder.id, name: folder.name, path: folder.path }, result },
+          `${folder.name}: ${result.changed} entries fixed, ${result.unchanged} already right, ${result.failed.length} failed${result.failed[0] ? ` (${result.failed[0].error})` : ''}.`
+        );
       } catch (error) {
         return describeError(error);
       }

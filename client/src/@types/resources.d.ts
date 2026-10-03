@@ -53,6 +53,8 @@ export default interface Resources {
       "folderDeleted": "Folder deleted{{size}}",
       "folderIgnored": "Folder ignored",
       "folderImported": "Folder imported into {{service}}",
+      "folderPermissionsFixed_one": "Permissions fixed ({{count}} entries, owner {{owner}})",
+      "folderPermissionsFixed_other": "Permissions fixed ({{count}} entries, owner {{owner}})",
       "folderUnignored": "Folder shown again",
       "matchedRule": "Matched rule: {{rule}}",
       "overseerrResetFailed": "Seerr reset failed",
@@ -411,6 +413,9 @@ export default interface Resources {
     }
   },
   "folders": {
+    "capabilityNotice": {
+      "title": "Prunerr cannot change ownership on this install. "
+    },
     "deleteModal": {
       "confirm": "Delete folder",
       "message": "\"{{name}}\" and everything in it ({{files}} files, {{size}}) will be removed from disk. There is no recycle bin for this.",
@@ -452,12 +457,19 @@ export default interface Resources {
       "deleteDisabled": "Add a folder mapping in Settings so Prunerr can reach this folder",
       "files_one": "{{count}} files",
       "files_other": "{{count}} files",
+      "fix": "Fix permissions (owner {{owner}})",
+      "fixDisabled": "Prunerr cannot change ownership on this install",
       "ignore": "Ignore",
       "ignored": "Ignored",
       "import": "Import into {{service}}",
       "importShort": "Import",
       "looksLike": "Looks like: {{title}}",
       "modified": "changed {{when}}",
+      "notWritable": "not writable",
+      "notWritableHint": "Prunerr cannot write to this folder as it is; a delete or import would fail with permission denied",
+      "permissionIssuesHint": "Entries not owned by {{owner}} or with other modes than configured",
+      "permissionIssues_one": "{{count}} with other owner/mode",
+      "permissionIssues_other": "{{count}} with other owner/mode",
       "unignore": "Show again",
       "unmeasured": "size unknown",
       "unmeasuredHint": "No folder mapping covers this path"
@@ -476,6 +488,9 @@ export default interface Resources {
       "deleteFailed": "Could not delete folder",
       "deletedMsg": "\"{{name}}\" removed, {{size}} freed",
       "deletedTitle": "Folder deleted",
+      "fixFailed": "Could not fix permissions",
+      "fixedMsg": "{{changed}} entries changed",
+      "fixedTitle": "Permissions updated",
       "importFailed": "Import failed",
       "importedMsg": "\"{{title}}\" added to {{service}}",
       "importedTitle": "Imported",
@@ -1724,6 +1739,7 @@ export default interface Resources {
       "groups": {
         "actions": "Item actions",
         "collections": "Collections",
+        "folders": "Unmanaged folders",
         "history": "History & users",
         "library": "Library",
         "overview": "Overview",
@@ -1756,6 +1772,19 @@ export default interface Resources {
       "mapThis": "map this",
       "mappedTo": "mapped to {{path}}",
       "none": "No mappings yet. Sizes stay unknown and deletion stays off until you add one.",
+      "permissions": {
+        "autoFix": "Repair automatically when a delete or import hits a permission error",
+        "capable": "Prunerr runs as {{uid}}:{{gid}} and can change the owner and mode of files it does not own.",
+        "dirMode": "Folder mode",
+        "fileMode": "File mode",
+        "gid": "Group gid",
+        "help": "What Prunerr sets when it repairs a folder: the owner (normally PUID:PGID, the same ids Sonarr and Radarr run as) and the modes. With automatic repair on, a delete or import that would fail on files owned by someone else repairs the folder first and carries on.",
+        "save": "Save permission settings",
+        "saveFailed": "Could not save",
+        "saved": "Permission settings saved",
+        "title": "Ownership and permissions",
+        "uid": "Owner uid"
+      },
       "remotePlaceholder": "Path as Sonarr/Radarr see it, e.g. /movies",
       "remove": "Remove mapping",
       "rootFolders": "Root folders reported by your apps",

@@ -173,7 +173,45 @@ export interface OrphanFolder {
   modifiedAt: string | null;
   ignored: boolean;
   canDelete: boolean;
+  /** Entries whose owner or mode differ from the configured ones; null when unmapped. */
+  permissionIssues: number | null;
+  /** Whether Prunerr can create and remove entries in the folder right now. */
+  writable: boolean | null;
   guess: { title: string; year: number | null; tmdbId: number | null; tvdbId: number | null; imdbId: string | null };
+}
+
+export interface PermissionSettings {
+  uid: number;
+  gid: number;
+  dirMode: string;
+  fileMode: string;
+  autoFix: boolean;
+}
+
+export interface PermissionCapabilities {
+  uid: number;
+  gid: number;
+  canChown: boolean;
+  canChmod: boolean;
+  reason: string | null;
+}
+
+export interface PermissionReport {
+  path: string;
+  checked: number;
+  wrongOwner: number;
+  wrongMode: number;
+  unreadable: number;
+  writable: boolean;
+  examples: Array<{ path: string; uid: number; gid: number; mode: string; kind: 'dir' | 'file' }>;
+  needsFix: boolean;
+}
+
+export interface PermissionFixResult {
+  path: string;
+  changed: number;
+  unchanged: number;
+  failed: Array<{ path: string; error: string }>;
 }
 
 export interface OrphanServiceState {

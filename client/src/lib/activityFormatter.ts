@@ -244,6 +244,10 @@ export function formatActivity(entry: ActivityLogEntry): FormattedActivity {
         const size = readNumber(meta, 'sizeBytes');
         title = i18n.t('activityLog:formatter.folderDeleted', 'Folder deleted{{size}}', { size: size ? ` (${formatBytes(size)})` : '' });
         description = readString(meta, 'path');
+      } else if (entry.action === 'folder_permissions_fixed') {
+        const changed = readNumber(meta, 'changed') ?? 0;
+        title = i18n.t('activityLog:formatter.folderPermissionsFixed', 'Permissions fixed ({{count}} entries, owner {{owner}})', { count: changed, owner: readString(meta, 'owner') ?? '' });
+        description = readString(meta, 'path');
       } else if (entry.action === 'folder_ignored' || entry.action === 'folder_unignored') {
         title = entry.action === 'folder_ignored'
           ? i18n.t('activityLog:formatter.folderIgnored', 'Folder ignored')
