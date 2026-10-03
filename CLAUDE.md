@@ -78,6 +78,14 @@ Do not attribute work to Claude anywhere in the repo or on GitHub. No
 on issue, PR, review or discussion comments. Everything should read as coming
 from the maintainer.
 
+Every commit is authored and committed as exactly:
+
+    McGeaverBeaver <29310945+McGeaverBeaver@users.noreply.github.com>
+
+Never use any other name or email, and never a personal address.
+`.claude/settings.json` sets this in git config when a session starts; if the
+identity is ever different (`git config user.email`), set it before committing.
+
 ## Login, roles and the MCP connector
 - Login is configured only by environment variables (`AUTH_ENABLED`, `OIDC_*`,
   `AUTH_LOCAL_*`); see `server/src/auth/config.ts` and `docs/authentication.md`.
