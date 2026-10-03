@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Film, Tv, FolderX, RefreshCw, Download, Trash2, EyeOff, Eye, AlertTriangle, Search, Loader2, HardDrive, Wrench, Lock } from 'lucide-react';
+import { Film, Tv, FolderX, RefreshCw, Download, Trash2, EyeOff, Eye, AlertTriangle, Search, Loader2, HardDrive, Wrench, Lock, X, CheckSquare } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
@@ -12,6 +12,7 @@ import { ErrorState } from '@/components/common/ErrorState';
 import { useToast } from '@/components/common/Toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
+  useBulkIgnoreFolders,
   useDeleteFolder,
   useFixFolderPermissions,
   useFolderCandidates,
@@ -20,11 +21,16 @@ import {
   useImportFolder,
   useOrphanFolders,
   useQualityProfiles,
+  useQueueFolderJobs,
 } from '@/hooks/useApi';
+import { useFolderJobs } from '@/hooks/useFolderJobs';
 import { formatBytes, formatRelativeTime, cn } from '@/lib/utils';
 import type { OrphanFolder } from '@/types';
+import { BulkImportModal } from './BulkImportModal';
+import { FolderJobsPanel } from './FolderJobsPanel';
 
 type ServiceFilter = 'all' | 'radarr' | 'sonarr';
+type ProblemFilter = 'all' | 'permissions' | 'unmapped';
 
 /**
  * Folders under Sonarr's and Radarr's root folders that no series or movie
@@ -38,21 +44,91 @@ export default function Folders() {
   const [showIgnored, setShowIgnored] = useState(false);
   const [filter, setFilter] = useState<ServiceFilter>('all');
   const [search, setSearch] = useState('');
+  const [problems, setProblems] = useState<ProblemFilter>('all');
   const [importing, setImporting] = useState<OrphanFolder | null>(null);
   const [deleting, setDeleting] = useState<OrphanFolder | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkImporting, setBulkImporting] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { addToast } = useToast();
 
   const { data, isLoading, isError, error, refetch, isFetching } = useOrphanFolders(showIgnored);
   const deleteMutation = useDeleteFolder();
   const ignoreMutation = useIgnoreFolder();
   const fixMutation = useFixFolderPermissions();
+  const bulkIgnore = useBulkIgnoreFolders();
+  const queueJobs = useQueueFolderJobs();
   const permissions = useFolderPermissions();
+  const jobs = useFolderJobs();
 
   const folders = useMemo(() => {
     const list = data?.folders ?? [];
     const q = search.trim().toLowerCase();
-    return list.filter((f) => (filter === 'all' || f.service === filter) && (!q || f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q)));
-  }, [data, filter, search]);
+    return list.filter(
+      (f) =>
+        (filter === 'all' || f.service === filter) &&
+        (problems === 'all' ||
+          (problems === 'permissions' && f.localPath !== null && ((f.permissionIssues ?? 0) > 0 || f.writable === false)) ||
+          (problems === 'unmapped' && f.localPath === null)) &&
+        (!q || f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
+    );
+  }, [data, filter, problems, search]);
+
+  // Only folders still in the list count as selected: ids of folders that a
+  // job has since deleted or imported fall away on their own.
+  const selectedFolders = useMemo(() => (data?.folders ?? []).filter((f) => selected.has(f.id)), [data, selected]);
+  const selectedSize = selectedFolders.reduce((sum, f) => sum + (f.sizeBytes ?? 0), 0);
+  const selectedDeletable = selectedFolders.filter((f) => f.canDelete && !jobs.activeFolderIds.has(f.id));
+  const selectedFixable = selectedFolders.filter((f) => f.localPath !== null && !jobs.activeFolderIds.has(f.id));
+  const selectedImportable = selectedFolders.filter((f) => !jobs.activeFolderIds.has(f.id));
+  const allShownSelected = folders.length > 0 && folders.every((f) => selected.has(f.id));
+
+  const toggleSelected = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const toggleAllShown = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allShownSelected) folders.forEach((f) => next.delete(f.id));
+      else folders.forEach((f) => next.add(f.id));
+      return next;
+    });
+
+  const queueBulk = (action: 'delete' | 'fix_permissions', ids: string[]) => {
+    queueJobs.mutate(
+      { action, folders: ids.map((id) => ({ id })) },
+      {
+        onSuccess: (result) => {
+          addToast({
+            type: 'success',
+            title: action === 'delete' ? t('bulk.deleteQueuedTitle', 'Deletions queued') : t('bulk.fixQueuedTitle', 'Permission fixes queued'),
+            message: result.message ?? t('bulk.queuedMsg', '{{count}} folders queued', { count: result.queued.length }),
+          });
+          setSelected(new Set());
+          setBulkDeleting(false);
+          void jobs.refresh();
+        },
+        onError: (err) => addToast({ type: 'error', title: t('bulk.queueFailed', 'Could not queue'), message: err instanceof Error ? err.message : String(err) }),
+      }
+    );
+  };
+
+  const bulkSetIgnored = (ignored: boolean) => {
+    bulkIgnore.mutate(
+      { ids: selectedFolders.map((f) => f.id), ignored },
+      {
+        onSuccess: (result) => {
+          addToast({ type: 'success', title: ignored ? t('bulk.ignoredTitle', 'Folders ignored') : t('bulk.unignoredTitle', 'Folders shown again'), message: result.message });
+          setSelected(new Set());
+        },
+        onError: (err) => addToast({ type: 'error', title: t('toasts.updateFailed', 'Could not update folder'), message: err instanceof Error ? err.message : String(err) }),
+      }
+    );
+  };
 
   const hasMappings = (data?.mappings.length ?? 0) > 0;
   const serviceErrors = data?.services.filter((s) => s.error) ?? [];
@@ -143,8 +219,34 @@ export default function Folders() {
               </button>
             ))}
           </div>
+          <div className="flex items-center gap-1 rounded-lg bg-surface-800/60 p-1">
+            {(['all', 'permissions', 'unmapped'] as ProblemFilter[]).map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setProblems(value)}
+                className={cn(
+                  'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                  problems === value ? 'bg-surface-700 text-surface-50' : 'text-surface-400 hover:text-surface-200'
+                )}
+              >
+                {value === 'all' ? t('filter.everything', 'Everything') : value === 'permissions' ? t('filter.permissions', 'Permission issues') : t('filter.unmapped', 'No mapping')}
+              </button>
+            ))}
+          </div>
         </div>
       )}
+
+      <FolderJobsPanel
+        batches={jobs.batches}
+        jobs={jobs.jobs}
+        connected={jobs.connected}
+        canAct={canAct}
+        onCancelBatch={jobs.cancelBatch}
+        onCancelJob={jobs.cancel}
+        onRetryJob={jobs.retry}
+        onClearFinished={jobs.clearFinished}
+      />
 
       {/* Notices */}
       {data && !hasMappings && data.folders.length > 0 && (
@@ -204,12 +306,64 @@ export default function Folders() {
         <EmptyState icon={FolderX} title={t('empty.title', 'Nothing unmanaged')} description={t('empty.body', 'Every folder under your root folders belongs to a series or movie. Nice and tidy.')} />
       ) : (
         <Card>
+          {canAct && (
+            <div className="flex flex-wrap items-center gap-3 border-b border-surface-800 px-4 py-2.5">
+              <label className="flex items-center gap-2 text-sm text-surface-300">
+                <input type="checkbox" checked={allShownSelected} onChange={toggleAllShown} className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
+                {allShownSelected ? t('bulk.deselectShown', 'Deselect the {{count}} shown', { count: folders.length }) : t('bulk.selectShown', 'Select the {{count}} shown', { count: folders.length })}
+              </label>
+              {selectedFolders.length > 0 && (
+                <>
+                  <Badge variant="accent" size="sm">
+                    <CheckSquare className="h-3 w-3" />
+                    {t('bulk.selected', '{{count}} selected', { count: selectedFolders.length })}
+                    {selectedSize > 0 && ` · ${formatBytes(selectedSize)}`}
+                  </Badge>
+                  <div className="ml-auto flex flex-wrap items-center gap-1">
+                    <Button variant="secondary" size="sm" onClick={() => setBulkImporting(true)} disabled={selectedImportable.length === 0} title={t('bulk.importHint', 'Match each folder to a title and import the ones you accept')}>
+                      <Download className="h-4 w-4" />
+                      <span className="ml-1">{t('bulk.import', 'Import {{count}}…', { count: selectedImportable.length })}</span>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => queueBulk('fix_permissions', selectedFixable.map((f) => f.id))}
+                      disabled={selectedFixable.length === 0 || !(permissions.data?.capabilities.canChown ?? false) || queueJobs.isPending}
+                      title={permissions.data?.capabilities.canChown ? t('bulk.fixHint', 'Set the configured owner and modes on each selected folder') : t('row.fixDisabled', 'Prunerr cannot change ownership on this install')}
+                    >
+                      <Wrench className="h-4 w-4" />
+                      <span className="ml-1">{t('bulk.fix', 'Fix permissions {{count}}', { count: selectedFixable.length })}</span>
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => setBulkDeleting(true)} disabled={selectedDeletable.length === 0} title={selectedDeletable.length < selectedFolders.length ? t('bulk.deleteHint', 'Only folders a mapping covers can be deleted') : undefined}>
+                      <Trash2 className="h-4 w-4" />
+                      <span className="ml-1">{t('bulk.delete', 'Delete {{count}}…', { count: selectedDeletable.length })}</span>
+                    </Button>
+                    {selectedFolders.some((f) => !f.ignored) ? (
+                      <Button variant="ghost" size="sm" onClick={() => bulkSetIgnored(true)} disabled={bulkIgnore.isPending} title={t('bulk.ignore', 'Ignore selected')}>
+                        <EyeOff className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button variant="ghost" size="sm" onClick={() => bulkSetIgnored(false)} disabled={bulkIgnore.isPending} title={t('bulk.unignore', 'Show selected again')}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())} title={t('bulk.clear', 'Clear selection')}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           <ul className="divide-y divide-surface-800">
             {folders.map((folder) => (
               <FolderRow
                 key={folder.id}
                 folder={folder}
                 canAct={canAct}
+                selected={selected.has(folder.id)}
+                onToggleSelected={() => toggleSelected(folder.id)}
+                queued={jobs.activeFolderIds.has(folder.id)}
                 busy={ignoreMutation.isPending && ignoreMutation.variables?.id === folder.id}
                 fixing={fixMutation.isPending && fixMutation.variables === folder.id}
                 canFix={permissions.data?.capabilities.canChown ?? false}
@@ -225,6 +379,35 @@ export default function Folders() {
       )}
 
       {importing && <ImportModal folder={importing} onClose={() => setImporting(null)} />}
+      {bulkImporting && (
+        <BulkImportModal
+          folders={selectedImportable}
+          onClose={() => setBulkImporting(false)}
+          onQueued={() => {
+            setBulkImporting(false);
+            setSelected(new Set());
+            void jobs.refresh();
+          }}
+        />
+      )}
+
+      <ConfirmModal
+        isOpen={bulkDeleting}
+        onClose={() => !queueJobs.isPending && setBulkDeleting(false)}
+        onConfirm={() => queueBulk('delete', selectedDeletable.map((f) => f.id))}
+        title={t('bulkDeleteModal.title', 'Delete {{count}} folders?', { count: selectedDeletable.length })}
+        message={t('bulkDeleteModal.message', '{{count}} folders ({{size}}) will be removed from disk in the background, one at a time per app, each re-checked as still unmanaged just before it goes. There is no recycle bin for this.{{skipped}}', {
+          count: selectedDeletable.length,
+          size: formatBytes(selectedDeletable.reduce((sum, f) => sum + (f.sizeBytes ?? 0), 0)),
+          skipped:
+            selectedDeletable.length < selectedFolders.length
+              ? ' ' + t('bulkDeleteModal.skipped', '{{count}} of the selected folders have no mapping or are already being worked on and are left out.', { count: selectedFolders.length - selectedDeletable.length })
+              : '',
+        })}
+        confirmText={t('bulkDeleteModal.confirm', 'Delete {{count}} folders', { count: selectedDeletable.length })}
+        variant="danger"
+        isLoading={queueJobs.isPending}
+      />
 
       <ConfirmModal
         isOpen={!!deleting}
@@ -251,6 +434,9 @@ export default function Folders() {
 function FolderRow({
   folder,
   canAct,
+  selected,
+  onToggleSelected,
+  queued,
   busy,
   fixing,
   canFix,
@@ -262,6 +448,10 @@ function FolderRow({
 }: {
   folder: OrphanFolder;
   canAct: boolean;
+  selected: boolean;
+  onToggleSelected: () => void;
+  /** A bulk job owns this folder right now. */
+  queued: boolean;
   busy: boolean;
   fixing: boolean;
   canFix: boolean;
@@ -275,7 +465,16 @@ function FolderRow({
   const Icon = folder.service === 'radarr' ? Film : Tv;
   const permissionTrouble = folder.localPath !== null && ((folder.permissionIssues ?? 0) > 0 || folder.writable === false);
   return (
-    <li className={cn('flex flex-col gap-3 p-4 sm:flex-row sm:items-start', folder.ignored && 'opacity-60')}>
+    <li className={cn('flex flex-col gap-3 p-4 sm:flex-row sm:items-start', folder.ignored && 'opacity-60', selected && 'bg-accent-500/5')}>
+      {canAct && (
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggleSelected}
+          aria-label={t('bulk.selectOne', 'Select {{name}}', { name: folder.name })}
+          className="mt-4 h-4 w-4 flex-shrink-0 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
+        />
+      )}
       <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface-800">
         <Icon className="h-6 w-6 text-surface-500" />
       </div>
@@ -290,6 +489,12 @@ function FolderRow({
           )}
           {folder.fileCount !== null && <Badge variant="muted" size="sm">{t('row.files', '{{count}} files', { count: folder.fileCount })}</Badge>}
           {folder.ignored && <Badge variant="default" size="sm">{t('row.ignored', 'Ignored')}</Badge>}
+          {queued && (
+            <Badge variant="accent" size="sm">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              {t('row.queued', 'in a bulk job')}
+            </Badge>
+          )}
           {permissionTrouble && (
             <Badge
               variant="danger"
@@ -320,7 +525,7 @@ function FolderRow({
       </div>
       {canAct && (
         <div className="flex flex-shrink-0 items-center gap-1">
-          <Button variant="secondary" size="sm" onClick={onImport} title={t('row.import', 'Import into {{service}}', { service: folder.serviceLabel })}>
+          <Button variant="secondary" size="sm" onClick={onImport} disabled={queued} title={t('row.import', 'Import into {{service}}', { service: folder.serviceLabel })}>
             <Download className="h-4 w-4" />
             <span className="ml-1 hidden sm:inline">{t('row.importShort', 'Import')}</span>
           </Button>
@@ -329,7 +534,7 @@ function FolderRow({
               variant="secondary"
               size="sm"
               onClick={onFix}
-              disabled={!canFix || fixing}
+              disabled={!canFix || fixing || queued}
               title={canFix ? t('row.fix', 'Fix permissions (owner {{owner}})', { owner }) : t('row.fixDisabled', 'Prunerr cannot change ownership on this install')}
             >
               {fixing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wrench className="h-4 w-4" />}
@@ -339,7 +544,7 @@ function FolderRow({
             variant="danger"
             size="sm"
             onClick={onDelete}
-            disabled={!folder.canDelete}
+            disabled={!folder.canDelete || queued}
             title={folder.canDelete ? t('row.delete', 'Delete folder') : t('row.deleteDisabled', 'Add a folder mapping in Settings so Prunerr can reach this folder')}
           >
             <Trash2 className="h-4 w-4" />

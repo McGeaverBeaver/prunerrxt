@@ -1,4 +1,72 @@
 {
+  "bulk": {
+    "clear": "",
+    "delete_one": "",
+    "delete_other": "",
+    "deleteHint": "",
+    "deleteQueuedTitle": "",
+    "deselectShown_one": "",
+    "deselectShown_other": "",
+    "fix_one": "",
+    "fix_other": "",
+    "fixHint": "",
+    "fixQueuedTitle": "",
+    "ignore": "",
+    "ignoredTitle": "",
+    "import_one": "",
+    "import_other": "",
+    "importHint": "",
+    "queuedMsg_one": "",
+    "queuedMsg_other": "",
+    "queueFailed": "",
+    "selected_one": "",
+    "selected_other": "",
+    "selectOne": "",
+    "selectShown_one": "",
+    "selectShown_other": "",
+    "unignore": "",
+    "unignoredTitle": ""
+  },
+  "bulkDeleteModal": {
+    "confirm_one": "",
+    "confirm_other": "",
+    "message_one": "",
+    "message_other": "",
+    "skipped_one": "",
+    "skipped_other": "",
+    "title_one": "",
+    "title_other": ""
+  },
+  "bulkImport": {
+    "colConfidence": "",
+    "colFolder": "",
+    "colMatch": "",
+    "confirm_one": "",
+    "confirm_other": "",
+    "everything": "",
+    "exact": "",
+    "exactLikely": "",
+    "firstChunk": "",
+    "intro": "",
+    "likely": "",
+    "matching": "",
+    "none": "",
+    "nothing": "",
+    "onlyExact": "",
+    "queuedMsg_one": "",
+    "queuedMsg_other": "",
+    "queuedTitle": "",
+    "queueFailed": "",
+    "queueing": "",
+    "radarrProfile": "",
+    "skippedSuffix_one": "",
+    "skippedSuffix_other": "",
+    "sonarrProfile": "",
+    "summary": "",
+    "title_one": "",
+    "title_other": "",
+    "weak": ""
+  },
   "capabilityNotice": {
     "title": ""
   },
@@ -15,7 +83,10 @@
     "title": ""
   },
   "filter": {
-    "all": ""
+    "all": "",
+    "everything": "",
+    "permissions": "",
+    "unmapped": ""
   },
   "importModal": {
     "cancel": "",
@@ -30,6 +101,34 @@
     "searching": "",
     "searchPlaceholder": "",
     "title": ""
+  },
+  "jobs": {
+    "action": {
+      "delete": "",
+      "fix": "",
+      "import": ""
+    },
+    "batchTitle_one": "",
+    "batchTitle_other": "",
+    "by": "",
+    "cancelFailed": "",
+    "cancelJob": "",
+    "cancelRest_one": "",
+    "cancelRest_other": "",
+    "clear": "",
+    "clearFailed": "",
+    "counts": "",
+    "finished": "",
+    "finishedWithFailures_one": "",
+    "finishedWithFailures_other": "",
+    "freed": "",
+    "polling": "",
+    "progress": "",
+    "retryFailed": "",
+    "retryJob": "",
+    "title": "",
+    "waiting": "",
+    "working": ""
   },
   "loading": "",
   "mappingNotice": {
@@ -56,6 +155,7 @@
     "permissionIssues_one": "",
     "permissionIssues_other": "",
     "permissionIssuesHint": "",
+    "queued": "",
     "unignore": "",
     "unmeasured": "",
     "unmeasuredHint": ""

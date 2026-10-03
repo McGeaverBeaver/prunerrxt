@@ -33,6 +33,12 @@ import type {
   SonarrSeriesDetailResponse,
   EpisodeDeletionRequest,
   EpisodeDeletionResult,
+  FolderJob,
+  FolderJobAction,
+  FolderJobParams,
+  FolderBatchResult,
+  FolderBatchSummary,
+  ImportSuggestion,
 } from '@/types';
 import { normalizeActivityEntry } from '@/lib/activityFormatter';
 
@@ -571,6 +577,40 @@ export const foldersApi = {
   fixPermissions: async (id: string): Promise<{ folder: OrphanFolder; result: PermissionFixResult; message?: string }> => {
     const { data } = await api.post<ApiResponse<{ folder: OrphanFolder; result: PermissionFixResult }>>(`/folders/${encodeURIComponent(id)}/permissions/fix`);
     return { ...data.data!, message: data.message };
+  },
+
+  // Bulk: background jobs for the slow actions, one call for the ignore list
+  setManyIgnored: async (ids: string[], ignored: boolean): Promise<{ folders: OrphanFolder[]; missing: string[]; message?: string }> => {
+    const { data } = await api.post<ApiResponse<{ folders: OrphanFolder[]; missing: string[] }>>('/folders/ignore', { ids, ignored });
+    return { ...data.data!, message: data.message };
+  },
+  importPreview: async (ids: string[]): Promise<ImportSuggestion[]> => {
+    const { data } = await api.post<ApiResponse<ImportSuggestion[]>>('/folders/import-preview', { ids });
+    return data.data ?? [];
+  },
+  queueJobs: async (body: { action: FolderJobAction; folders: Array<{ id: string; params?: FolderJobParams }>; params?: FolderJobParams }): Promise<FolderBatchResult> => {
+    const { data } = await api.post<ApiResponse<FolderBatchResult>>('/folders/jobs', body);
+    return { ...data.data!, message: data.message };
+  },
+  jobs: async (): Promise<{ active: FolderJob[]; recent: FolderJob[]; batches: FolderBatchSummary[] }> => {
+    const { data } = await api.get<ApiResponse<{ active: FolderJob[]; recent: FolderJob[]; batches: FolderBatchSummary[] }>>('/folders/jobs');
+    return data.data!;
+  },
+  cancelJob: async (id: number): Promise<FolderJob> => {
+    const { data } = await api.post<ApiResponse<FolderJob>>(`/folders/jobs/${id}/cancel`);
+    return data.data!;
+  },
+  retryJob: async (id: number): Promise<FolderJob> => {
+    const { data } = await api.post<ApiResponse<FolderJob>>(`/folders/jobs/${id}/retry`);
+    return data.data!;
+  },
+  cancelBatch: async (batchId: string): Promise<{ cancelled: number }> => {
+    const { data } = await api.post<ApiResponse<{ cancelled: number }>>(`/folders/jobs/batch/${encodeURIComponent(batchId)}/cancel`);
+    return data.data!;
+  },
+  clearFinishedJobs: async (): Promise<{ removed: number }> => {
+    const { data } = await api.delete<ApiResponse<{ removed: number }>>('/folders/jobs/finished');
+    return data.data!;
   },
 };
 

@@ -26,6 +26,8 @@ import type {
   ServiceConnection,
   FolderMapping,
   PermissionSettings,
+  FolderJobAction,
+  FolderJobParams,
 } from '@/types';
 
 // Query Keys
@@ -652,6 +654,23 @@ export function useSavePermissionSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['folders'] });
     },
+  });
+}
+
+export function useBulkIgnoreFolders() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, ignored }: { ids: string[]; ignored: boolean }) => foldersApi.setManyIgnored(ids, ignored),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['activity'] });
+    },
+  });
+}
+
+export function useQueueFolderJobs() {
+  return useMutation({
+    mutationFn: (body: { action: FolderJobAction; folders: Array<{ id: string; params?: FolderJobParams }>; params?: FolderJobParams }) => foldersApi.queueJobs(body),
   });
 }
 

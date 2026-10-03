@@ -110,6 +110,11 @@ identity is ever different (`git config user.email`), set it before committing.
   lists. Deleting one needs a folder mapping (`media_folder_mappings`) and
   stays strictly inside the mapped path; importing adds the title to the app
   with the folder as its path. See docs/folders.md.
+- Bulk folder actions (delete, import, fix permissions) are `folder_jobs` rows
+  run by `services/folderJobs.ts`, one lane per service, streamed at
+  `/api/folders/jobs/stream` (`hooks/useFolderJobs.ts`). Per-folder work stays
+  in `orphanFolders.ts`; the listing cache is patched in place after each job
+  rather than rebuilt (a full rebuild walks every folder on disk).
 - Permission repair (`services/permissions.ts`) relies on the Dockerfile
   granting the Node binary `cap_chown,cap_fowner`; it only ever runs on paths
   resolved inside a folder mapping.

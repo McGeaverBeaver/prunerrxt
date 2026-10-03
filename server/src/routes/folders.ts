@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import logger from '../utils/logger';
 import { requestActorName } from '../utils/actor';
+import { openSseStream } from '../utils/sse';
 import {
   deleteFolder,
   fixFolderPermissions,
@@ -12,12 +13,30 @@ import {
   listOrphanFolders,
   lookupCandidates,
   setFolderIgnored,
+  setFoldersIgnored,
   setFolderMappings,
+  suggestImports,
 } from '../services/orphanFolders';
+import {
+  cancelFolderBatch,
+  cancelFolderJob,
+  clearFinishedFolderJobs,
+  enqueueFolderBatch,
+  getFolderJob,
+  listFolderJobs,
+  onFolderJobChange,
+  onFolderJobsCleared,
+  retryFolderJob,
+} from '../services/folderJobs';
 import { ServiceNotConfiguredError, isDiagnosticsService } from '../services/serviceDiagnostics';
 import { getPermissionCapabilities, getPermissionSettings, setPermissionSettings } from '../services/permissions';
 
 const router = Router();
+
+/** How many folders one bulk request may name. */
+const MAX_BULK_IDS = 1000;
+/** How many lookups one import preview request runs; the client chunks beyond this. */
+const MAX_PREVIEW_IDS = 60;
 
 function fail(res: Response, what: string, error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
@@ -125,6 +144,130 @@ router.post('/:id/permissions/fix', async (req: Request, res: Response) => {
     });
   } catch (error) {
     fail(res, 'fix folder permissions', error);
+  }
+});
+
+// ============================================================================
+// Bulk operations: jobs for the slow ones, one write for the ignore list
+// ============================================================================
+
+const IdList = z.array(z.string().min(1).max(2000)).min(1).max(MAX_BULK_IDS);
+const JobParamsSchema = z.object({
+  candidateId: z.number().int().positive().optional(),
+  qualityProfileId: z.number().int().positive().optional(),
+  monitored: z.boolean().optional(),
+});
+const BatchSchema = z.object({
+  action: z.enum(['delete', 'import', 'fix_permissions']),
+  folders: z.array(z.object({ id: z.string().min(1).max(2000), params: JobParamsSchema.optional() })).min(1).max(MAX_BULK_IDS),
+  params: JobParamsSchema.optional(),
+});
+
+// POST /api/folders/jobs - queue a batch; answers at once with the jobs
+router.post('/jobs', async (req: Request, res: Response) => {
+  const parsed = BatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: `action (delete, import or fix_permissions) and 1-${MAX_BULK_IDS} folders are required` });
+    return;
+  }
+  try {
+    const result = await enqueueFolderBatch({ ...parsed.data, actorName: requestActorName(req, 'Manual action') });
+    const verb = parsed.data.action === 'delete' ? 'delete' : parsed.data.action === 'import' ? 'import' : 'fix permissions on';
+    res.status(202).json({
+      success: true,
+      data: result,
+      message: `Queued ${result.queued.length} folder(s) to ${verb}${result.alreadyQueued > 0 ? `, ${result.alreadyQueued} already in progress` : ''}${result.skipped.length > 0 ? `, ${result.skipped.length} skipped` : ''}`,
+    });
+  } catch (error) {
+    fail(res, 'queue folder jobs', error);
+  }
+});
+
+// GET /api/folders/jobs - live jobs, recent history and per-batch totals
+router.get('/jobs', (_req: Request, res: Response) => {
+  res.json({ success: true, data: listFolderJobs() });
+});
+
+// GET /api/folders/jobs/stream - the same, pushed as it changes
+router.get('/jobs/stream', (req: Request, res: Response) => {
+  const stream = openSseStream(req, res);
+  stream.send({ type: 'snapshot', ...listFolderJobs() });
+  const unsubscribeChange = onFolderJobChange((job) => stream.send({ type: 'job', job }));
+  const unsubscribeCleared = onFolderJobsCleared(() => stream.send({ type: 'snapshot', ...listFolderJobs() }));
+  stream.onClose(() => {
+    unsubscribeChange();
+    unsubscribeCleared();
+  });
+});
+
+// DELETE /api/folders/jobs/finished - clear the history
+router.delete('/jobs/finished', (_req: Request, res: Response) => {
+  res.json({ success: true, data: { removed: clearFinishedFolderJobs() } });
+});
+
+// POST /api/folders/jobs/batch/:batchId/cancel - stop what has not started
+router.post('/jobs/batch/:batchId/cancel', (req: Request, res: Response) => {
+  const result = cancelFolderBatch(req.params['batchId'] as string);
+  res.json({ success: true, data: result, message: `Cancelled ${result.cancelled} pending job(s)` });
+});
+
+// GET /api/folders/jobs/:id
+router.get('/jobs/:id', (req: Request, res: Response) => {
+  const id = parseInt(req.params['id'] as string, 10);
+  const job = Number.isFinite(id) ? getFolderJob(id) : null;
+  if (!job) {
+    res.status(404).json({ success: false, error: 'Job not found' });
+    return;
+  }
+  res.json({ success: true, data: job });
+});
+
+// POST /api/folders/jobs/:id/cancel
+router.post('/jobs/:id/cancel', (req: Request, res: Response) => {
+  const result = cancelFolderJob(parseInt(req.params['id'] as string, 10));
+  if (!result.ok) {
+    res.status(result.status).json({ success: false, error: result.error });
+    return;
+  }
+  res.json({ success: true, data: result.job, message: `Cancelled "${result.job.name}"` });
+});
+
+// POST /api/folders/jobs/:id/retry
+router.post('/jobs/:id/retry', (req: Request, res: Response) => {
+  const result = retryFolderJob(parseInt(req.params['id'] as string, 10));
+  if (!result.ok) {
+    res.status(result.status).json({ success: false, error: result.error });
+    return;
+  }
+  res.status(202).json({ success: true, data: result.job, message: `Retrying "${result.job.name}"` });
+});
+
+// POST /api/folders/import-preview { ids } - best match per folder, for review before a bulk import
+router.post('/import-preview', async (req: Request, res: Response) => {
+  const parsed = z.object({ ids: IdList.max(MAX_PREVIEW_IDS) }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: `ids (1-${MAX_PREVIEW_IDS} folder ids) is required` });
+    return;
+  }
+  try {
+    res.json({ success: true, data: await suggestImports(parsed.data.ids) });
+  } catch (error) {
+    fail(res, 'match folders', error);
+  }
+});
+
+// POST /api/folders/ignore { ids, ignored } - ignore or show many folders at once
+router.post('/ignore', async (req: Request, res: Response) => {
+  const parsed = z.object({ ids: IdList, ignored: z.boolean() }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: 'ids (folder ids) and ignored (boolean) are required' });
+    return;
+  }
+  try {
+    const result = await setFoldersIgnored(parsed.data.ids, parsed.data.ignored, requestActorName(req, 'Manual action'));
+    res.json({ success: true, data: result, message: `${result.folders.length} folder(s) ${parsed.data.ignored ? 'ignored' : 'shown again'}` });
+  } catch (error) {
+    fail(res, 'update folders', error);
   }
 });
 

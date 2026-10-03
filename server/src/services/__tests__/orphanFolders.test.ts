@@ -37,8 +37,11 @@ import {
   invalidateCache,
   listOrphanFolders,
   lookupCandidates,
+  matchFolder,
   parseFolderName,
   setFolderIgnored,
+  setFoldersIgnored,
+  suggestImports,
   setFolderMappings,
   toLocalPath,
 } from '../orphanFolders';
@@ -127,6 +130,27 @@ describe('parseFolderName', () => {
   });
 });
 
+describe('matchFolder', () => {
+  const base = { service: 'radarr' as const, serviceLabel: 'Radarr' as const, id: 'x', rootFolder: '/movies', path: '/movies/x', localPath: null, sizeBytes: null, fileCount: null, videoFiles: [], modifiedAt: null, ignored: false, canDelete: false, permissionIssues: null, writable: null, name: 'x' };
+  const cand = (id: number, title: string, year: number | null, inLibrary = false) => ({ id, title, year, overview: null, posterUrl: null, inLibrary, existingId: inLibrary ? 1 : null });
+  const withGuess = (name: string) => ({ ...base, name, guess: parseFolderName(name) });
+
+  it('grades matches by id tag, title and year', () => {
+    expect(matchFolder(withGuess('Deepwater Horizon (2016) {tmdb-296098}'), [cand(1, 'Deep Water', 2022), cand(296098, 'Deepwater Horizon', 2016)])).toMatchObject({ confidence: 'exact', candidate: { id: 296098 } });
+    expect(matchFolder(withGuess('The Deepwater Horizon (2016)'), [cand(1, 'Deep Water', 2022), cand(2, 'Deepwater Horizon', 2016)])).toMatchObject({ confidence: 'exact', candidate: { id: 2 } });
+    expect(matchFolder(withGuess('Deepwater Horizon (2017)'), [cand(2, 'Deepwater Horizon', 2016)])).toMatchObject({ confidence: 'likely', candidate: { id: 2 } });
+    expect(matchFolder(withGuess('Deepwater Horizon (1999)'), [cand(2, 'Deepwater Horizon', 2016)])).toMatchObject({ confidence: 'weak' });
+    expect(matchFolder(withGuess('Deepwater Horizon'), [cand(2, 'Deepwater Horizon', 2016)])).toMatchObject({ confidence: 'likely' });
+    expect(matchFolder(withGuess('Deepwater Horizon'), [cand(2, 'Deepwater Horizon', 2016), cand(3, 'Deepwater Horizon', 2001)])).toMatchObject({ confidence: 'weak' });
+    expect(matchFolder(withGuess('Something Else (2016)'), [cand(2, 'Deepwater Horizon', 2016)])).toMatchObject({ confidence: 'weak', candidate: { id: 2 } });
+  });
+
+  it('never picks a title already in the library and reports nothing usable', () => {
+    expect(matchFolder(withGuess('Deepwater Horizon (2016)'), [cand(2, 'Deepwater Horizon', 2016, true)])).toMatchObject({ confidence: 'none', candidate: null, reason: expect.stringContaining('already in Radarr') });
+    expect(matchFolder(withGuess('Deepwater Horizon (2016)'), [])).toMatchObject({ confidence: 'none', reason: 'No results' });
+  });
+});
+
 describe('folder mappings', () => {
   it('maps service paths to local paths by longest prefix', () => {
     const mappings = [
@@ -178,6 +202,23 @@ describe('listing', () => {
     await setFolderIgnored(folder.id, false, 'tester');
     expect((await listOrphanFolders({ refresh: true })).folders).toHaveLength(1);
   });
+
+  it('ignores many folders in one write and updates the cached listing in place', async () => {
+    state.unmapped = [
+      { name: 'A', path: '/movies/A', relativePath: 'A' },
+      { name: 'B', path: '/movies/B', relativePath: 'B' },
+      { name: 'C', path: '/movies/C', relativePath: 'C' },
+    ];
+    const listing = await listOrphanFolders({ refresh: true });
+    const [a, b] = listing.folders;
+    const result = await setFoldersIgnored([a!.id, b!.id, 'missing'], true, 'tester');
+    expect(result.folders.map((f) => f.name)).toEqual(['A', 'B']);
+    expect(result.missing).toEqual(['missing']);
+    expect((await listOrphanFolders()).folders.map((f) => f.name)).toEqual(['C']);
+    expect((await listOrphanFolders({ refresh: true })).folders.map((f) => f.name)).toEqual(['C']);
+    const activity = getDatabase().prepare("SELECT COUNT(*) AS n FROM activity_log WHERE action = 'folder_ignored'").get() as { n: number };
+    expect(activity.n).toBe(2);
+  });
 });
 
 describe('lookup and import', () => {
@@ -201,6 +242,33 @@ describe('lookup and import', () => {
       ['Deepwater Horizon', false],
       ['Deep Water', true],
     ]);
+  });
+
+  it('matches many folders at once and imports automatically only when the match is confident', async () => {
+    state.unmapped = [
+      { name: 'Deepwater Horizon (2016) {tmdb-296098}', path: '/movies/Deepwater Horizon (2016) {tmdb-296098}', relativePath: 'x' },
+      { name: 'Deepwater Horizon (1999)', path: '/movies/Deepwater Horizon (1999)', relativePath: 'y' },
+      { name: 'Deep Water (2022)', path: '/movies/Deep Water (2022)', relativePath: 'z' },
+    ];
+    const listing = await listOrphanFolders({ refresh: true });
+    const ids = listing.folders.map((f) => f.id);
+    const suggestions = await suggestImports([...ids, 'not-a-folder']);
+    // Unsized folders list by name. "Deep Water" itself is already in Radarr,
+    // so its best remaining result is a different title: a weak guess.
+    expect(suggestions.map((s) => [s.name, s.confidence, s.candidate?.id ?? null])).toEqual([
+      ['Deep Water (2022)', 'weak', 296098],
+      ['Deepwater Horizon (1999)', 'weak', 296098],
+      ['Deepwater Horizon (2016) {tmdb-296098}', 'exact', 296098],
+    ]);
+    expect(suggestions[0]!.reason).toMatch(/title differs/);
+
+    const weak = listing.folders.find((f) => f.name.includes('1999'))!;
+    await expect(importFolder(weak.id, { actorName: 'tester' })).rejects.toThrow(/No confident match/);
+    const exact = listing.folders.find((f) => f.name.includes('tmdb'))!;
+    const result = await importFolder(exact.id, { actorName: 'tester' });
+    expect(result).toMatchObject({ addedId: 900, title: 'Deepwater Horizon' });
+    // The imported folder leaves the cached listing without a full refresh.
+    expect((await listOrphanFolders()).folders.map((f) => f.id)).not.toContain(exact.id);
   });
 
   it('adds the movie to Radarr with the folder as its path and refuses titles already there', async () => {

@@ -19,6 +19,7 @@ import { initializeServices } from './services/init';
 import { getScheduler } from './scheduler';
 import { createMcpRouter, closeAllMcpSessions } from './mcp';
 import { startDeletionJobWorker, stopDeletionJobWorker, runningDeletionJobCount } from './services/deletionJobs';
+import { startFolderJobWorker, stopFolderJobWorker, runningFolderJobCount } from './services/folderJobs';
 import oauthRouter from './auth/oauthRoutes';
 import { purgeExpiredOAuth } from './auth/oauthServer';
 import { getAuthConfig } from './auth/config';
@@ -195,6 +196,7 @@ async function startServer(): Promise<void> {
     // Background deletions: resume anything interrupted, then run what's queued.
     startDeletionJobWorker();
     logger.info('Deletion job worker started');
+    startFolderJobWorker();
 
     // Start listening
     const server = app.listen(config.port, () => {
@@ -216,6 +218,9 @@ async function startServer(): Promise<void> {
       stopDeletionJobWorker();
       const inFlight = runningDeletionJobCount();
       if (inFlight > 0) logger.warn(`${inFlight} deletion job(s) still running; they resume after restart`);
+      stopFolderJobWorker();
+      const folderJobsInFlight = runningFolderJobCount();
+      if (folderJobsInFlight > 0) logger.warn(`${folderJobsInFlight} folder job(s) still running; they resume after restart`);
 
       await closeAllMcpSessions();
 

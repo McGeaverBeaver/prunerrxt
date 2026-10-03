@@ -61,3 +61,31 @@ log.
 If the container is run with capabilities dropped (`--cap-drop ALL`), the
 page says so and repair is unavailable; `--cap-add CHOWN --cap-add FOWNER`
 restores it.
+
+## Working on many folders at once
+
+Tick folders in the list (or "Select the N shown", which follows the current
+search and filters) and the bar above the list offers the same actions for the
+whole selection:
+
+- **Import…** matches every selected folder against the catalogue of the app
+  that owns it and shows the result first. Each match is graded: *exact* (an
+  id tag in the folder name, or title and year both match), *likely* (title
+  matches, no conflicting year), *check* (best guess) or *no match*. Exact and
+  likely matches start ticked; untick or tick rows, pick a quality profile per
+  app, then queue the imports.
+- **Fix permissions** and **Delete…** queue one job per folder.
+- **Ignore** / **Show again** apply at once.
+
+Delete, import and fix run as background jobs, one at a time per app, so a
+Sonarr batch never waits behind a Radarr one. The *Bulk jobs* panel at the top
+of the page shows each batch's progress, the folder being worked on, failures
+with a retry, and a button to stop the rest. Each delete is re-checked as
+still unmanaged just before it goes. Jobs survive a restart: a batch that was
+half done when the container updated carries on. Folders filter by
+*Permission issues* and *No mapping* to find the ones that need attention.
+
+Over the MCP connector the same is `preview_folder_imports`,
+`run_folder_jobs` (import or fix permissions), `delete_orphan_folders`,
+`ignore_orphan_folders`, `list_folder_jobs` and `cancel_folder_batch`.
+

@@ -604,6 +604,42 @@ const migrations: Migration[] = [
       ALTER TABLE deletion_jobs ADD COLUMN upstream_log TEXT;
     `,
   },
+  {
+    version: 26,
+    name: 'folder_jobs',
+    up: `
+      -- Bulk work on unmanaged folders (delete, import, fix permissions),
+      -- one row per folder, run in the background by services/folderJobs.ts.
+      -- Rows outlive restarts the same way deletion_jobs do.
+      CREATE TABLE IF NOT EXISTS folder_jobs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        batch_id TEXT NOT NULL,
+        folder_id TEXT NOT NULL,
+        service TEXT NOT NULL CHECK (service IN ('sonarr', 'radarr')),
+        folder_name TEXT NOT NULL,
+        folder_path TEXT NOT NULL,
+        size_bytes INTEGER,
+        action TEXT NOT NULL CHECK (action IN ('delete', 'import', 'fix_permissions')),
+        params TEXT,
+        requested_by TEXT NOT NULL,
+        status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'done', 'failed', 'cancelled')),
+        message TEXT,
+        error TEXT,
+        result TEXT,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        started_at TEXT,
+        finished_at TEXT,
+        updated_at TEXT NOT NULL
+      );
+
+      -- One live job per folder.
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_folder_jobs_active_folder
+        ON folder_jobs(folder_id) WHERE status IN ('pending', 'running');
+      CREATE INDEX IF NOT EXISTS idx_folder_jobs_status ON folder_jobs(status);
+      CREATE INDEX IF NOT EXISTS idx_folder_jobs_batch ON folder_jobs(batch_id);
+    `,
+  },
 ];
 
 // Schema version tracking table

@@ -10,9 +10,14 @@ import {
   listOrphanFolders,
   lookupCandidates,
   setFolderIgnored,
+  setFoldersIgnored,
+  suggestImports,
 } from '../../services/orphanFolders';
+import { cancelFolderBatch, enqueueFolderBatch, listFolderJobs } from '../../services/folderJobs';
 import { DESTRUCTIVE, EXTERNAL_READ, MUTATING, defineTool, fail, ok } from '../helpers';
 import { getPermissionCapabilities, getPermissionSettings } from '../../services/permissions';
+
+const FolderIds = z.array(z.string().min(1)).min(1).max(500).describe('Folder ids from list_orphan_folders.');
 
 const describeError = (error: unknown) => fail(error instanceof Error ? error.message : String(error));
 
@@ -186,6 +191,153 @@ export function registerFolderTools(server: McpServer): void {
           { folder: { id: folder.id, name: folder.name, path: folder.path }, result },
           `${folder.name}: ${result.changed} entries fixed, ${result.unchanged} already right, ${result.failed.length} failed${result.failed[0] ? ` (${result.failed[0].error})` : ''}.`
         );
+      } catch (error) {
+        return describeError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'preview_folder_imports',
+      title: 'Match many folders to titles',
+      description:
+        "For each folder, the title it most plausibly is in the owning app's catalogue, with a confidence: exact (id tag, or title and year match), likely (title matches, no conflicting year), weak (best guess; check it) or none. Use it before run_folder_jobs with action import, and pass only the folders whose match you and the user accept. Up to 60 folders per call.",
+      group: 'folders',
+      inputSchema: { ids: z.array(z.string().min(1)).min(1).max(60).describe('Folder ids from list_orphan_folders.') },
+      annotations: EXTERNAL_READ,
+    },
+    async ({ ids }) => {
+      try {
+        const suggestions = await suggestImports(ids);
+        const counts = suggestions.reduce<Record<string, number>>((acc, s) => ({ ...acc, [s.confidence]: (acc[s.confidence] ?? 0) + 1 }), {});
+        return ok(
+          suggestions,
+          `${suggestions.length} folder(s) matched: ${['exact', 'likely', 'weak', 'none'].map((c) => `${counts[c] ?? 0} ${c}`).join(', ')}.`
+        );
+      } catch (error) {
+        return describeError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'run_folder_jobs',
+      title: 'Import or fix permissions on many folders',
+      description:
+        'Queue background jobs for many unmanaged folders at once: import each into the app that owns it, or fix ownership and modes. Imports without a candidateId are matched automatically and only go ahead when the match is exact or likely; anything weaker fails with a reason and is left for an individual import. Returns at once; follow progress with list_folder_jobs. For deleting many folders use delete_orphan_folders.',
+      group: 'folders',
+      inputSchema: {
+        action: z.enum(['import', 'fix_permissions']),
+        folders: z
+          .array(
+            z.object({
+              id: z.string().min(1),
+              candidateId: z.number().int().positive().optional().describe('TMDB/TVDB id from preview_folder_imports or lookup_orphan_folder; omit to match automatically.'),
+            })
+          )
+          .min(1)
+          .max(500),
+        qualityProfileId: z.number().int().positive().optional().describe("Imports only; defaults to the app's first profile."),
+        monitored: z.boolean().optional().describe('Imports only; default true.'),
+      },
+      annotations: MUTATING,
+    },
+    async ({ action, folders, qualityProfileId, monitored }) => {
+      try {
+        const result = await enqueueFolderBatch({
+          action,
+          folders: folders.map((f) => ({ id: f.id, params: f.candidateId ? { candidateId: f.candidateId } : undefined })),
+          params: { qualityProfileId, monitored },
+          actorName: 'MCP connector',
+        });
+        return ok(result, `Batch ${result.batchId}: ${result.queued.length} job(s) queued, ${result.alreadyQueued} already in progress, ${result.skipped.length} skipped${result.skipped[0] ? ` (${result.skipped[0].error})` : ''}.`);
+      } catch (error) {
+        return describeError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'delete_orphan_folders',
+      title: 'Delete many unmanaged folders',
+      description:
+        'Queue background deletions of many unmanaged folders. Each needs a folder mapping and is re-checked as still unmanaged just before it goes. Irreversible; requires the "allow immediate deletion" setting and explicit confirmation from the user, listing what will be removed. Returns at once; follow progress with list_folder_jobs, stop the rest with cancel_folder_batch.',
+      group: 'folders',
+      inputSchema: { ids: FolderIds },
+      annotations: DESTRUCTIVE,
+      requiresImmediateDeletion: true,
+    },
+    async ({ ids }) => {
+      try {
+        const result = await enqueueFolderBatch({ action: 'delete', folders: ids.map((id) => ({ id })), actorName: 'MCP connector' });
+        const bytes = result.queued.reduce((sum, j) => sum + (j.sizeBytes ?? 0), 0);
+        return ok(result, `Batch ${result.batchId}: ${result.queued.length} deletion(s) queued (${formatBytes(bytes)}), ${result.alreadyQueued} already in progress, ${result.skipped.length} skipped${result.skipped[0] ? ` (${result.skipped[0].error})` : ''}.`);
+      } catch (error) {
+        return describeError(error);
+      }
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'list_folder_jobs',
+      title: 'Progress of folder batches',
+      description: 'Background folder jobs (delete, import, fix permissions): what is running, what finished recently and per-batch totals.',
+      group: 'folders',
+      inputSchema: {},
+      annotations: EXTERNAL_READ,
+    },
+    async () => {
+      const listing = listFolderJobs(100);
+      return ok(
+        listing,
+        listing.batches.length === 0
+          ? 'No folder jobs.'
+          : listing.batches
+              .slice(0, 5)
+              .map((b) => `${b.action} batch ${b.batchId.slice(0, 8)}: ${b.done}/${b.total} done, ${b.running} running, ${b.pending} pending, ${b.failed} failed`)
+              .join('; ')
+      );
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'cancel_folder_batch',
+      title: 'Stop a folder batch',
+      description: 'Cancel every job in a batch that has not started yet. The job running right now finishes on its own.',
+      group: 'folders',
+      inputSchema: { batchId: z.string().min(1).describe('From run_folder_jobs, delete_orphan_folders or list_folder_jobs.') },
+      annotations: MUTATING,
+    },
+    async ({ batchId }) => {
+      const result = cancelFolderBatch(batchId);
+      return ok(result, `${result.cancelled} pending job(s) cancelled.`);
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'ignore_orphan_folders',
+      title: 'Ignore or unignore many folders',
+      description: 'Hide many folders from the orphan list (or bring them back) in one go. Nothing on disk changes.',
+      group: 'folders',
+      inputSchema: { ids: FolderIds, ignored: z.boolean().optional().describe('Default true.') },
+      annotations: MUTATING,
+    },
+    async ({ ids, ignored }) => {
+      try {
+        const result = await setFoldersIgnored(ids, ignored !== false, 'MCP connector');
+        return ok(result, `${result.folders.length} folder(s) ${ignored !== false ? 'ignored' : 'listed again'}${result.missing.length > 0 ? `, ${result.missing.length} not found` : ''}.`);
       } catch (error) {
         return describeError(error);
       }

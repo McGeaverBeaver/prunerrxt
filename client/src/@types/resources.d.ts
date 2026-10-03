@@ -413,6 +413,74 @@ export default interface Resources {
     }
   },
   "folders": {
+    "bulk": {
+      "clear": "Clear selection",
+      "deleteHint": "Only folders a mapping covers can be deleted",
+      "deleteQueuedTitle": "Deletions queued",
+      "delete_one": "Delete {{count}}…",
+      "delete_other": "Delete {{count}}…",
+      "deselectShown_one": "Deselect the {{count}} shown",
+      "deselectShown_other": "Deselect the {{count}} shown",
+      "fixHint": "Set the configured owner and modes on each selected folder",
+      "fixQueuedTitle": "Permission fixes queued",
+      "fix_one": "Fix permissions {{count}}",
+      "fix_other": "Fix permissions {{count}}",
+      "ignore": "Ignore selected",
+      "ignoredTitle": "Folders ignored",
+      "importHint": "Match each folder to a title and import the ones you accept",
+      "import_one": "Import {{count}}…",
+      "import_other": "Import {{count}}…",
+      "queueFailed": "Could not queue",
+      "queuedMsg_one": "{{count}} folders queued",
+      "queuedMsg_other": "{{count}} folders queued",
+      "selectOne": "Select {{name}}",
+      "selectShown_one": "Select the {{count}} shown",
+      "selectShown_other": "Select the {{count}} shown",
+      "selected_one": "{{count}} selected",
+      "selected_other": "{{count}} selected",
+      "unignore": "Show selected again",
+      "unignoredTitle": "Folders shown again"
+    },
+    "bulkDeleteModal": {
+      "confirm_one": "Delete {{count}} folders",
+      "confirm_other": "Delete {{count}} folders",
+      "message_one": "{{count}} folders ({{size}}) will be removed from disk in the background, one at a time per app, each re-checked as still unmanaged just before it goes. There is no recycle bin for this.{{skipped}}",
+      "message_other": "{{count}} folders ({{size}}) will be removed from disk in the background, one at a time per app, each re-checked as still unmanaged just before it goes. There is no recycle bin for this.{{skipped}}",
+      "skipped_one": "{{count}} of the selected folders have no mapping or are already being worked on and are left out.",
+      "skipped_other": "{{count}} of the selected folders have no mapping or are already being worked on and are left out.",
+      "title_one": "Delete {{count}} folders?",
+      "title_other": "Delete {{count}} folders?"
+    },
+    "bulkImport": {
+      "colConfidence": "Match",
+      "colFolder": "Folder",
+      "colMatch": "Will be imported as",
+      "confirm_one": "Queue {{count}} imports",
+      "confirm_other": "Queue {{count}} imports",
+      "everything": "Everything matched",
+      "exact": "exact",
+      "exactLikely": "Exact + likely",
+      "firstChunk": "Asking Sonarr and Radarr…",
+      "intro": "Each folder is matched against the catalogue of the app that owns it. Exact and likely matches are ticked; look at the rest before ticking them. Imports run in the background, one at a time per app.",
+      "likely": "likely",
+      "matching": "Matched {{done}} of {{total}}…",
+      "none": "no match",
+      "nothing": "None",
+      "onlyExact": "Only exact",
+      "queueFailed": "Could not queue imports",
+      "queuedMsg_one": "{{count}} folders are being imported in the background{{skipped}}",
+      "queuedMsg_other": "{{count}} folders are being imported in the background{{skipped}}",
+      "queuedTitle": "Imports queued",
+      "queueing": "Queueing…",
+      "radarrProfile": "Radarr quality profile",
+      "skippedSuffix_one": ", {{count}} skipped",
+      "skippedSuffix_other": ", {{count}} skipped",
+      "sonarrProfile": "Sonarr quality profile",
+      "summary": "{{exact}} exact, {{likely}} likely, {{weak}} to check, {{none}} without a match",
+      "title_one": "Import {{count}} folders",
+      "title_other": "Import {{count}} folders",
+      "weak": "check"
+    },
     "capabilityNotice": {
       "title": "Prunerr cannot change ownership on this install. "
     },
@@ -429,7 +497,10 @@ export default interface Resources {
       "title": "Nothing unmanaged"
     },
     "filter": {
-      "all": "All"
+      "all": "All",
+      "everything": "Everything",
+      "permissions": "Permission issues",
+      "unmapped": "No mapping"
     },
     "importModal": {
       "cancel": "Cancel",
@@ -444,6 +515,34 @@ export default interface Resources {
       "searchPlaceholder": "Search by title, tmdb:123 or tvdb:123",
       "searching": "Searching {{service}}…",
       "title": "Import into {{service}}"
+    },
+    "jobs": {
+      "action": {
+        "delete": "Delete",
+        "fix": "Fix permissions",
+        "import": "Import"
+      },
+      "batchTitle_one": "{{action}} {{count}} folders",
+      "batchTitle_other": "{{action}} {{count}} folders",
+      "by": "by {{who}}",
+      "cancelFailed": "Could not cancel",
+      "cancelJob": "Cancel",
+      "cancelRest_one": "Stop the remaining {{count}}",
+      "cancelRest_other": "Stop the remaining {{count}}",
+      "clear": "Clear finished",
+      "clearFailed": "Could not clear",
+      "counts": "{{done}} done, {{failed}} failed, {{cancelled}} cancelled",
+      "finished": "finished",
+      "finishedWithFailures_one": "finished, {{count}} failed",
+      "finishedWithFailures_other": "finished, {{count}} failed",
+      "freed": "{{size}} freed",
+      "polling": "(live updates paused; refreshing every few seconds)",
+      "progress": "{{done}} of {{total}}",
+      "retryFailed": "Could not retry",
+      "retryJob": "Retry",
+      "title": "Bulk jobs",
+      "waiting": "Waiting for its turn",
+      "working": "Working on {{name}}: {{message}}"
     },
     "loading": "Asking Sonarr and Radarr for their unmapped folders…",
     "mappingNotice": {
@@ -470,6 +569,7 @@ export default interface Resources {
       "permissionIssuesHint": "Entries not owned by {{owner}} or with other modes than configured",
       "permissionIssues_one": "{{count}} with other owner/mode",
       "permissionIssues_other": "{{count}} with other owner/mode",
+      "queued": "in a bulk job",
       "unignore": "Show again",
       "unmeasured": "size unknown",
       "unmeasuredHint": "No folder mapping covers this path"

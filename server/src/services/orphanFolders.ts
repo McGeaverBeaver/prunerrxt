@@ -298,6 +298,23 @@ export function invalidateCache(): void {
   cache = null;
 }
 
+/**
+ * Take one folder out of the cached listing (it was deleted or imported)
+ * without throwing the whole listing away. A batch of hundreds of jobs
+ * would otherwise re-walk every folder on disk after each one.
+ */
+function removeFromCache(id: string): void {
+  if (!cache) return;
+  const folders = cache.listing.folders.filter((f) => f.id !== id);
+  if (folders.length === cache.listing.folders.length) return;
+  cache = { at: cache.at, listing: { ...cache.listing, folders, totalSizeBytes: folders.reduce((sum, f) => sum + (f.sizeBytes ?? 0), 0), unsized: folders.filter((f) => f.sizeBytes === null).length } };
+}
+
+function patchCache(id: string, patch: Partial<OrphanFolder>): void {
+  if (!cache) return;
+  cache = { at: cache.at, listing: { ...cache.listing, folders: cache.listing.folders.map((f) => (f.id === id ? { ...f, ...patch } : f)) } };
+}
+
 async function rootFoldersFor(service: OrphanService): Promise<ArrRootFolder[]> {
   const instance = service === 'sonarr' ? getSonarrService() : getRadarrService();
   if (!instance) throw new ServiceNotConfiguredError(service);
@@ -398,6 +415,23 @@ export async function getOrphanFolder(id: string): Promise<OrphanFolder | null> 
   return listing.folders.find((f) => f.id === id) ?? null;
 }
 
+/**
+ * Whether the owning app still lists the folder as unmapped, asked fresh and
+ * for that app only. Cheaper than a full refresh: no disk walk of every
+ * folder, and the other app is not consulted.
+ */
+async function isStillUnmanaged(folder: OrphanFolder): Promise<boolean> {
+  const roots = await rootFoldersFor(folder.service);
+  for (const root of roots) {
+    const unmapped = (Array.isArray(root.unmappedFolders) ? root.unmappedFolders : []) as UnmappedFolderResource[];
+    for (const entry of unmapped) {
+      const remotePath = normalisePath(entry.path || path.posix.join(root.path, entry.relativePath || entry.name || ''));
+      if (remotePath === folder.path) return true;
+    }
+  }
+  return false;
+}
+
 // ============================================================================
 // Lookup and import
 // ============================================================================
@@ -457,6 +491,106 @@ export async function lookupCandidates(id: string, term?: string): Promise<{ fol
   };
 }
 
+function normaliseTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[\u2018\u2019'`\u00b4]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\b(the|a|an)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export interface ImportSuggestion {
+  folderId: string;
+  name: string;
+  path: string;
+  service: OrphanService;
+  serviceLabel: 'Sonarr' | 'Radarr';
+  sizeBytes: number | null;
+  /** What was searched for. */
+  term: string;
+  /** The pick, or null when nothing usable came back. */
+  candidate: FolderCandidate | null;
+  /**
+   * exact: an id tag in the folder name, or the title and year both match.
+   * likely: the title matches and there is no conflicting year.
+   * weak: best available result; check before importing.
+   * none: no result, or every result is already in the library.
+   */
+  confidence: 'exact' | 'likely' | 'weak' | 'none';
+  reason: string;
+}
+
+/**
+ * Pick the candidate a folder most plausibly is, with a confidence the UI
+ * (and the bulk import job) can act on. Only 'exact' and 'likely' matches
+ * are imported without someone looking at them.
+ */
+export function matchFolder(folder: OrphanFolder, candidates: FolderCandidate[]): Pick<ImportSuggestion, 'candidate' | 'confidence' | 'reason'> {
+  const usable = candidates.filter((c) => !c.inLibrary);
+  if (usable.length === 0) {
+    return {
+      candidate: null,
+      confidence: 'none',
+      reason: candidates.length === 0 ? 'No results' : `Only results already in ${folder.serviceLabel}`,
+    };
+  }
+  const { guess } = folder;
+  const tagged = (folder.service === 'radarr' && guess.tmdbId) || (folder.service === 'sonarr' && guess.tvdbId);
+  if (tagged) {
+    const byId = usable.find((c) => c.id === (folder.service === 'radarr' ? guess.tmdbId : guess.tvdbId));
+    if (byId) return { candidate: byId, confidence: 'exact', reason: 'Id tag in the folder name' };
+  }
+  const wanted = normaliseTitle(guess.title);
+  const titleMatches = usable.filter((c) => normaliseTitle(c.title) === wanted);
+  if (titleMatches.length > 0) {
+    if (guess.year) {
+      const sameYear = titleMatches.find((c) => c.year === guess.year);
+      if (sameYear) return { candidate: sameYear, confidence: 'exact', reason: 'Title and year match' };
+      const nearYear = titleMatches.find((c) => c.year !== null && Math.abs(c.year - guess.year!) <= 1);
+      if (nearYear) return { candidate: nearYear, confidence: 'likely', reason: `Title matches, year off by one (${nearYear.year})` };
+      return { candidate: titleMatches[0]!, confidence: 'weak', reason: `Title matches but the year differs (${titleMatches[0]!.year ?? 'unknown'} vs ${guess.year})` };
+    }
+    if (titleMatches.length === 1) return { candidate: titleMatches[0]!, confidence: 'likely', reason: 'Title matches; folder has no year' };
+    return { candidate: titleMatches[0]!, confidence: 'weak', reason: `${titleMatches.length} titles match and the folder has no year` };
+  }
+  const top = usable[0]!;
+  if (guess.year && top.year === guess.year) {
+    return { candidate: top, confidence: 'weak', reason: `Best result for "${guess.title}" has the same year` };
+  }
+  return { candidate: top, confidence: 'weak', reason: `Best result for "${guess.title}"; title differs` };
+}
+
+/**
+ * Best candidate per folder, a few lookups at a time. For the bulk import
+ * preview; the caller keeps the request bounded (the route caps the ids).
+ */
+export async function suggestImports(ids: string[], options: { concurrency?: number } = {}): Promise<ImportSuggestion[]> {
+  const listing = await listOrphanFolders({ includeIgnored: true });
+  const byId = new Map(listing.folders.map((f) => [f.id, f]));
+  const results: ImportSuggestion[] = [];
+  const queue = [...ids];
+  const workers = Array.from({ length: Math.max(1, Math.min(options.concurrency ?? 4, queue.length)) }, async () => {
+    for (;;) {
+      const id = queue.shift();
+      if (id === undefined) return;
+      const folder = byId.get(id);
+      if (!folder) continue;
+      try {
+        const lookup = await lookupCandidates(id);
+        results.push({ folderId: id, name: folder.name, path: folder.path, service: folder.service, serviceLabel: folder.serviceLabel, sizeBytes: folder.sizeBytes, term: lookup.term, ...matchFolder(folder, lookup.candidates) });
+      } catch (error) {
+        results.push({ folderId: id, name: folder.name, path: folder.path, service: folder.service, serviceLabel: folder.serviceLabel, sizeBytes: folder.sizeBytes, term: folder.guess.title, candidate: null, confidence: 'none', reason: `Lookup failed: ${error instanceof Error ? error.message : String(error)}` });
+      }
+    }
+  });
+  await Promise.all(workers);
+  const order = new Map(ids.map((id, i) => [id, i]));
+  return results.sort((a, b) => (order.get(a.folderId) ?? 0) - (order.get(b.folderId) ?? 0));
+}
+
 export async function getQualityProfiles(service: OrphanService): Promise<QualityProfile[]> {
   if (service === 'radarr') {
     const radarr = getRadarrService();
@@ -469,8 +603,12 @@ export async function getQualityProfiles(service: OrphanService): Promise<Qualit
 }
 
 export interface ImportFolderOptions {
-  /** tmdbId (Radarr) or tvdbId (Sonarr) chosen from lookupCandidates. */
-  candidateId: number;
+  /**
+   * tmdbId (Radarr) or tvdbId (Sonarr) chosen from lookupCandidates. Left
+   * out, the folder is matched automatically and imported only when the
+   * match is exact or likely (see matchFolder).
+   */
+  candidateId?: number;
   qualityProfileId?: number;
   monitored?: boolean;
   actorName: string;
@@ -499,6 +637,18 @@ export async function importFolder(id: string, options: ImportFolderOptions): Pr
   if (!profiles.some((p) => p.id === profileId)) throw new Error(`Quality profile ${profileId} does not exist in ${folder.serviceLabel}`);
   const monitored = options.monitored ?? true;
 
+  let candidateId = options.candidateId;
+  let matchNote: string | null = null;
+  if (candidateId === undefined) {
+    const lookup = await lookupCandidates(id);
+    const match = matchFolder(folder, lookup.candidates);
+    if (!match.candidate || (match.confidence !== 'exact' && match.confidence !== 'likely')) {
+      throw new Error(`No confident match for "${folder.name}" (${match.reason}); import it individually and pick the title`);
+    }
+    candidateId = match.candidate.id;
+    matchNote = `${match.candidate.title} (${match.candidate.year ?? '?'}): ${match.reason}`;
+  }
+
   // The app will want to rename and move files in this folder. If Prunerr can
   // see that it is owned by someone else, put it right first (same owner the
   // apps run as) so the import does not stall on a permission error there.
@@ -515,8 +665,8 @@ export async function importFolder(id: string, options: ImportFolderOptions): Pr
   if (folder.service === 'radarr') {
     const radarr = getRadarrService();
     if (!radarr) throw new ServiceNotConfiguredError('radarr');
-    const [match] = await radarr.lookupMovies(`tmdb:${options.candidateId}`);
-    if (!match || match.tmdbId !== options.candidateId) throw new Error(`Radarr could not find TMDB id ${options.candidateId}`);
+    const [match] = await radarr.lookupMovies(`tmdb:${candidateId}`);
+    if (!match || match.tmdbId !== candidateId) throw new Error(`Radarr could not find TMDB id ${candidateId}`);
     if (match.id && match.id > 0) throw new Error(`"${match.title}" is already in Radarr (id ${match.id}); it owns a different folder. Remove or merge it there first.`);
     const added = await radarr.addMovie({
       ...match,
@@ -531,8 +681,8 @@ export async function importFolder(id: string, options: ImportFolderOptions): Pr
   } else {
     const sonarr = getSonarrService();
     if (!sonarr) throw new ServiceNotConfiguredError('sonarr');
-    const [match] = await sonarr.lookupSeries(`tvdb:${options.candidateId}`);
-    if (!match || match.tvdbId !== options.candidateId) throw new Error(`Sonarr could not find TVDB id ${options.candidateId}`);
+    const [match] = await sonarr.lookupSeries(`tvdb:${candidateId}`);
+    if (!match || match.tvdbId !== candidateId) throw new Error(`Sonarr could not find TVDB id ${candidateId}`);
     if (match.id && match.id > 0) throw new Error(`"${match.title}" is already in Sonarr (id ${match.id}); it owns a different folder. Remove or merge it there first.`);
     const languageProfiles = await sonarr.getLanguageProfiles();
     const added = await sonarr.addSeries({
@@ -558,12 +708,12 @@ export async function importFolder(id: string, options: ImportFolderOptions): Pr
       targetType: 'folder',
       targetId: null,
       targetTitle: folder.name,
-      metadata: JSON.stringify({ service: folder.serviceLabel, path: folder.path, title: result.title, year: result.year, addedId: result.addedId, sizeBytes: folder.sizeBytes, permissionsFixed: permissionsFixed?.changed ?? 0 }),
+      metadata: JSON.stringify({ service: folder.serviceLabel, path: folder.path, title: result.title, year: result.year, addedId: result.addedId, sizeBytes: folder.sizeBytes, permissionsFixed: permissionsFixed?.changed ?? 0, match: matchNote }),
     });
   } catch (activityError) {
     logger.warn('Failed to log folder import activity:', activityError);
   }
-  invalidateCache();
+  removeFromCache(id);
   return result;
 }
 
@@ -641,7 +791,8 @@ async function repairMappedFolder(folder: OrphanFolder, actorName: string, why: 
   } catch (activityError) {
     logger.warn('Failed to log permission repair activity:', activityError);
   }
-  invalidateCache();
+  const summary = await summariseLocal(real);
+  if (summary) patchCache(folder.id, { permissionIssues: summary.permissionIssues, writable: summary.writable });
   return result;
 }
 
@@ -665,8 +816,8 @@ export async function deleteFolder(id: string, options: { actorName: string }): 
   const real = await resolveInsideMapping(folder);
 
   // Make sure it is still unmanaged right now, not from a cached listing.
-  const fresh = await listOrphanFolders({ includeIgnored: true, refresh: true });
-  if (!fresh.folders.some((f) => f.id === id)) {
+  if (!(await isStillUnmanaged(folder))) {
+    removeFromCache(id);
     throw new Error(`${folder.serviceLabel} now manages ${folder.path}; not deleting a managed folder`);
   }
 
@@ -708,32 +859,52 @@ export async function deleteFolder(id: string, options: { actorName: string }): 
   }
   const ignored = getIgnored();
   if (ignored.delete(`${folder.service}:${folder.path}`)) setIgnored(ignored);
-  invalidateCache();
+  removeFromCache(id);
   return { folder, localPath: real, sizeBytes: summary.sizeBytes, fileCount: summary.fileCount };
 }
 
 export async function setFolderIgnored(id: string, ignored: boolean, actorName: string): Promise<OrphanFolder> {
-  const folder = await getOrphanFolder(id);
+  const result = await setFoldersIgnored([id], ignored, actorName);
+  const folder = result.folders[0];
   if (!folder) throw new Error('Folder not found');
+  return folder;
+}
+
+/** Ignore (or show again) many folders in one settings write. */
+export async function setFoldersIgnored(ids: string[], ignored: boolean, actorName: string): Promise<{ folders: OrphanFolder[]; missing: string[] }> {
+  const listing = await listOrphanFolders({ includeIgnored: true });
+  const byId = new Map(listing.folders.map((f) => [f.id, f]));
   const set = getIgnored();
-  const key = `${folder.service}:${folder.path}`;
-  if (ignored) set.add(key);
-  else set.delete(key);
-  setIgnored(set);
-  try {
-    logActivity({
-      eventType: 'manual_action',
-      action: ignored ? 'folder_ignored' : 'folder_unignored',
-      actorType: 'user',
-      actorName,
-      targetType: 'folder',
-      targetId: null,
-      targetTitle: folder.name,
-      metadata: JSON.stringify({ service: folder.serviceLabel, path: folder.path }),
-    });
-  } catch (activityError) {
-    logger.warn('Failed to log folder ignore activity:', activityError);
+  const folders: OrphanFolder[] = [];
+  const missing: string[] = [];
+  for (const id of ids) {
+    const folder = byId.get(id);
+    if (!folder) {
+      missing.push(id);
+      continue;
+    }
+    const key = `${folder.service}:${folder.path}`;
+    if (ignored) set.add(key);
+    else set.delete(key);
+    folders.push({ ...folder, ignored });
   }
-  invalidateCache();
-  return { ...folder, ignored };
+  if (folders.length > 0) setIgnored(set);
+  for (const folder of folders) {
+    try {
+      logActivity({
+        eventType: 'manual_action',
+        action: ignored ? 'folder_ignored' : 'folder_unignored',
+        actorType: 'user',
+        actorName,
+        targetType: 'folder',
+        targetId: null,
+        targetTitle: folder.name,
+        metadata: JSON.stringify({ service: folder.serviceLabel, path: folder.path }),
+      });
+    } catch (activityError) {
+      logger.warn('Failed to log folder ignore activity:', activityError);
+    }
+    patchCache(folder.id, { ignored });
+  }
+  return { folders, missing };
 }

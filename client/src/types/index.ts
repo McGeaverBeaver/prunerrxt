@@ -180,6 +180,78 @@ export interface OrphanFolder {
   guess: { title: string; year: number | null; tmdbId: number | null; tvdbId: number | null; imdbId: string | null };
 }
 
+export type FolderJobAction = 'delete' | 'import' | 'fix_permissions';
+export type FolderJobStatus = 'pending' | 'running' | 'done' | 'failed' | 'cancelled';
+
+export interface FolderJobParams {
+  candidateId?: number;
+  qualityProfileId?: number;
+  monitored?: boolean;
+}
+
+/** One folder's share of a bulk delete, import or permission fix. */
+export interface FolderJob {
+  id: number;
+  batchId: string;
+  folderId: string;
+  service: 'sonarr' | 'radarr';
+  serviceLabel: 'Sonarr' | 'Radarr';
+  name: string;
+  path: string;
+  sizeBytes: number | null;
+  action: FolderJobAction;
+  params: FolderJobParams;
+  requestedBy: string;
+  status: FolderJobStatus;
+  message: string | null;
+  error: string | null;
+  result: Record<string, unknown> | null;
+  attempts: number;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  updatedAt: string;
+}
+
+export interface FolderBatchSummary {
+  batchId: string;
+  action: FolderJobAction;
+  requestedBy: string;
+  total: number;
+  pending: number;
+  running: number;
+  done: number;
+  failed: number;
+  cancelled: number;
+  freedBytes: number;
+  createdAt: string;
+  finishedAt: string | null;
+}
+
+export interface FolderBatchResult {
+  batchId: string;
+  queued: FolderJob[];
+  alreadyQueued: number;
+  skipped: Array<{ id: string; error: string }>;
+  message?: string;
+}
+
+export type ImportConfidence = 'exact' | 'likely' | 'weak' | 'none';
+
+/** The server's best guess at what a folder is, for the bulk import review. */
+export interface ImportSuggestion {
+  folderId: string;
+  name: string;
+  path: string;
+  service: 'sonarr' | 'radarr';
+  serviceLabel: 'Sonarr' | 'Radarr';
+  sizeBytes: number | null;
+  term: string;
+  candidate: FolderCandidate | null;
+  confidence: ImportConfidence;
+  reason: string;
+}
+
 export interface PermissionSettings {
   uid: number;
   gid: number;
