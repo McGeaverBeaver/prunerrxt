@@ -71,7 +71,16 @@ function Snippet({ title, code, hint }: { title: string; code: string; hint?: st
  * key card above; snippets use a placeholder otherwise so the page never
  * shows the secret unasked.
  */
-export function McpSection({ registerSection, apiKey }: { registerSection: PanelProps['registerSection']; apiKey: string | null }) {
+export function McpSection({
+  registerSection,
+  apiKey,
+  apiKeyEnabled = true,
+}: {
+  registerSection: PanelProps['registerSection'];
+  apiKey: string | null;
+  /** False when key access is switched off in the API key card: the snippets below will not authenticate. */
+  apiKeyEnabled?: boolean;
+}) {
   const { t } = useTranslation('settings');
   const { addToast } = useToast();
   const { data: info, isLoading, isError } = useMcpInfo();
@@ -239,6 +248,15 @@ export function McpSection({ registerSection, apiKey }: { registerSection: Panel
                 label={t('mcp.immediateTitle', 'Allow immediate deletion')}
               />
             </div>
+
+            {!apiKeyEnabled && (
+              <p className="rounded-xl border border-ruby-500/25 bg-ruby-500/[0.06] px-3.5 py-3 text-xs text-ruby-text">
+                {t(
+                  'mcp.apiKeyOff',
+                  'External API access is off (see the API key card above), so the key-based snippets below will be refused. Hosted clients that sign in through OAuth keep working.'
+                )}
+              </p>
+            )}
 
             <div className="flex flex-col gap-2 rounded-xl bg-surface-800/45 px-3.5 py-3">
               <div className="flex items-center justify-between gap-3">

@@ -1045,23 +1045,71 @@ function WatchHistoryCard({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <input
-            id="watch-history-lookback"
-            type="number"
-            min={30}
-            max={3650}
-            value={lookbackDays}
-            onChange={(event) =>
-              onLookbackChange(Math.max(30, parseInt(event.target.value, 10) || 365))
-            }
-            className="min-h-[44px] w-24 rounded-[11px] border border-surface-600/60 bg-surface-800/70 px-3 py-2 text-center font-mono text-[13px] text-surface-50 focus:border-accent-500/50 focus:outline-none lg:min-h-0"
-          />
+          <LookbackInput value={lookbackDays} onChange={onLookbackChange} />
           <span className="text-[12px] text-surface-400">
             {t('watchHistory.lookback.days', 'days')}
           </span>
         </div>
       </div>
     </SettingsCard>
+  );
+}
+
+const LOOKBACK_MIN_DAYS = 30;
+const LOOKBACK_MAX_DAYS = 3650;
+
+/**
+ * The lookback field keeps what is typed until the value is committed (blur
+ * or Enter), then clamps it to the allowed range. Clamping on every
+ * keystroke is what made the old field unusable: "4" became 30 before the
+ * "5" of "45" could be typed, so only numbers starting with a 3 got through.
+ */
+function LookbackInput({ value, onChange }: { value: number; onChange: (days: number) => void }) {
+  const { t } = useTranslation('settings');
+  const [draft, setDraft] = useState<string | null>(null);
+
+  const commit = () => {
+    if (draft === null) return;
+    const parsed = parseInt(draft, 10);
+    const next = Number.isFinite(parsed)
+      ? Math.min(LOOKBACK_MAX_DAYS, Math.max(LOOKBACK_MIN_DAYS, parsed))
+      : value;
+    setDraft(null);
+    if (next !== value) onChange(next);
+  };
+
+  return (
+    <input
+      id="watch-history-lookback"
+      type="number"
+      inputMode="numeric"
+      min={LOOKBACK_MIN_DAYS}
+      max={LOOKBACK_MAX_DAYS}
+      step={1}
+      value={draft ?? String(value)}
+      title={t('watchHistory.lookback.range', 'Between {{min}} and {{max}} days', {
+        min: LOOKBACK_MIN_DAYS,
+        max: LOOKBACK_MAX_DAYS,
+      })}
+      onChange={(event) => {
+        const text = event.target.value;
+        setDraft(text);
+        // A value already in range is staged at once, so the hint above and
+        // the dirty count follow the field without waiting for a blur.
+        const parsed = parseInt(text, 10);
+        if (Number.isFinite(parsed) && parsed >= LOOKBACK_MIN_DAYS && parsed <= LOOKBACK_MAX_DAYS && parsed !== value) {
+          onChange(parsed);
+        }
+      }}
+      onBlur={commit}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          commit();
+          event.currentTarget.blur();
+        }
+      }}
+      className="min-h-[44px] w-24 rounded-[11px] border border-surface-600/60 bg-surface-800/70 px-3 py-2 text-center font-mono text-[13px] text-surface-50 focus:border-accent-500/50 focus:outline-none lg:min-h-0"
+    />
   );
 }
 

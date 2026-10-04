@@ -14,20 +14,54 @@
     }
   },
   "apiKey": {
+    "accessBody": "",
+    "accessOff": "",
+    "accessTitle": "",
     "confirmBody": "Hiermee wordt een nieuwe sleutel aangemaakt en de oude meteen ongeldig gemaakt. Scripts of integraties die de huidige sleutel gebruiken, stoppen met werken.",
     "confirmRegenerate": "Opnieuw genereren bevestigen",
     "confirmTitle": "API-sleutel opnieuw genereren?",
     "copyToClipboard": "Kopiëren naar klembord",
     "description": "Vereist voor externe API-toegang (scripts, nzb360, enz.). De webinterface heeft het niet nodig.",
+    "fromEnv": "",
     "hideKey": "Sleutel verbergen",
+    "howToTitle": "",
     "regenerate": "Opnieuw genereren",
     "regenerateHint": "Het opnieuw genereren van de sleutel maakt de huidige meteen ongeldig.",
     "regenerating": "Opnieuw genereren...",
     "revealKey": "Sleutel tonen",
     "unavailableBody": "Deze installatie heeft nog geen API-sleutel uitgegeven. Externe toegang blijft uitgeschakeld totdat er een is.",
     "unavailableTitle": "Nog geen API-sleutel",
+    "usage": {
+      "clear": "",
+      "clients": "",
+      "col": {
+        "from": "",
+        "request": "",
+        "result": "",
+        "when": ""
+      },
+      "empty": "",
+      "last24h": "",
+      "last7d": "",
+      "lastUsed": "",
+      "never": "",
+      "outcome": {
+        "disabled": "",
+        "invalid": "",
+        "ok": ""
+      },
+      "recent_one": "",
+      "recent_other": "",
+      "refresh": "",
+      "refused24h": "",
+      "refusedHint": "",
+      "requestCount_one": "",
+      "requestCount_other": "",
+      "subtitle": "",
+      "title": "",
+      "unknownClient": ""
+    },
     "usageBody": "Voeg de sleutel toe aan de <1>X-Api-Key</1>-header wanneer je API-verzoeken doet vanuit externe tools, scripts of apps zoals nzb360.",
-    "usageTitle": "Gebruik",
     "yourKey": "Jouw API-sleutel"
   },
   "automation": {
@@ -302,6 +336,7 @@
     "username": ""
   },
   "mcp": {
+    "apiKeyOff": "",
     "badgeDestructive": "",
     "badgeImmediate": "",
     "badgeReadOnly": "",
@@ -347,11 +382,20 @@
   },
   "mediaFolders": {
     "add": "",
+    "customPath": "",
     "description": "",
     "help": "",
     "localPlaceholder": "",
     "mappedTo": "",
     "mapThis": "",
+    "mountReadOnly": "",
+    "mounts": {
+      "none": "",
+      "readOnly": "",
+      "readWrite": "",
+      "title": "",
+      "unsupported": ""
+    },
     "none": "",
     "permissions": {
       "autoFix": "",
@@ -366,6 +410,8 @@
       "title": "",
       "uid": ""
     },
+    "pickPath": "",
+    "readOnlyHint": "",
     "remotePlaceholder": "",
     "remove": "",
     "rootFolders": "",
@@ -524,9 +570,14 @@
     "productName": "Prunerr"
   },
   "toasts": {
+    "apiKeyDisabled": "",
+    "apiKeyDisabledMsg": "",
+    "apiKeyEnabled": "",
     "apiKeyRegeneratedMsg": "Scripts of integraties die de oude sleutel gebruiken, moeten worden bijgewerkt.",
     "apiKeyRegeneratedTitle": "API-sleutel opnieuw gegenereerd",
     "apiKeyRegenerateFailed": "Opnieuw genereren van API-sleutel mislukt",
+    "apiKeyToggleFailed": "",
+    "apiKeyUsageClearFailed": "",
     "copyFailed": "Kopiëren naar klembord mislukt",
     "failedSaveLibraryMsg": "Bibliotheekuitsluitingen konden niet worden opgeslagen",
     "failedSavePatternsMsg": "Uitsluitingspatronen konden niet worden opgeslagen",
@@ -554,6 +605,7 @@
     "lookback": {
       "days": "dagen",
       "description": "Hoe ver terug kijkgeschiedenisgegevens moeten worden opgehaald",
+      "range": "",
       "title": "Terugkijkperiode"
     },
     "mediaServerDirectInfo": "Geen extra configuratie nodig — Prunerr leest de geschiedenis van je mediaserver via de verbinding die hierboven is ingesteld in het gedeelte Mediaserver. Installeer de Playback Reporting-plug-in voor nauwkeurige afspeeltellingen.",

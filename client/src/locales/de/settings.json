@@ -14,20 +14,54 @@
     }
   },
   "apiKey": {
+    "accessBody": "",
+    "accessOff": "",
+    "accessTitle": "",
     "confirmBody": "Dadurch wird ein neuer Schlüssel erstellt und der alte sofort ungültig. Alle Skripte oder Integrationen, die den aktuellen Schlüssel verwenden, funktionieren dann nicht mehr.",
     "confirmRegenerate": "Neu generieren bestätigen",
     "confirmTitle": "API-Schlüssel neu generieren?",
     "copyToClipboard": "In die Zwischenablage kopieren",
     "description": "Erforderlich für den externen API-Zugriff (Skripte, nzb360 usw.). Die Web-Oberfläche benötigt ihn nicht.",
+    "fromEnv": "",
     "hideKey": "Schlüssel ausblenden",
+    "howToTitle": "",
     "regenerate": "Neu generieren",
     "regenerateHint": "Beim Neugenerieren wird der aktuelle Schlüssel sofort ungültig.",
     "regenerating": "Wird neu generiert...",
     "revealKey": "Schlüssel anzeigen",
     "unavailableBody": "Diese Installation hat noch keinen API-Schlüssel ausgestellt. Der externe Zugriff bleibt deaktiviert, bis einer existiert.",
     "unavailableTitle": "Noch kein API-Schlüssel",
+    "usage": {
+      "clear": "",
+      "clients": "",
+      "col": {
+        "from": "",
+        "request": "",
+        "result": "",
+        "when": ""
+      },
+      "empty": "",
+      "last24h": "",
+      "last7d": "",
+      "lastUsed": "",
+      "never": "",
+      "outcome": {
+        "disabled": "",
+        "invalid": "",
+        "ok": ""
+      },
+      "recent_one": "",
+      "recent_other": "",
+      "refresh": "",
+      "refused24h": "",
+      "refusedHint": "",
+      "requestCount_one": "",
+      "requestCount_other": "",
+      "subtitle": "",
+      "title": "",
+      "unknownClient": ""
+    },
     "usageBody": "Füge den Schlüssel im <1>X-Api-Key</1>-Header ein, wenn du API-Anfragen von externen Tools, Skripten oder Apps wie nzb360 stellst.",
-    "usageTitle": "Verwendung",
     "yourKey": "Dein API-Schlüssel"
   },
   "automation": {
@@ -302,6 +336,7 @@
     "username": ""
   },
   "mcp": {
+    "apiKeyOff": "",
     "badgeDestructive": "",
     "badgeImmediate": "",
     "badgeReadOnly": "",
@@ -347,11 +382,20 @@
   },
   "mediaFolders": {
     "add": "",
+    "customPath": "",
     "description": "",
     "help": "",
     "localPlaceholder": "",
     "mappedTo": "",
     "mapThis": "",
+    "mountReadOnly": "",
+    "mounts": {
+      "none": "",
+      "readOnly": "",
+      "readWrite": "",
+      "title": "",
+      "unsupported": ""
+    },
     "none": "",
     "permissions": {
       "autoFix": "",
@@ -366,6 +410,8 @@
       "title": "",
       "uid": ""
     },
+    "pickPath": "",
+    "readOnlyHint": "",
     "remotePlaceholder": "",
     "remove": "",
     "rootFolders": "",
@@ -524,9 +570,14 @@
     "productName": "Prunerr"
   },
   "toasts": {
+    "apiKeyDisabled": "",
+    "apiKeyDisabledMsg": "",
+    "apiKeyEnabled": "",
     "apiKeyRegeneratedMsg": "Alle Skripte oder Integrationen, die den alten Schlüssel verwenden, müssen aktualisiert werden.",
     "apiKeyRegeneratedTitle": "API-Schlüssel neu generiert",
     "apiKeyRegenerateFailed": "API-Schlüssel konnte nicht neu generiert werden",
+    "apiKeyToggleFailed": "",
+    "apiKeyUsageClearFailed": "",
     "copyFailed": "Kopieren in die Zwischenablage fehlgeschlagen",
     "failedSaveLibraryMsg": "Bibliotheksausschlüsse konnten nicht gespeichert werden",
     "failedSavePatternsMsg": "Ausschlussmuster konnten nicht gespeichert werden",
@@ -554,6 +605,7 @@
     "lookback": {
       "days": "Tage",
       "description": "Wie weit zurück Wiedergabeverlaufsdaten abgerufen werden",
+      "range": "",
       "title": "Verlaufsrückblick"
     },
     "mediaServerDirectInfo": "Keine zusätzliche Konfiguration nötig — Prunerr liest den Verlauf von deinem Medienserver über die im obigen Abschnitt „Medienserver“ festgelegte Verbindung. Installiere das Playback-Reporting-Plugin für exakte Wiedergabezähler.",

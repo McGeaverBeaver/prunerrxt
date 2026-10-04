@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trans, useTranslation } from 'react-i18next';
-import { Check, Copy, Download, Eye, EyeOff, RefreshCw, Upload } from 'lucide-react';
+import { Check, Copy, Download, Eye, EyeOff, KeyRound, RefreshCw, Upload } from 'lucide-react';
 
 import { apiKeyApi, type ApiKeyInfo } from '@/services/api';
 import { useImportSettings, useVersion } from '@/hooks/useApi';
@@ -13,8 +14,14 @@ import { PanelSection } from '../components/PanelSection';
 import { SettingsCard } from '../components/SettingsCard';
 import { SettingsEmptyState } from '../components/SettingsEmptyState';
 import type { PanelProps } from '../types';
+import { Toggle } from '../components/Toggle';
 import { McpSection } from './system/McpSection';
 import { LoginSection } from './system/LoginSection';
+import { ApiKeyUsage } from './system/ApiKeyUsage';
+
+/** How often the usage history refreshes while the panel is open. */
+const API_KEY_USAGE_REFRESH_MS = 30_000;
+const API_KEY_QUERY_KEY = ['settings', 'api-key'] as const;
 
 const MASKED_KEY = '•'.repeat(32);
 
@@ -63,37 +70,63 @@ export default function SystemPanel({ registerSection }: PanelProps) {
 
   // --- API key --------------------------------------------------------------
 
-  const [apiKeyInfo, setApiKeyInfo] = useState<ApiKeyInfo | null>(null);
-  const [apiKeyStatus, setApiKeyStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading');
+  const queryClient = useQueryClient();
+  // Polled while the page is in the foreground so the usage history answers
+  // "is anything using this key?" by watching the panel.
+  const apiKeyQuery = useQuery({
+    queryKey: API_KEY_QUERY_KEY,
+    queryFn: apiKeyApi.get,
+    refetchInterval: API_KEY_USAGE_REFRESH_MS,
+    retry: false,
+  });
+  const apiKeyInfo: ApiKeyInfo | null = apiKeyQuery.data ?? null;
+  // 'unavailable' only when the first load fails: a later refresh error keeps what we have.
+  const apiKeyStatus: 'loading' | 'ready' | 'unavailable' = apiKeyInfo ? 'ready' : apiKeyQuery.isError ? 'unavailable' : 'loading';
+  const setApiKeyInfo = useCallback((info: ApiKeyInfo) => queryClient.setQueryData(API_KEY_QUERY_KEY, info), [queryClient]);
   const [apiKeyVisible, setApiKeyVisible] = useState(false);
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
   const [apiKeyLoading, setApiKeyLoading] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [apiKeyToggling, setApiKeyToggling] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    apiKeyApi
-      .get()
-      .then((info) => {
-        if (cancelled) return;
+  const handleToggleApiKey = useCallback(
+    async (enabled: boolean) => {
+      setApiKeyToggling(true);
+      try {
+        const info = await apiKeyApi.setEnabled(enabled);
         setApiKeyInfo(info);
-        setApiKeyStatus('ready');
-      })
-      .catch(() => {
-        // API key feature not available on this install.
-        if (!cancelled) setApiKeyStatus('unavailable');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+        addToast({
+          type: 'success',
+          title: enabled
+            ? t('toasts.apiKeyEnabled', 'API key access turned on')
+            : t('toasts.apiKeyDisabled', 'API key access turned off'),
+          message: enabled
+            ? undefined
+            : t('toasts.apiKeyDisabledMsg', 'Requests that send the key are refused until you turn it back on.'),
+        });
+      } catch {
+        addToast({ type: 'error', title: t('toasts.apiKeyToggleFailed', 'Could not change API key access') });
+      } finally {
+        setApiKeyToggling(false);
+      }
+    },
+    [addToast, setApiKeyInfo, t]
+  );
+
+  const handleClearApiKeyUsage = useCallback(async () => {
+    try {
+      const info = await apiKeyApi.clearUsage();
+      setApiKeyInfo(info);
+    } catch {
+      addToast({ type: 'error', title: t('toasts.apiKeyUsageClearFailed', 'Could not clear the usage history') });
+    }
+  }, [addToast, setApiKeyInfo, t]);
 
   const handleRegenerateApiKey = useCallback(async () => {
     setApiKeyLoading(true);
     try {
       const result = await apiKeyApi.regenerate();
       setApiKeyInfo(result);
-      setApiKeyStatus('ready');
       setShowRegenerateConfirm(false);
       setApiKeyVisible(true);
       addToast({
@@ -112,7 +145,7 @@ export default function SystemPanel({ registerSection }: PanelProps) {
     } finally {
       setApiKeyLoading(false);
     }
-  }, [addToast, t]);
+  }, [addToast, setApiKeyInfo, t]);
 
   const handleCopyApiKey = useCallback(async () => {
     if (!apiKeyInfo?.apiKey) return;
@@ -293,6 +326,45 @@ export default function SystemPanel({ registerSection }: PanelProps) {
             />
           ) : (
             <>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-display text-[13.5px] font-semibold text-surface-50 flex items-center gap-2">
+                    <KeyRound className="h-4 w-4 text-accent-text" aria-hidden />
+                    {t('apiKey.accessTitle', 'External API access')}
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-surface-400">
+                    {t(
+                      'apiKey.accessBody',
+                      'When off, every request that sends the key is refused, over the REST API and the MCP connector alike. The key is kept, so turning it back on needs no re-pasting. Signed-in users and OAuth clients are unaffected.'
+                    )}
+                  </p>
+                </div>
+                <Toggle
+                  checked={apiKeyInfo?.enabled ?? true}
+                  onChange={(enabled) => void handleToggleApiKey(enabled)}
+                  disabled={!apiKeyInfo || apiKeyToggling}
+                  label={t('apiKey.accessTitle', 'External API access')}
+                />
+              </div>
+
+              {apiKeyInfo && !apiKeyInfo.enabled && (
+                <p className="rounded-xl border border-surface-700/80 bg-surface-800/50 px-3.5 py-3 text-xs text-surface-400">
+                  {t(
+                    'apiKey.accessOff',
+                    'Key access is off. Scripts, nzb360, Home Assistant and MCP clients that send the key get a 401 until you turn it back on.'
+                  )}
+                </p>
+              )}
+
+              {apiKeyInfo?.fromEnv && (
+                <p className="rounded-xl border border-surface-700/80 bg-surface-800/50 px-3.5 py-3 text-xs text-surface-400">
+                  {t(
+                    'apiKey.fromEnv',
+                    'This key is set by the PRUNERR_API_KEY environment variable. Change it there; regenerating here has no effect.'
+                  )}
+                </p>
+              )}
+
               <p className="font-display text-[13.5px] font-semibold text-surface-50">
                 {t('apiKey.yourKey', 'Your API Key')}
               </p>
@@ -336,7 +408,7 @@ export default function SystemPanel({ registerSection }: PanelProps) {
                 <ActionButton
                   tone="destructive"
                   onClick={() => setShowRegenerateConfirm(true)}
-                  disabled={apiKeyLoading}
+                  disabled={apiKeyLoading || Boolean(apiKeyInfo?.fromEnv)}
                 >
                   <RefreshCw
                     className={cn('h-3.5 w-3.5', apiKeyLoading && 'animate-spin motion-reduce:animate-none')}
@@ -355,7 +427,7 @@ export default function SystemPanel({ registerSection }: PanelProps) {
 
               <div className="flex flex-col gap-2 rounded-xl bg-surface-800/45 px-3.5 py-3">
                 <p className="font-display text-[12.5px] font-semibold text-surface-200">
-                  {t('apiKey.usageTitle', 'Usage')}
+                  {t('apiKey.howToTitle', 'How to use it')}
                 </p>
                 <p className="text-xs text-surface-300">
                   {/* Child order must stay text → <code> → text: the stored
@@ -368,12 +440,25 @@ export default function SystemPanel({ registerSection }: PanelProps) {
                   curl -H &quot;X-Api-Key: {'<your-key>'}&quot; http://{'<host>'}:{'{port}'}/api/health
                 </code>
               </div>
+
+              {apiKeyInfo?.usage && (
+                <ApiKeyUsage
+                  usage={apiKeyInfo.usage}
+                  refreshing={apiKeyQuery.isFetching}
+                  onRefresh={() => void apiKeyQuery.refetch()}
+                  onClear={() => void handleClearApiKeyUsage()}
+                />
+              )}
             </>
           )}
         </SettingsCard>
       </PanelSection>
 
-      <McpSection registerSection={registerSection} apiKey={apiKeyVisible && apiKeyInfo ? apiKeyInfo.apiKey : null} />
+      <McpSection
+        registerSection={registerSection}
+        apiKey={apiKeyVisible && apiKeyInfo ? apiKeyInfo.apiKey : null}
+        apiKeyEnabled={apiKeyInfo?.enabled ?? true}
+      />
 
       <LoginSection registerSection={registerSection} />
 

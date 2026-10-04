@@ -60,6 +60,16 @@ is `none` by default — they can sign in at Authentik but Prunerr refuses them.
 The **API key** always acts as admin, with or without login. Scripts, nzb360,
 Home Assistant and the MCP connector keep working unchanged.
 
+Key access can be switched off altogether under Settings, System, **API key**
+(*External API access*). While it is off, every request that presents the key
+is refused with `401 API_KEY_DISABLED`, over the REST API and the MCP
+connector alike; the key itself is kept, signed-in users are unaffected, and
+MCP clients that signed in through OAuth keep working. The same card shows
+the key's **usage history**: when it was last accepted, how many requests it
+served in the last day and week, the clients (user agent and address) that
+presented it, and the most recent requests, including ones refused for a
+wrong or switched-off key. Rows are kept for 30 days.
+
 ## All environment variables
 
 | Variable | Default | Meaning |

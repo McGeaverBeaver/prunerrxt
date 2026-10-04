@@ -15,20 +15,56 @@
     }
   },
   "apiKey": {
+    "accessBody": "",
+    "accessOff": "",
+    "accessTitle": "",
     "confirmBody": "Esto creará una nueva clave e invalidará la anterior de inmediato. Cualquier script o integración que use la clave actual dejará de funcionar.",
     "confirmRegenerate": "Confirmar regeneración",
     "confirmTitle": "¿Regenerar la clave de API?",
     "copyToClipboard": "Copiar al portapapeles",
     "description": "Necesaria para el acceso externo a la API (scripts, nzb360, etc.). La interfaz web no la necesita.",
+    "fromEnv": "",
     "hideKey": "Ocultar clave",
+    "howToTitle": "",
     "regenerate": "Regenerar",
     "regenerateHint": "Regenerar la clave invalidará la actual de inmediato.",
     "regenerating": "Regenerando...",
     "revealKey": "Mostrar clave",
     "unavailableBody": "Esta instalación no ha emitido ninguna clave de API. El acceso externo permanece desactivado hasta que exista una.",
     "unavailableTitle": "Aún no hay clave de API",
+    "usage": {
+      "clear": "",
+      "clients": "",
+      "col": {
+        "from": "",
+        "request": "",
+        "result": "",
+        "when": ""
+      },
+      "empty": "",
+      "last24h": "",
+      "last7d": "",
+      "lastUsed": "",
+      "never": "",
+      "outcome": {
+        "disabled": "",
+        "invalid": "",
+        "ok": ""
+      },
+      "recent_one": "",
+      "recent_many": "",
+      "recent_other": "",
+      "refresh": "",
+      "refused24h": "",
+      "refusedHint": "",
+      "requestCount_one": "",
+      "requestCount_many": "",
+      "requestCount_other": "",
+      "subtitle": "",
+      "title": "",
+      "unknownClient": ""
+    },
     "usageBody": "Incluye la clave en la cabecera <1>X-Api-Key</1> al realizar solicitudes a la API desde herramientas, scripts o aplicaciones externas como nzb360.",
-    "usageTitle": "Uso",
     "yourKey": "Tu clave de API"
   },
   "automation": {
@@ -304,6 +340,7 @@
     "username": ""
   },
   "mcp": {
+    "apiKeyOff": "",
     "badgeDestructive": "",
     "badgeImmediate": "",
     "badgeReadOnly": "",
@@ -350,11 +387,20 @@
   },
   "mediaFolders": {
     "add": "",
+    "customPath": "",
     "description": "",
     "help": "",
     "localPlaceholder": "",
     "mappedTo": "",
     "mapThis": "",
+    "mountReadOnly": "",
+    "mounts": {
+      "none": "",
+      "readOnly": "",
+      "readWrite": "",
+      "title": "",
+      "unsupported": ""
+    },
     "none": "",
     "permissions": {
       "autoFix": "",
@@ -369,6 +415,8 @@
       "title": "",
       "uid": ""
     },
+    "pickPath": "",
+    "readOnlyHint": "",
     "remotePlaceholder": "",
     "remove": "",
     "rootFolders": "",
@@ -530,9 +578,14 @@
     "productName": "Prunerr"
   },
   "toasts": {
+    "apiKeyDisabled": "",
+    "apiKeyDisabledMsg": "",
+    "apiKeyEnabled": "",
     "apiKeyRegeneratedMsg": "Cualquier script o integración que use la clave anterior deberá actualizarse.",
     "apiKeyRegeneratedTitle": "Clave de API regenerada",
     "apiKeyRegenerateFailed": "Error al regenerar la clave de API",
+    "apiKeyToggleFailed": "",
+    "apiKeyUsageClearFailed": "",
     "copyFailed": "Error al copiar al portapapeles",
     "failedSaveLibraryMsg": "No se pudieron guardar las exclusiones de bibliotecas",
     "failedSavePatternsMsg": "No se pudieron guardar los patrones de exclusión",
@@ -561,6 +614,7 @@
     "lookback": {
       "days": "días",
       "description": "Hasta qué punto en el pasado obtener los datos del historial de reproducción",
+      "range": "",
       "title": "Periodo del historial"
     },
     "mediaServerDirectInfo": "No se necesita configuración adicional: Prunerr leerá el historial de tu servidor multimedia usando la conexión configurada en la sección Servidor multimedia de arriba. Instala el complemento Playback Reporting para obtener recuentos de reproducción exactos.",

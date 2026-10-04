@@ -640,6 +640,26 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_folder_jobs_batch ON folder_jobs(batch_id);
     `,
   },
+  {
+    version: 27,
+    name: 'api_key_usage',
+    up: `
+      -- One row per request that presented the API key (REST or MCP), so the
+      -- Settings page can show whether and how the key is being used.
+      -- services/apiKeyUsage.ts writes and prunes it.
+      CREATE TABLE IF NOT EXISTS api_key_usage (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        used_at TEXT NOT NULL,
+        outcome TEXT NOT NULL CHECK (outcome IN ('ok', 'invalid', 'disabled')),
+        source TEXT NOT NULL CHECK (source IN ('api', 'mcp')),
+        method TEXT NOT NULL,
+        path TEXT NOT NULL,
+        ip TEXT,
+        user_agent TEXT
+      );
+      CREATE INDEX IF NOT EXISTS idx_api_key_usage_used_at ON api_key_usage(used_at);
+    `,
+  },
 ];
 
 // Schema version tracking table

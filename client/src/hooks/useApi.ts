@@ -51,6 +51,7 @@ export const queryKeys = {
   scanCadence: (days: number) => ['scan', 'cadence', days] as const,
   folders: (includeIgnored: boolean) => ['folders', includeIgnored] as const,
   folderMappings: ['folders', 'mappings'] as const,
+  folderMounts: ['folders', 'mounts'] as const,
   folderCandidates: (id: string, term?: string) => ['folders', 'candidates', id, term ?? ''] as const,
   qualityProfiles: (service: string) => ['folders', 'profiles', service] as const,
   folderPermissions: ['folders', 'permissions'] as const,
@@ -586,6 +587,11 @@ export function useOrphanFolders(includeIgnored = false) {
 
 export function useFolderMappings() {
   return useQuery({ queryKey: queryKeys.folderMappings, queryFn: foldersApi.mappings });
+}
+
+/** The volumes mounted into the container; changes only when the container is recreated. */
+export function useContainerMounts() {
+  return useQuery({ queryKey: queryKeys.folderMounts, queryFn: foldersApi.mounts, staleTime: 5 * 60 * 1000 });
 }
 
 export function useSaveFolderMappings() {

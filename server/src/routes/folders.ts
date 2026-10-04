@@ -30,6 +30,7 @@ import {
 } from '../services/folderJobs';
 import { ServiceNotConfiguredError, isDiagnosticsService } from '../services/serviceDiagnostics';
 import { getPermissionCapabilities, getPermissionSettings, setPermissionSettings } from '../services/permissions';
+import { listContainerMounts } from '../services/containerMounts';
 
 const router = Router();
 
@@ -68,6 +69,15 @@ router.get('/', async (req: Request, res: Response) => {
 // GET /api/folders/mappings
 router.get('/mappings', (_req: Request, res: Response) => {
   res.json({ success: true, data: getFolderMappings() });
+});
+
+// GET /api/folders/mounts - the volumes mounted into this container, for the mapping picker
+router.get('/mounts', async (_req: Request, res: Response) => {
+  try {
+    res.json({ success: true, data: await listContainerMounts() });
+  } catch (error) {
+    fail(res, 'list container mounts', error);
+  }
 });
 
 const MappingsSchema = z.object({

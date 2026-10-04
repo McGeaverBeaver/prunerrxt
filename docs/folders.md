@@ -31,8 +31,12 @@ still be imported; they just show no size and cannot be deleted.
    to delete. On Unraid that is a Path in the container settings, for
    example `/mnt/user/media` → `/media`.
 2. In Settings, Connections, **Media folders**, add a mapping per root folder.
-   The section lists the root folders your apps report, so you only have to
-   fill in where Prunerr sees each one.
+   The section lists the root folders your apps report, and the Prunerr side
+   is a pick list of the volumes mounted into the container (and the folders
+   inside them, two levels deep), read from the container's own mount table.
+   Pick the one that holds the same files; choose *Type a path…* for anything
+   deeper. A volume mounted read-only is marked as such: folders under it can
+   be measured but not deleted.
 
 Deletion is deliberately strict: a folder is removed only when its resolved
 location sits strictly inside a mapped path (so a mapping can never reach a

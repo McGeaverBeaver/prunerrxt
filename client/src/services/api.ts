@@ -9,6 +9,7 @@ import type {
   OrphanFolder,
   OrphanFolderListing,
   FolderMapping,
+  ContainerMountsResult,
   FolderCandidate,
   QualityProfile,
   PermissionSettings,
@@ -537,6 +538,10 @@ export const foldersApi = {
     const { data } = await api.put<ApiResponse<FolderMapping[]>>('/folders/mappings', { mappings });
     return data.data ?? [];
   },
+  mounts: async (): Promise<ContainerMountsResult> => {
+    const { data } = await api.get<ApiResponse<ContainerMountsResult>>('/folders/mounts');
+    return data.data ?? { supported: false, mounts: [] };
+  },
   profiles: async (service: 'sonarr' | 'radarr'): Promise<QualityProfile[]> => {
     const { data } = await api.get<ApiResponse<QualityProfile[]>>(`/folders/profiles/${service}`);
     return data.data ?? [];
@@ -710,8 +715,46 @@ export const scanApi = {
 };
 
 // API Key types
+export type ApiKeyUseOutcome = 'ok' | 'invalid' | 'disabled';
+export type ApiKeyUseSource = 'api' | 'mcp';
+
+export interface ApiKeyUsageEntry {
+  id: number;
+  usedAt: string;
+  outcome: ApiKeyUseOutcome;
+  source: ApiKeyUseSource;
+  method: string;
+  path: string;
+  ip: string | null;
+  userAgent: string | null;
+}
+
+export interface ApiKeyUsageClient {
+  userAgent: string | null;
+  ip: string | null;
+  requests: number;
+  lastUsedAt: string;
+}
+
+export interface ApiKeyUsageSummary {
+  lastUsedAt: string | null;
+  totalRequests: number;
+  requestsLast24h: number;
+  requestsLast7d: number;
+  refusedLast24h: number;
+  lastRefusedAt: string | null;
+  clients: ApiKeyUsageClient[];
+  recent: ApiKeyUsageEntry[];
+  retentionDays: number;
+}
+
 export interface ApiKeyInfo {
   apiKey: string;
+  /** False: every request that presents the key is refused (REST and MCP). */
+  enabled: boolean;
+  /** The key comes from PRUNERR_API_KEY, so regenerating has no effect. */
+  fromEnv: boolean;
+  usage: ApiKeyUsageSummary;
 }
 
 // API Key APIs
@@ -719,6 +762,18 @@ export const apiKeyApi = {
   get: async (): Promise<ApiKeyInfo> => {
     const { data } = await api.get<ApiResponse<ApiKeyInfo>>('/settings/api-key');
     if (!data.data) throw new Error('Failed to get API key');
+    return data.data;
+  },
+
+  setEnabled: async (enabled: boolean): Promise<ApiKeyInfo> => {
+    const { data } = await api.put<ApiResponse<ApiKeyInfo>>('/settings/api-key', { enabled });
+    if (!data.data) throw new Error('Failed to update API key access');
+    return data.data;
+  },
+
+  clearUsage: async (): Promise<ApiKeyInfo> => {
+    const { data } = await api.delete<ApiResponse<ApiKeyInfo>>('/settings/api-key/usage');
+    if (!data.data) throw new Error('Failed to clear API key usage');
     return data.data;
   },
 

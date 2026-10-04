@@ -15,7 +15,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import logger from '../utils/logger';
-import { getApiKey, keysMatch } from '../middleware/apiAuth';
+import { getApiKey, isApiKeyEnabled, keysMatch, noteApiKeyUse } from '../middleware/apiAuth';
 import { createMcpServer } from './server';
 import { isMcpEnabled, mcpDisabledReason } from './config';
 import { resolveAccessToken } from '../auth/oauthServer';
@@ -105,9 +105,24 @@ function authenticate(req: Request, res: Response): AuthInfo | null {
 
   const admin = (token: string): AuthInfo => ({ token, clientId: 'api-key', scopes: ['prunerr'], extra: { role: 'admin', username: 'API key', kind: 'apiKey' } });
 
+  // The key switched off in Settings refuses key auth here too; OAuth
+  // clients are unaffected, they never hold the key.
+  const keyDisabled = (): null => {
+    noteApiKeyUse(req, 'mcp', 'disabled');
+    logger.warn(`MCP auth: API key presented while key access is disabled, from ${req.ip}`);
+    challenge(req, res, 'invalid_token');
+    jsonRpcError(res, 401, -32000, 'API key access is turned off in Settings → System → API key. Sign in through OAuth, or turn the key back on.');
+    return null;
+  };
+
   const headerKey = req.headers['x-api-key'];
   if (typeof headerKey === 'string' && headerKey.trim()) {
-    if (keysMatch(headerKey.trim(), getApiKey())) return admin(headerKey.trim());
+    if (!isApiKeyEnabled()) return keyDisabled();
+    if (keysMatch(headerKey.trim(), getApiKey())) {
+      noteApiKeyUse(req, 'mcp', 'ok');
+      return admin(headerKey.trim());
+    }
+    noteApiKeyUse(req, 'mcp', 'invalid');
     logger.warn(`MCP auth: invalid API key from ${req.ip}`);
     challenge(req, res, 'invalid_token');
     jsonRpcError(res, 401, -32000, 'Invalid API key.');
@@ -126,7 +141,11 @@ function authenticate(req: Request, res: Response): AuthInfo | null {
     return null;
   }
 
-  if (keysMatch(bearer, getApiKey())) return admin(bearer);
+  if (keysMatch(bearer, getApiKey())) {
+    if (!isApiKeyEnabled()) return keyDisabled();
+    noteApiKeyUse(req, 'mcp', 'ok');
+    return admin(bearer);
+  }
 
   const resolved = resolveAccessToken(bearer);
   if (resolved) {

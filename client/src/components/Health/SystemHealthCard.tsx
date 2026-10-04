@@ -6,6 +6,9 @@ import { useMediaServerName, useSettings } from '@/hooks/useApi';
 import { ServiceStatusIndicator } from './ServiceStatusIndicator';
 import type { ServiceHealthStatus } from '@/types';
 
+/** Health rows that are one of the watch history providers, of which only one is in use. */
+const WATCH_HISTORY_PROVIDERS = new Set(['tautulli', 'tracearr']);
+
 interface SystemHealthCardProps {
   services: ServiceHealthStatus[];
   overall: 'healthy' | 'degraded' | 'unhealthy';
@@ -41,8 +44,18 @@ export function SystemHealthCard({ services, overall, loading, isFetching }: Sys
 
   const config = overallConfig[overall];
 
+  // Tautulli and Tracearr are alternatives, not a checklist: only the chosen
+  // watch history provider is a setup step, so a provider that is neither
+  // selected nor configured is left off the list instead of reading as
+  // "Not configured". Legacy installs never stored the choice; for them,
+  // whatever is configured is what counts.
+  const watchProvider = settings?.watchHistory?.provider;
+  const visibleServices = services.filter(
+    (s) => !WATCH_HISTORY_PROVIDERS.has(s.service) || s.configured || watchProvider === s.service
+  );
+
   // Sort services: configured first, then alphabetically
-  const sortedServices = [...services].sort((a, b) => {
+  const sortedServices = [...visibleServices].sort((a, b) => {
     if (a.configured !== b.configured) return a.configured ? -1 : 1;
     return displayName(a.service).localeCompare(displayName(b.service));
   });

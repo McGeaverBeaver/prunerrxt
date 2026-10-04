@@ -1533,20 +1533,54 @@ export default interface Resources {
       }
     },
     "apiKey": {
+      "accessBody": "When off, every request that sends the key is refused, over the REST API and the MCP connector alike. The key is kept, so turning it back on needs no re-pasting. Signed-in users and OAuth clients are unaffected.",
+      "accessOff": "Key access is off. Scripts, nzb360, Home Assistant and MCP clients that send the key get a 401 until you turn it back on.",
+      "accessTitle": "External API access",
       "confirmBody": "This will create a new key and immediately invalidate the old one. Any scripts or integrations using the current key will stop working.",
       "confirmRegenerate": "Confirm Regenerate",
       "confirmTitle": "Regenerate API Key?",
       "copyToClipboard": "Copy to clipboard",
       "description": "Required for external API access (scripts, nzb360, etc.). The web UI does not need it.",
+      "fromEnv": "This key is set by the PRUNERR_API_KEY environment variable. Change it there; regenerating here has no effect.",
       "hideKey": "Hide key",
+      "howToTitle": "How to use it",
       "regenerate": "Regenerate",
       "regenerateHint": "Regenerating the key will invalidate the current one immediately.",
       "regenerating": "Regenerating...",
       "revealKey": "Reveal key",
       "unavailableBody": "This install has not issued an API key. External access stays disabled until one exists.",
       "unavailableTitle": "No API key yet",
+      "usage": {
+        "clear": "Clear",
+        "clients": "Clients",
+        "col": {
+          "from": "From",
+          "request": "Request",
+          "result": "Result",
+          "when": "When"
+        },
+        "empty": "The key has not been used in the last {{days}} days.",
+        "last24h": "Requests, 24 h",
+        "last7d": "Requests, 7 days",
+        "lastUsed": "Last used",
+        "never": "Never",
+        "outcome": {
+          "disabled": "key off",
+          "invalid": "wrong key",
+          "ok": "accepted"
+        },
+        "recent_one": "Recent requests ({{count}})",
+        "recent_other": "Recent requests ({{count}})",
+        "refresh": "Refresh",
+        "refused24h": "Refused, 24 h",
+        "refusedHint": "Something sent a wrong or switched-off key {{when}}. A script with an old key after a regenerate is the usual cause; an unknown address is worth a look.",
+        "requestCount_one": "{{count}} requests",
+        "requestCount_other": "{{count}} requests",
+        "subtitle": "Every request that sends the key is logged for {{days}} days. The web UI never sends it.",
+        "title": "Usage history",
+        "unknownClient": "Unknown client"
+      },
       "usageBody": "Include the key in the <1>X-Api-Key</1> header when making API requests from external tools, scripts, or apps like nzb360.",
-      "usageTitle": "Usage",
       "yourKey": "Your API Key"
     },
     "automation": {
@@ -1821,6 +1855,7 @@ export default interface Resources {
       "username": "Username"
     },
     "mcp": {
+      "apiKeyOff": "External API access is off (see the API key card above), so the key-based snippets below will be refused. Hosted clients that sign in through OAuth keep working.",
       "badgeDestructive": "destructive",
       "badgeImmediate": "needs opt-in",
       "badgeReadOnly": "read-only",
@@ -1866,11 +1901,20 @@ export default interface Resources {
     },
     "mediaFolders": {
       "add": "Add mapping",
+      "customPath": "Type a path…",
       "description": "Lets Prunerr measure and delete unmanaged folders. Pair each root folder as Sonarr/Radarr see it with the path where this container sees the same files.",
       "help": "Mount the media share into the Prunerr container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, Prunerr sees /media/movies.",
       "localPlaceholder": "Path as Prunerr sees it, e.g. /media/movies",
       "mapThis": "map this",
       "mappedTo": "mapped to {{path}}",
+      "mountReadOnly": "{{path}} (read-only)",
+      "mounts": {
+        "none": "None found. Add a volume (a Path in the Unraid template, or a bind mount in docker-compose) for the media share and recreate the container; it will show up here.",
+        "readOnly": "read-only",
+        "readWrite": "read-write",
+        "title": "Volumes mounted into this container",
+        "unsupported": "Cannot be read on this platform; type the paths by hand."
+      },
       "none": "No mappings yet. Sizes stay unknown and deletion stays off until you add one.",
       "permissions": {
         "autoFix": "Repair automatically when a delete or import hits a permission error",
@@ -1885,6 +1929,8 @@ export default interface Resources {
         "title": "Ownership and permissions",
         "uid": "Owner uid"
       },
+      "pickPath": "Choose a mounted folder…",
+      "readOnlyHint": "This volume is mounted read-only: folders under it can be measured but not deleted. Mount it read-write to enable deletion.",
       "remotePlaceholder": "Path as Sonarr/Radarr see it, e.g. /movies",
       "remove": "Remove mapping",
       "rootFolders": "Root folders reported by your apps",
@@ -2043,9 +2089,14 @@ export default interface Resources {
       "productName": "Prunerr"
     },
     "toasts": {
+      "apiKeyDisabled": "API key access turned off",
+      "apiKeyDisabledMsg": "Requests that send the key are refused until you turn it back on.",
+      "apiKeyEnabled": "API key access turned on",
       "apiKeyRegenerateFailed": "Failed to regenerate API key",
       "apiKeyRegeneratedMsg": "Any scripts or integrations using the old key will need to be updated.",
       "apiKeyRegeneratedTitle": "API key regenerated",
+      "apiKeyToggleFailed": "Could not change API key access",
+      "apiKeyUsageClearFailed": "Could not clear the usage history",
       "copyFailed": "Failed to copy to clipboard",
       "failedSaveLibraryMsg": "Could not save library exclusions",
       "failedSavePatternsMsg": "Could not save exclusion patterns",
@@ -2073,6 +2124,7 @@ export default interface Resources {
       "lookback": {
         "days": "days",
         "description": "How far back to fetch watch history data",
+        "range": "Between {{min}} and {{max}} days",
         "title": "History Lookback"
       },
       "mediaServerDirectInfo": "No extra configuration needed — Prunerr will read history from your media server using the connection set in the Media Server section above. Install the Playback Reporting plugin for full play-count accuracy.",

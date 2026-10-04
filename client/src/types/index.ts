@@ -159,6 +159,24 @@ export interface FolderMapping {
   localPath: string;
 }
 
+/** A volume mounted into the Prunerr container, as GET /api/folders/mounts reports it. */
+export interface ContainerMount {
+  mountPoint: string;
+  fsType: string;
+  source: string;
+  readOnly: boolean;
+  /** Directories under the mount point, up to two levels deep, as absolute paths. */
+  subfolders: string[];
+  /** The listing stopped at the cap; deeper paths must be typed. */
+  truncated: boolean;
+}
+
+export interface ContainerMountsResult {
+  /** False when the server cannot read a mount table (not Linux). */
+  supported: boolean;
+  mounts: ContainerMount[];
+}
+
 export interface OrphanFolder {
   id: string;
   service: 'sonarr' | 'radarr';

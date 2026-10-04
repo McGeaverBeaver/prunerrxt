@@ -3,7 +3,8 @@ import { z } from 'zod';
 import settingsRepo from '../db/repositories/settings';
 import { SettingInputSchema } from '../types';
 import logger from '../utils/logger';
-import { getApiKey, clearApiKeyCache, ensureApiKey } from '../middleware/apiAuth';
+import { getApiKey, clearApiKeyCache, ensureApiKey, isApiKeyEnabled, setApiKeyEnabled } from '../middleware/apiAuth';
+import { clearApiKeyUsage, getApiKeyUsageSummary } from '../services/apiKeyUsage';
 import { getMcpInfo } from '../mcp/info';
 import { setAllowImmediateDeletion, setMcpEnabled } from '../mcp/config';
 import { getAuthConfig } from '../auth/config';
@@ -429,23 +430,53 @@ router.post('/import', async (req: Request, res: Response) => {
 });
 
 // ============================================================================
-// GET /api/settings/api-key - Get the current API key and enabled status
+/** The API key card's payload: the key, whether it is accepted, and how it has been used. */
+function apiKeyInfo() {
+  return {
+    apiKey: getApiKey(),
+    enabled: isApiKeyEnabled(),
+    fromEnv: Boolean(process.env['PRUNERR_API_KEY']),
+    usage: getApiKeyUsageSummary(),
+  };
+}
+
+// GET /api/settings/api-key - The current API key, whether it is enabled, and its usage
 router.get('/api-key', (_req: Request, res: Response) => {
   try {
-    const apiKey = getApiKey();
-
-    res.json({
-      success: true,
-      data: {
-        apiKey,
-      },
-    });
+    res.json({ success: true, data: apiKeyInfo() });
   } catch (error) {
     logger.error('Failed to get API key:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve API key',
     });
+  }
+});
+
+const ApiKeyUpdateSchema = z.object({ enabled: z.boolean() });
+
+// PUT /api/settings/api-key - Switch key access on or off (the key itself is kept)
+router.put('/api-key', validateBody(ApiKeyUpdateSchema), (req: Request, res: Response) => {
+  try {
+    const { enabled } = req.body as z.infer<typeof ApiKeyUpdateSchema>;
+    setApiKeyEnabled(enabled);
+    logger.info(`API key access ${enabled ? 'enabled' : 'disabled'} in settings`);
+    res.json({ success: true, data: apiKeyInfo() });
+  } catch (error) {
+    logger.error('Failed to update API key settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to update API key settings' });
+  }
+});
+
+// DELETE /api/settings/api-key/usage - Forget the usage history
+router.delete('/api-key/usage', (_req: Request, res: Response) => {
+  try {
+    clearApiKeyUsage();
+    logger.info('API key usage history cleared');
+    res.json({ success: true, data: apiKeyInfo() });
+  } catch (error) {
+    logger.error('Failed to clear API key usage:', error);
+    res.status(500).json({ success: false, error: 'Failed to clear API key usage history' });
   }
 });
 
@@ -459,9 +490,7 @@ router.post('/api-key/regenerate', (_req: Request, res: Response) => {
 
     res.json({
       success: true,
-      data: {
-        apiKey: newKey,
-      },
+      data: apiKeyInfo(),
       message: 'API key regenerated successfully',
     });
   } catch (error) {

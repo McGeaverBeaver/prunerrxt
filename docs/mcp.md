@@ -200,5 +200,6 @@ Actions taken through the connector appear in the Activity log attributed to
 | `403 … turned off in Settings` | The in-app toggle. |
 | `401 Authentication required` | No `Authorization`/`X-Api-Key` header reached Prunerr (check the proxy). |
 | `401 Invalid API key` | Wrong or regenerated key. |
+| `401 API key access is turned off` | *External API access* is off under Settings → System → API key. Turn it on, or sign in through OAuth. |
 | `delete_now` returns *Immediate deletion is not allowed* | Expected. Turn on **Allow immediate deletion** or queue instead. |
 | Client says the session was not found | Sessions end after 30 idle minutes; the client reconnects on its own. |

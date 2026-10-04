@@ -1,13 +1,120 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { HardDrive, Plus, Trash2, Save } from 'lucide-react';
 
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { useToast } from '@/components/common/Toast';
-import { useFolderMappings, useFolderPermissions, useOrphanFolders, useSaveFolderMappings, useSavePermissionSettings } from '@/hooks/useApi';
+import { useContainerMounts, useFolderMappings, useFolderPermissions, useOrphanFolders, useSaveFolderMappings, useSavePermissionSettings } from '@/hooks/useApi';
 import { Toggle } from '../../components/Toggle';
-import type { FolderMapping } from '@/types';
+import type { ContainerMount, FolderMapping } from '@/types';
+
+/** The `<select>` value that reveals the free-text field. */
+const CUSTOM_PATH = '__custom__';
+
+function basename(p: string): string {
+  const trimmed = p.replace(/[\\/]+$/, '');
+  const idx = Math.max(trimmed.lastIndexOf('/'), trimmed.lastIndexOf('\\'));
+  return (idx === -1 ? trimmed : trimmed.slice(idx + 1)).toLowerCase();
+}
+
+/** Every path the picker offers, in display order: each mount followed by its subfolders. */
+function pickerPaths(mounts: ContainerMount[]): string[] {
+  return mounts.flatMap((m) => [m.mountPoint, ...m.subfolders]);
+}
+
+/**
+ * The best guess for where Prunerr sees a root folder: the same path when it
+ * is mounted under the same name (the shared `/data` layout), else the
+ * detected folder with the same final segment (`/movies` → `/media/movies`),
+ * else nothing.
+ */
+function suggestLocalPath(remotePath: string, mounts: ContainerMount[]): string {
+  const paths = pickerPaths(mounts);
+  const normalised = remotePath.replace(/\\/g, '/').replace(/\/+$/, '');
+  if (paths.includes(normalised)) return normalised;
+  const wanted = basename(normalised);
+  if (!wanted) return '';
+  const matches = paths.filter((p) => basename(p) === wanted);
+  return matches.length === 1 ? matches[0]! : '';
+}
+
+/** The mount a path lives on, by longest mount point prefix. */
+function mountFor(path: string, mounts: ContainerMount[]): ContainerMount | undefined {
+  let best: ContainerMount | undefined;
+  for (const m of mounts) {
+    if (path === m.mountPoint || path.startsWith(`${m.mountPoint}/`)) {
+      if (!best || m.mountPoint.length > best.mountPoint.length) best = m;
+    }
+  }
+  return best;
+}
+
+/**
+ * The Prunerr side of a mapping. With the container's mounts detected it is a
+ * pick list of those volumes and the folders inside them, with "Type a path…"
+ * for anything deeper; without them (not Linux, or nothing mounted) it is the
+ * plain text field it always was.
+ */
+function LocalPathPicker({ value, onChange, mounts }: { value: string; onChange: (path: string) => void; mounts: ContainerMount[] }) {
+  const { t } = useTranslation('settings');
+  const paths = useMemo(() => pickerPaths(mounts), [mounts]);
+  const known = paths.includes(value);
+  // Stays in free-text mode once chosen, even while the typed value happens to match an option.
+  const [custom, setCustom] = useState(() => value !== '' && !known);
+  const placeholder = t('mediaFolders.localPlaceholder', 'Path as Prunerr sees it, e.g. /media/movies');
+
+  if (mounts.length === 0) {
+    return <Input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} className="font-mono text-sm" aria-label={placeholder} />;
+  }
+
+  const showCustom = custom || (value !== '' && !known);
+  const onMount = mountFor(value, mounts);
+
+  return (
+    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+      <select
+        value={showCustom ? CUSTOM_PATH : value}
+        aria-label={placeholder}
+        onChange={(e) => {
+          if (e.target.value === CUSTOM_PATH) {
+            setCustom(true);
+            return;
+          }
+          setCustom(false);
+          onChange(e.target.value);
+        }}
+        className="w-full rounded-xl border border-surface-600/50 bg-surface-800/60 px-3 py-2.5 font-mono text-sm text-surface-50 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500/50"
+      >
+        <option value="" disabled>
+          {t('mediaFolders.pickPath', 'Choose a mounted folder…')}
+        </option>
+        {mounts.map((m) => (
+          <optgroup
+            key={m.mountPoint}
+            label={m.readOnly ? t('mediaFolders.mountReadOnly', '{{path}} (read-only)', { path: m.mountPoint }) : m.mountPoint}
+          >
+            <option value={m.mountPoint}>{m.mountPoint}</option>
+            {m.subfolders.map((sub) => (
+              <option key={sub} value={sub}>
+                {sub}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+        <option value={CUSTOM_PATH}>{t('mediaFolders.customPath', 'Type a path…')}</option>
+      </select>
+      {showCustom && (
+        <Input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} className="font-mono text-sm" aria-label={placeholder} autoFocus />
+      )}
+      {onMount?.readOnly && (
+        <p className="text-xs text-accent-text">
+          {t('mediaFolders.readOnlyHint', 'This volume is mounted read-only: folders under it can be measured but not deleted. Mount it read-write to enable deletion.')}
+        </p>
+      )}
+    </div>
+  );
+}
 
 import { PanelSection } from '../../components/PanelSection';
 import { SettingsCard } from '../../components/SettingsCard';
@@ -25,6 +132,8 @@ export function FolderMappingsSection({ registerSection }: { registerSection: Pa
   const saved = useFolderMappings();
   const save = useSaveFolderMappings();
   const listing = useOrphanFolders(true);
+  const mountsQuery = useContainerMounts();
+  const mounts = useMemo(() => mountsQuery.data?.mounts ?? [], [mountsQuery.data]);
   const [rows, setRows] = useState<FolderMapping[]>([]);
   const [dirty, setDirty] = useState(false);
 
@@ -43,7 +152,7 @@ export function FolderMappingsSection({ registerSection }: { registerSection: Pa
     setDirty(true);
   };
   const add = (remotePath = '') => {
-    setRows((prev) => [...prev, { remotePath, localPath: '' }]);
+    setRows((prev) => [...prev, { remotePath, localPath: remotePath ? suggestLocalPath(remotePath, mounts) : '' }]);
     setDirty(true);
   };
   const persist = () => {
@@ -69,6 +178,39 @@ export function FolderMappingsSection({ registerSection }: { registerSection: Pa
             {t('mediaFolders.help', 'Mount the media share into the Prunerr container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, Prunerr sees /media/movies.')}
           </p>
 
+          {mountsQuery.data && (
+            <div className="rounded-lg bg-surface-800/50 p-3 text-xs">
+              <p className="mb-1 flex items-center gap-1.5 font-medium text-surface-300">
+                <HardDrive className="h-3.5 w-3.5 text-surface-400" aria-hidden />
+                {t('mediaFolders.mounts.title', 'Volumes mounted into this container')}
+              </p>
+              {!mountsQuery.data.supported ? (
+                <p className="text-surface-500">
+                  {t('mediaFolders.mounts.unsupported', 'Cannot be read on this platform; type the paths by hand.')}
+                </p>
+              ) : mounts.length === 0 ? (
+                <p className="text-surface-500">
+                  {t(
+                    'mediaFolders.mounts.none',
+                    'None found. Add a volume (a Path in the Unraid template, or a bind mount in docker-compose) for the media share and recreate the container; it will show up here.'
+                  )}
+                </p>
+              ) : (
+                <ul className="flex flex-wrap gap-x-4 gap-y-1">
+                  {mounts.map((m) => (
+                    <li key={m.mountPoint} className="flex items-center gap-1.5">
+                      <span className="font-mono text-surface-200">{m.mountPoint}</span>
+                      <span className="text-surface-500">
+                        {m.readOnly ? t('mediaFolders.mounts.readOnly', 'read-only') : t('mediaFolders.mounts.readWrite', 'read-write')}
+                        {m.fsType ? ` · ${m.fsType}` : ''}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
           {rootFolders.length > 0 && (
             <div className="rounded-lg bg-surface-800/50 p-3 text-xs">
               <p className="mb-1 font-medium text-surface-300">{t('mediaFolders.rootFolders', 'Root folders reported by your apps')}</p>
@@ -93,20 +235,18 @@ export function FolderMappingsSection({ registerSection }: { registerSection: Pa
           <div className="space-y-2">
             {rows.length === 0 && <p className="text-sm text-surface-500">{t('mediaFolders.none', 'No mappings yet. Sizes stay unknown and deletion stays off until you add one.')}</p>}
             {rows.map((row, index) => (
-              <div key={index} className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Input
-                  placeholder={t('mediaFolders.remotePlaceholder', 'Path as Sonarr/Radarr see it, e.g. /movies')}
-                  value={row.remotePath}
-                  onChange={(e) => update(index, { remotePath: e.target.value })}
-                  className="font-mono text-sm"
-                />
-                <span className="hidden text-surface-500 sm:inline">→</span>
-                <Input
-                  placeholder={t('mediaFolders.localPlaceholder', 'Path as Prunerr sees it, e.g. /media/movies')}
-                  value={row.localPath}
-                  onChange={(e) => update(index, { localPath: e.target.value })}
-                  className="font-mono text-sm"
-                />
+              <div key={index} className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                <div className="min-w-0 flex-1">
+                  <Input
+                    placeholder={t('mediaFolders.remotePlaceholder', 'Path as Sonarr/Radarr see it, e.g. /movies')}
+                    value={row.remotePath}
+                    onChange={(e) => update(index, { remotePath: e.target.value })}
+                    className="font-mono text-sm"
+                    aria-label={t('mediaFolders.remotePlaceholder', 'Path as Sonarr/Radarr see it, e.g. /movies')}
+                  />
+                </div>
+                <span className="hidden pt-2.5 text-surface-500 sm:inline">→</span>
+                <LocalPathPicker value={row.localPath} onChange={(localPath) => update(index, { localPath })} mounts={mounts} />
                 <Button variant="ghost" size="sm" onClick={() => remove(index)} title={t('mediaFolders.remove', 'Remove mapping')}>
                   <Trash2 className="h-4 w-4" />
                 </Button>

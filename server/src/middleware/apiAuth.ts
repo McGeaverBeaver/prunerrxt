@@ -6,8 +6,11 @@ import { getAuthConfig } from '../auth/config';
 import { isAuthorized } from '../auth/roles';
 import { sessionFromRequest } from '../auth/sessions';
 import { isPublicApiPath, setRequestAuth } from '../auth/middleware';
+import { recordApiKeyUse } from '../services/apiKeyUsage';
 
 const API_KEY_SETTING = 'api_key';
+/** "false" switches external access by key off entirely; the key itself is kept. */
+export const API_KEY_ENABLED_SETTING = 'api_key_enabled';
 
 let cachedApiKey: string | null = null;
 
@@ -53,6 +56,38 @@ export function clearApiKeyCache(): void {
 }
 
 /**
+ * Whether requests may authenticate with the key at all. Off means every
+ * request that presents the key is refused (REST and MCP alike) until it is
+ * switched back on; the key is kept, so nothing has to be re-pasted.
+ */
+export function isApiKeyEnabled(): boolean {
+  return settingsRepo.getBoolean(API_KEY_ENABLED_SETTING, true);
+}
+
+export function setApiKeyEnabled(enabled: boolean): void {
+  settingsRepo.set({ key: API_KEY_ENABLED_SETTING, value: enabled ? 'true' : 'false' });
+}
+
+/** The request path as the client sent it (without the query string), for the usage log. */
+export function requestPathFor(req: Request): string {
+  const url = req.originalUrl || req.url || '/';
+  const q = url.indexOf('?');
+  return q === -1 ? url : url.slice(0, q);
+}
+
+/** One usage row for a request that presented the key, however it was answered. */
+export function noteApiKeyUse(req: Request, source: 'api' | 'mcp', outcome: 'ok' | 'invalid' | 'disabled'): void {
+  recordApiKeyUse({
+    outcome,
+    source,
+    method: req.method,
+    path: requestPathFor(req),
+    ip: req.ip ?? null,
+    userAgent: typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null,
+  });
+}
+
+/**
  * Constant-time key comparison using HMAC to avoid length leaks.
  * Both inputs are hashed to a fixed-length digest before comparing,
  * so neither the key length nor content leaks via timing.
@@ -86,7 +121,18 @@ export function apiAuthMiddleware(req: Request, res: Response, next: NextFunctio
   const providedKey = req.headers['x-api-key'] as string | undefined;
 
   if (providedKey) {
+    if (!isApiKeyEnabled()) {
+      noteApiKeyUse(req, 'api', 'disabled');
+      logger.warn(`API auth: API key presented while key access is disabled, from ${req.ip} for ${req.method} ${req.path}`);
+      res.status(401).json({
+        success: false,
+        error: 'API key access is turned off in Settings → System → API key.',
+        code: 'API_KEY_DISABLED',
+      });
+      return;
+    }
     if (!keysMatch(providedKey, getApiKey())) {
+      noteApiKeyUse(req, 'api', 'invalid');
       logger.warn(`API auth: invalid API key from ${req.ip} for ${req.method} ${req.path}`);
       res.status(401).json({
         success: false,
@@ -95,6 +141,7 @@ export function apiAuthMiddleware(req: Request, res: Response, next: NextFunctio
       });
       return;
     }
+    noteApiKeyUse(req, 'api', 'ok');
     setRequestAuth(res, { kind: 'apiKey', role: 'admin' });
     next();
     return;
