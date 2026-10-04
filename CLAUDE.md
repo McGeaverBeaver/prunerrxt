@@ -19,54 +19,37 @@ Prunerr is a media library cleanup tool for Plex/Sonarr/Radarr. It helps users r
 
 ## Release Workflow
 
-**IMPORTANT: Always create a git tag when pushing changes that affect the Docker image.**
+The image lives on the GitHub Container Registry as `ghcr.io/mcgeaverbeaver/prunerr`
+(built by `.github/workflows/docker-publish.yml`, both amd64 and arm64, using
+only the repository's own GitHub token). Three ways to publish:
 
-The GitHub Actions workflow only triggers on version tags, not on regular pushes to main.
-A manual run of the workflow (Actions → Build and Push Docker Image → Run
-workflow) with no tag given publishes the branch as a moving tag (`:main`)
-plus a pinned `:main-<sha>`; a tag typed into the input is published as is.
+- **Manual run** (Actions → Build and Push Docker Image → Run workflow) on
+  `main` with the tag input left empty publishes `:main` and a pinned
+  `:main-<sha>`. This is the day-to-day way to get a change onto the test box.
+  A tag typed into the input is published as is.
+- **Beta channel.** Pushing to the `beta` branch publishes `:beta`:
+  `git push origin <your-branch>:beta`.
+- **Release.** A version tag publishes `:<version>`, `:<major>.<minor>`,
+  `:<major>` and `:latest`, and creates a GitHub Release with generated notes:
 
 ```bash
-# After committing changes:
 git push
 git tag v1.x.x
 git push origin v1.x.x
 ```
 
-This triggers the Docker build in `.github/workflows/docker-publish.yml`, which
-publishes `:<version>`, `:<major>.<minor>`, `:<major>` and `:latest`.
-
-**Beta channel.** Pushing to the `beta` branch rebuilds
-`helliott20/prunerr:beta` automatically — no tag, no GitHub release, and
-`:latest` is untouched (it is only published for release tags without a
-pre-release suffix). Unraid users pick Stable or Beta from the template's
-branch list; everyone else pulls `helliott20/prunerr:beta`. To put work on the
-beta channel:
-
-```bash
-git push origin <your-branch>:beta
-```
-
-Merge the branch to `main` and tag as usual when it is ready to release.
+A plain push to `main` runs `ci.yml` (client and server lint, typecheck,
+build and tests) but builds no image.
 
 **No outbound calls.** Prunerr contacts only the services the user configures.
 Do not add telemetry, update checks, remote feeds, CDN assets or any other
 request to a third party.
 
-**IMPORTANT: When releasing a new version, also bump the CasaOS manifest.**
-
-The CasaOS App Store manifest at `packaging/casaos/Prunerr/docker-compose.yml`
-pins an exact image tag (CasaOS forbids `:latest`). On every release update all
-three fields to the new version, then open a follow-up PR to
-`IceWhaleTech/CasaOS-AppStore` so users get the in-store update prompt:
-- `image: helliott20/prunerr:<version>` (Docker Hub tags drop the `v` prefix)
-- `x-casaos.version: "<version>"`
-- `x-casaos.updateAt: "<YYYY-MM-DD>"`
-
 ## Related Repositories
-- **Main repo**: https://github.com/helliott20/prunerr
-- **Unraid templates**: https://github.com/helliott20/unraid-templates
-- **Docker Hub**: https://hub.docker.com/r/helliott20/prunerr
+- **This fork**: https://github.com/McGeaverBeaver/prunerr
+- **Container image**: https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr
+- **Upstream**: https://github.com/helliott20/prunerr (its wiki is still the
+  user documentation the README links to)
 
 ## Unraid Support
 - **Forum thread**: https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/

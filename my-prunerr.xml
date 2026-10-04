@@ -1,23 +1,23 @@
 <?xml version="1.0"?>
 <Container version="2">
     <Name>Prunerr</Name>
-    <Repository>helliott20/prunerr:latest</Repository>
+    <Repository>ghcr.io/mcgeaverbeaver/prunerr:main</Repository>
     <!-- Community Applications turns each Branch into a pickable channel:
          the Tag is appended to the repository above. -->
     <Branch>
-        <Tag>latest</Tag>
-        <TagDescription>Stable - the current release, recommended for everyone</TagDescription>
+        <Tag>main</Tag>
+        <TagDescription>Main - rebuilt from the main branch on demand, the usual channel for this fork</TagDescription>
     </Branch>
     <Branch>
         <Tag>beta</Tag>
         <TagDescription>Beta - rebuilt from the beta branch as changes land, for testing new features before release</TagDescription>
     </Branch>
-    <Registry>https://hub.docker.com/r/helliott20/prunerr</Registry>
+    <Registry>https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr</Registry>
     <Network>bridge</Network>
     <Shell>sh</Shell>
     <Privileged>false</Privileged>
     <Support>https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/</Support>
-    <Project>https://github.com/helliott20/prunerr</Project>
+    <Project>https://github.com/McGeaverBeaver/prunerr</Project>
     <Overview>Prunerr is a media library cleanup and management tool designed to work with Plex, Jellyfin or Emby, plus Sonarr and Radarr. Automatically reclaim disk space by identifying and removing unwanted media based on customizable rules.&#xD;
 &#xD;
 Features:&#xD;
@@ -36,8 +36,8 @@ Features:&#xD;
 All service connections are configured through the web UI — no config files needed.</Overview>
     <Category>MediaApp:Other MediaServer:Other</Category>
     <WebUI>http://[IP]:[PORT:3000]/</WebUI>
-    <TemplateURL>https://raw.githubusercontent.com/helliott20/unraid-templates/main/templates/prunerr.xml</TemplateURL>
-    <Icon>https://raw.githubusercontent.com/helliott20/prunerr/main/assets/icon.png</Icon>
+    <TemplateURL>https://raw.githubusercontent.com/McGeaverBeaver/prunerr/main/my-prunerr.xml</TemplateURL>
+    <Icon>https://raw.githubusercontent.com/McGeaverBeaver/prunerr/main/assets/icon.png</Icon>
 
     <Config Name="Web UI Port" Target="3000" Default="3000" Mode="tcp" Description="Port for the Prunerr web interface" Type="Port" Display="always" Required="true" Mask="false">3000</Config>
 

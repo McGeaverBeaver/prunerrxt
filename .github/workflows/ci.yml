@@ -77,18 +77,3 @@ jobs:
       - name: Test
         working-directory: server
         run: npm test
-
-  packaging:
-    name: Packaging manifests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      # Catches a pinned tag that disagrees between manifests, or names an
-      # image that was never published. Both have happened.
-      - name: Check pinned image tags
-        run: node scripts/check-pinned-tags.mjs

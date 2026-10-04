@@ -7,9 +7,9 @@
 </p>
 
 <p align="center">
-  <a href="https://hub.docker.com/r/helliott20/prunerr"><img src="https://img.shields.io/docker/pulls/helliott20/prunerr?style=flat-square&color=0db7ed" alt="Docker Pulls"></a>
-  <img src="https://img.shields.io/github/license/helliott20/prunerr?style=flat-square" alt="License">
-  <a href="https://github.com/helliott20/prunerr/releases"><img src="https://img.shields.io/github/v/release/helliott20/prunerr?style=flat-square&color=brightgreen" alt="Release"></a>
+  <a href="https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr"><img src="https://img.shields.io/badge/image-ghcr.io%2Fmcgeaverbeaver%2Fprunerr-0db7ed?style=flat-square" alt="Container image"></a>
+  <img src="https://img.shields.io/github/license/McGeaverBeaver/prunerr?style=flat-square" alt="License">
+  <a href="https://github.com/McGeaverBeaver/prunerr/actions/workflows/docker-publish.yml"><img src="https://img.shields.io/github/actions/workflow/status/McGeaverBeaver/prunerr/docker-publish.yml?style=flat-square&label=image%20build" alt="Image build"></a>
   <a href="https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/"><img src="https://img.shields.io/badge/Unraid-Community%20App-orange?style=flat-square" alt="Unraid"></a>
 </p>
 
@@ -75,7 +75,7 @@ docker run -d \
   -e SONARR_API_KEY=your-sonarr-api-key \
   -e RADARR_URL=http://your-radarr:7878 \
   -e RADARR_API_KEY=your-radarr-api-key \
-  helliott20/prunerr:latest
+  ghcr.io/mcgeaverbeaver/prunerr:main
 ```
 
 For **Jellyfin** or **Emby**, swap the two Plex variables for:
@@ -90,24 +90,24 @@ Use `MEDIA_SERVER_TYPE=emby` for Emby; both share the `JELLYFIN_*` variables. On
 **Playback Reporting** plugin for full watch history — without it Jellyfin only keeps the most recent play
 per item, so repeat views collapse into one.
 
-Prunerr is also packaged for the places self-hosters actually install things:
+The image is published to the GitHub Container Registry as
+[`ghcr.io/mcgeaverbeaver/prunerr`](https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr).
+`:main` follows the main branch (with a pinned `:main-<sha>` per build), `:beta`
+follows the `beta` branch, and version tags publish `:<version>` and `:latest`.
 
 | Platform | How |
 |----------|-----|
 | **Docker Compose** | [`docker-compose.yml`](docker-compose.yml) in this repo |
-| **Unraid** | Community Applications store &mdash; search "Prunerr" |
-| **CasaOS** | App Store, or import [`packaging/casaos`](packaging/casaos) via Custom Install |
-| **TrueNAS** | Apps &rarr; Install via YAML, using [`packaging/truenas`](packaging/truenas) |
-| **Portainer** | App template &mdash; see [`packaging/portainer`](packaging/portainer) |
+| **Unraid** | Add [`my-prunerr.xml`](my-prunerr.xml) as a template, or paste its raw URL into *Add Container* &rarr; *Template* |
 
 See the [Installation guide](https://github.com/helliott20/prunerr/wiki/Installation) for full details.
 
 ### Beta channel
 
-`helliott20/prunerr:beta` is rebuilt from the `beta` branch as changes land, if
+`ghcr.io/mcgeaverbeaver/prunerr:beta` is rebuilt from the `beta` branch as changes land, if
 you want to try features before they are released. On Unraid, pick **Beta** from
 the template's branch list; elsewhere, point the image at `:beta` instead of
-`:latest`. Back up your database first — beta builds can include schema
+`:main`. Back up your database first — beta builds can include schema
 migrations, and downgrading is not supported.
 
 ## Integrations
@@ -152,8 +152,9 @@ sent anywhere, and nothing asks you whether it may.
 ## Support
 
 - **Unraid Forum:** [Support Thread](https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/)
-- **GitHub Issues:** [Report a Bug](https://github.com/helliott20/prunerr/issues)
-- **Docker Hub:** [helliott20/prunerr](https://hub.docker.com/r/helliott20/prunerr)
+- **GitHub Issues:** [Report a Bug](https://github.com/McGeaverBeaver/prunerr/issues)
+- **Container image:** [ghcr.io/mcgeaverbeaver/prunerr](https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr)
+- **Upstream project:** [helliott20/prunerr](https://github.com/helliott20/prunerr), whose wiki the links above point at
 
 ## License
 

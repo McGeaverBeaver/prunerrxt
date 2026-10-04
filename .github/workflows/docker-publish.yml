@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*'
-    # Every push to `beta` republishes helliott20/prunerr:beta, so testers can
+    # Every push to `beta` republishes ghcr.io/<owner>/prunerr:beta, so testers can
     # track the branch without a release or a version tag.
     branches:
       - beta
