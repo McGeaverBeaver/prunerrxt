@@ -31,6 +31,7 @@ import type {
   SyncProgressCallback,
 } from './types';
 import { syncMediaServerUsers } from './mediaServerUsers';
+import { MovieMatcher, SeriesMatcher } from './arrMatch';
 import type { MediaItem, CreateMediaItemInput, MediaType } from '../types';
 
 // GUID parsing patterns
@@ -78,6 +79,8 @@ export class ScannerService {
   private radarrMoviesCache: Map<number, RadarrMovie> = new Map();
   private radarrTmdbIndex: Map<number, RadarrMovie> = new Map();
   private radarrImdbIndex: Map<string, RadarrMovie> = new Map();
+  private movieMatcher: MovieMatcher | null = null;
+  private seriesMatcher: SeriesMatcher | null = null;
   private radarrTagMap: Map<number, string> = new Map();
   private sonarrTagMap: Map<number, string> = new Map();
 
@@ -662,6 +665,21 @@ export class ScannerService {
       else if (guids.imdbId && this.radarrImdbIndex.has(guids.imdbId)) {
         radarrMovie = this.radarrImdbIndex.get(guids.imdbId);
       }
+      // The ids disagree (Plex matched the folder to a different entry, or
+      // one with no TMDB id): fall back to the folder the file sits in, then
+      // to a unique title and year.
+      if (!radarrMovie && this.movieMatcher) {
+        const hit = this.movieMatcher.match({
+          title: plexItem.title,
+          originalTitle: plexItem.originalTitle,
+          year: plexItem.year,
+          filePath: this.firstFilePath(plexItem),
+        });
+        if (hit) {
+          radarrMovie = this.radarrMoviesCache.get(hit.item.id);
+          logger.info(`Matched "${plexItem.title}" to Radarr by ${hit.how} (ids differ: Plex tmdb=${guids.tmdbId ?? '-'} imdb=${guids.imdbId ?? '-'}; Radarr #${hit.item.id})`);
+        }
+      }
 
       if (radarrMovie) {
         return {
@@ -683,6 +701,17 @@ export class ScannerService {
       else if (guids.imdbId && this.sonarrImdbIndex.has(guids.imdbId)) {
         sonarrSeries = this.sonarrImdbIndex.get(guids.imdbId);
       }
+      if (!sonarrSeries && this.seriesMatcher) {
+        const hit = this.seriesMatcher.match({
+          title: plexItem.title,
+          year: plexItem.year,
+          seriesFolder: plexItem.locations?.[0],
+        });
+        if (hit) {
+          sonarrSeries = this.sonarrSeriesCache.get(hit.item.id);
+          logger.info(`Matched "${plexItem.title}" to Sonarr by ${hit.how} (ids differ: Plex tvdb=${guids.tvdbId ?? '-'} imdb=${guids.imdbId ?? '-'}; Sonarr #${hit.item.id})`);
+        }
+      }
 
       if (sonarrSeries) {
         const mediaSummary = await this.summariseSeriesFiles(sonarrSeries.id);
@@ -695,6 +724,11 @@ export class ScannerService {
     }
 
     return undefined;
+  }
+
+  /** The first file Plex lists for the item, if any. */
+  private firstFilePath(plexItem: PlexMediaItem): string | undefined {
+    return plexItem.media?.[0]?.parts?.[0]?.file || undefined;
   }
 
   /**
@@ -783,6 +817,7 @@ export class ScannerService {
             this.sonarrImdbIndex.set(s.imdbId, s);
           }
         }
+        this.seriesMatcher = new SeriesMatcher(series);
         logger.info(`Cached ${series.length} series from Sonarr`);
       } catch (error) {
         logger.error('Failed to cache Sonarr data', { message: (error as Error).message });
@@ -802,6 +837,7 @@ export class ScannerService {
             this.radarrImdbIndex.set(m.imdbId, m);
           }
         }
+        this.movieMatcher = new MovieMatcher(movies);
         logger.info(`Cached ${movies.length} movies from Radarr`);
       } catch (error) {
         logger.error('Failed to cache Radarr data', { message: (error as Error).message });
@@ -850,6 +886,8 @@ export class ScannerService {
     this.radarrMoviesCache.clear();
     this.radarrTmdbIndex.clear();
     this.radarrImdbIndex.clear();
+    this.movieMatcher = null;
+    this.seriesMatcher = null;
     // Clear watch history provider cache if supported
     this.watchHistoryProvider?.clearCache?.();
     logger.debug('Cleared service caches');

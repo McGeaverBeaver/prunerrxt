@@ -145,6 +145,8 @@ export interface DeletionServiceDependencies {
       onProgress?: (progress: FileDeletionProgress) => void
     ): Promise<{ outcome: 'deleted' | 'no_files' | 'not_found'; deleted: number; failed: number; errors: string[] }>;
     removeSeries(seriesId: number, deleteFiles: boolean): Promise<'deleted' | 'not_found'>;
+    /** Find the series by folder or title when the sync stored no id (see arrMatch.ts). */
+    findSeries?(item: MediaItem): Promise<{ id: number; how: string } | null>;
   };
   radarrService?: {
     unmonitorMovie(movieId: number): Promise<'unmonitored' | 'not_found'>;
@@ -153,6 +155,8 @@ export interface DeletionServiceDependencies {
       onProgress?: (progress: FileDeletionProgress) => void
     ): Promise<{ outcome: 'deleted' | 'no_file' | 'not_found' }>;
     removeMovie(movieId: number, deleteFiles: boolean): Promise<'deleted' | 'not_found'>;
+    /** Find the movie by folder or title when the sync stored no id (see arrMatch.ts). */
+    findMovie?(item: MediaItem): Promise<{ id: number; how: string } | null>;
   };
   overseerrService?: {
     resetMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<OverseerrResetResult>;
@@ -812,6 +816,34 @@ export class DeletionService {
   // ============================================================================
 
   /**
+   * An item the sync could not link by id may still be findable: Radarr and
+   * Sonarr name the folder the file sits in, and the title and year are
+   * known. Ask the owning app once, and remember the answer so the next sync
+   * and the next deletion do not have to look again.
+   */
+  private async resolveUpstreamId(item: MediaItem): Promise<void> {
+    const sonarr = this.dependencies.sonarrService;
+    const radarr = this.dependencies.radarrService;
+    try {
+      if (item.type === 'movie' && radarr?.findMovie) {
+        const hit = await radarr.findMovie(item);
+        if (!hit) return;
+        item.radarr_id = hit.id;
+        logger.info(`Linked "${item.title}" to Radarr #${hit.id} by ${hit.how} at deletion time`);
+        await this.dependencies.mediaItemRepository?.update(item.id, { radarr_id: hit.id });
+      } else if (item.type === 'show' && sonarr?.findSeries) {
+        const hit = await sonarr.findSeries(item);
+        if (!hit) return;
+        item.sonarr_id = hit.id;
+        logger.info(`Linked "${item.title}" to Sonarr #${hit.id} by ${hit.how} at deletion time`);
+        await this.dependencies.mediaItemRepository?.update(item.id, { sonarr_id: hit.id });
+      }
+    } catch (error) {
+      logger.warn(`Could not look "${item.title}" up upstream: ${(error as Error).message}`);
+    }
+  }
+
+  /**
    * Talk to Sonarr/Radarr for the given action, reporting each step.
    *
    * Returns as soon as either app says it no longer has the item: the rest of
@@ -835,6 +867,10 @@ export class DeletionService {
     const radarr = this.dependencies.radarrService;
     let filesDeleted = false;
     let touchedUpstream = false;
+
+    if (!item.sonarr_id && !item.radarr_id) {
+      await this.resolveUpstreamId(item);
+    }
 
     if (item.sonarr_id && sonarr) {
       touchedUpstream = true;

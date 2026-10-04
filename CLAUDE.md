@@ -116,6 +116,12 @@ identity is ever different (`git config user.email`), set it before committing.
   `services/monitoredVolumes.ts`, switch `diskPressure_includeArrVolumes`).
   `computeDiskPressureStats`, the `monitorDiskPressure` task, the dashboard's
   volumes card and `get_overview` all read that merged list.
+- Matching Plex items to Radarr/Sonarr goes by TMDB/TVDB/IMDb id first; when
+  the ids disagree, `services/arrMatch.ts` falls back to the folder the file
+  sits in (last path segment, so mount prefixes can differ) and then to a
+  unique normalised title and year. The scanner uses it at sync, and
+  `deletion.ts` asks the owning app once more before failing an item as
+  "not linked", persisting the id it finds.
 - Permission repair (`services/permissions.ts`) relies on the Dockerfile
   granting the Node binary `cap_chown,cap_fowner`; it only ever runs on paths
   resolved inside a folder mapping.

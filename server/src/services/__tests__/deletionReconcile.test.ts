@@ -219,6 +219,34 @@ describe('executeDelete failures', () => {
     expect(activityEntries()[0]).toMatchObject({ eventType: 'error', action: 'deletion_failed' });
   });
 
+  it('looks an unlinked movie up in Radarr by folder or title before giving up, and remembers the id', async () => {
+    const { service, update, radarr } = buildService();
+    const findMovie = vi.fn<NonNullable<RadarrDeps['findMovie']>>(async () => ({ id: 777, how: 'folder' }));
+    radarr.unmonitorMovie.mockResolvedValue('unmonitored');
+    (radarr as RadarrDeps).findMovie = findMovie;
+    const unlinked = { ...(movie as object), radarr_id: null, file_path: '/movies/300 (2006)/300 (2007).mkv' } as never;
+
+    const result = await service.executeDelete(unlinked, DeletionAction.UNMONITOR_AND_DELETE);
+
+    expect(result.success).toBe(true);
+    expect(findMovie).toHaveBeenCalledWith(expect.objectContaining({ id: 101, file_path: '/movies/300 (2006)/300 (2007).mkv' }));
+    expect(update).toHaveBeenCalledWith(101, { radarr_id: 777 });
+    expect(radarr.unmonitorMovie).toHaveBeenCalledWith(777);
+    expect(radarr.deleteMovieFilesByMovieId).toHaveBeenCalledWith(777, expect.any(Function));
+  });
+
+  it('still fails when the lookup finds nothing', async () => {
+    const { service, radarr } = buildService();
+    (radarr as RadarrDeps).findMovie = vi.fn(async () => null);
+    const unlinked = { ...(movie as object), radarr_id: null } as never;
+
+    const result = await service.executeDelete(unlinked, DeletionAction.UNMONITOR_AND_DELETE);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not linked to Radarr');
+    expect(radarr.unmonitorMovie).not.toHaveBeenCalled();
+  });
+
   it('fails a show whose episode files only partly deleted, so it is retried', async () => {
     const { service, sonarr } = buildService();
     sonarr.deleteAllEpisodeFiles.mockResolvedValue({

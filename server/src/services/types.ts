@@ -64,6 +64,8 @@ export interface PlexMediaItem {
   collections?: string[];
   originalLanguage?: string;
   hdr?: 'none' | 'hdr10' | 'dv' | 'hdr10+';
+  /** A show's folder(s) on disk, as Plex sees them. Movies report files under `media` instead. */
+  locations?: string[];
 }
 
 export interface PlexMedia {

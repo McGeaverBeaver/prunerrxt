@@ -80,6 +80,8 @@ interface PlexXmlVideo {
   '@_parentIndex'?: string;
   Media?: PlexXmlMedia | PlexXmlMedia[];
   Guid?: PlexXmlGuid | PlexXmlGuid[];
+  /** Shows carry their folder(s) here; movies carry files under Media/Part. */
+  Location?: PlexXmlLocation | PlexXmlLocation[];
   Genre?: PlexXmlTag | PlexXmlTag[];
   Label?: PlexXmlTag | PlexXmlTag[];
   Collection?: PlexXmlTag | PlexXmlTag[];
@@ -529,6 +531,9 @@ export class PlexService implements MediaServerService {
   private parseMediaItem(item: PlexXmlVideo): PlexMediaItem {
     const mediaArray = this.ensureArray(item.Media);
     const guidArray = this.ensureArray(item.Guid);
+    const locations = this.ensureArray(item.Location)
+      .map((loc: PlexXmlLocation) => loc['@_path'])
+      .filter((path): path is string => typeof path === 'string' && path.length > 0);
 
     const media: PlexMedia[] = mediaArray.map((m: PlexXmlMedia) => {
       const partsArray = this.ensureArray(m.Part);
@@ -658,6 +663,7 @@ export class PlexService implements MediaServerService {
       labels: labels.length > 0 ? labels : undefined,
       collections: collections.length > 0 ? collections : undefined,
       originalLanguage: item['@_originalLanguage'],
+      locations: locations.length > 0 ? locations : undefined,
       hdr,
     };
   }
