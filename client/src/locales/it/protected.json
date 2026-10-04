@@ -1,0 +1,69 @@
+{
+  "actions": {
+    "unarchiveSelected_one": "",
+    "unarchiveSelected_many": "",
+    "unarchiveSelected_other": "",
+    "unprotectSelected_one": "",
+    "unprotectSelected_many": "",
+    "unprotectSelected_other": ""
+  },
+  "badges": {
+    "archived": "",
+    "protected": ""
+  },
+  "collections": {
+    "error": "",
+    "items_one": "",
+    "items_many": "",
+    "items_other": ""
+  },
+  "count_one": "",
+  "count_many": "",
+  "count_other": "",
+  "empty": {
+    "archivedDesc": "",
+    "archivedTitle": "",
+    "collectionsDesc": "",
+    "collectionsTitle": "",
+    "protectedDesc": "",
+    "protectedTitle": "",
+    "searchDesc": "",
+    "searchTitle": ""
+  },
+  "header": {
+    "subtitle": "",
+    "title": ""
+  },
+  "loading": "",
+  "next": "",
+  "pagination": "",
+  "prev": "",
+  "row": {
+    "noReason": "",
+    "openCollection": "",
+    "recheck": "",
+    "since": "",
+    "unarchive": "",
+    "unprotect": "",
+    "viaCollection": ""
+  },
+  "search": {
+    "placeholder": ""
+  },
+  "selectAll": "",
+  "tabs": {
+    "archived": "",
+    "collections": "",
+    "protected": ""
+  },
+  "toasts": {
+    "bulkMsg": "",
+    "bulkTitle": "",
+    "checked": "",
+    "checkFailed": "",
+    "failed": "",
+    "releasedMsg": "",
+    "unarchived": "",
+    "unprotected": ""
+  }
+}

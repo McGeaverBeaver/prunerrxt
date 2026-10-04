@@ -112,9 +112,11 @@
   "filters": {
     "all": "Alle",
     "allStatus": "Alle statussen",
+    "archived": "",
     "deleted": "Verwijderd",
     "inProgress": "",
     "movies": "Films",
+    "protected": "",
     "queued": "In wachtrij",
     "resultCount_one": "{{count}} resultaat",
     "resultCount_other": "{{count}} resultaten",

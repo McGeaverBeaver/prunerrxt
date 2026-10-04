@@ -947,6 +947,7 @@ export default interface Resources {
       "history": "History",
       "insights": "Insights",
       "library": "Library",
+      "protected": "Protected",
       "queue": "Queue",
       "rules": "Rules",
       "settings": "Settings"
@@ -1080,9 +1081,11 @@ export default interface Resources {
     "filters": {
       "all": "All",
       "allStatus": "All Status",
+      "archived": "Archived",
       "deleted": "Deleted",
       "inProgress": "In progress",
       "movies": "Movies",
+      "protected": "Protected",
       "queued": "Queued",
       "resultCount_one": "{{count}} result",
       "resultCount_other": "{{count}} results",
@@ -1249,6 +1252,71 @@ export default interface Resources {
       "syncGenericError": "An error occurred while syncing",
       "unprotectedMsg_one": "{{count}} item unprotected",
       "unprotectedMsg_other": "{{count}} item(s) unprotected"
+    }
+  },
+  "protected": {
+    "actions": {
+      "unarchiveSelected_one": "Unarchive selected ({{count}})",
+      "unarchiveSelected_other": "Unarchive selected ({{count}})",
+      "unprotectSelected_one": "Remove protection ({{count}})",
+      "unprotectSelected_other": "Remove protection ({{count}})"
+    },
+    "badges": {
+      "archived": "Archived",
+      "protected": "Protected"
+    },
+    "collections": {
+      "error": "Could not load collections",
+      "items_one": "{{count}} titles",
+      "items_other": "{{count}} titles"
+    },
+    "count_one": "{{count}} titles",
+    "count_other": "{{count}} titles",
+    "empty": {
+      "archivedDesc": "Archive keeps titles here when they could not be downloaded again. Pick Archive on a queued item, or let the Archive automatically mode do it.",
+      "archivedTitle": "Nothing archived yet",
+      "collectionsDesc": "Protect a collection on the Collections page and every title in it is shielded at once.",
+      "collectionsTitle": "No protected collections",
+      "protectedDesc": "Protect a title from its page, the library grid or the queue, and it shows up here.",
+      "protectedTitle": "Nothing protected yet",
+      "searchDesc": "No {{tab}} title matches \"{{search}}\".",
+      "searchTitle": "Nothing matches"
+    },
+    "header": {
+      "subtitle": "Titles and collections no rule, scan or deletion will touch",
+      "title": "Protected"
+    },
+    "loading": "Loading…",
+    "next": "Next page",
+    "pagination": "Showing {{from}}–{{to}} of {{total}}",
+    "prev": "Previous page",
+    "row": {
+      "noReason": "Manually protected",
+      "openCollection": "Open collection",
+      "recheck": "Ask Radarr/Sonarr again",
+      "since": "since {{time}}",
+      "unarchive": "Unarchive",
+      "unprotect": "Remove protection",
+      "viaCollection": "Protected via collection \"{{title}}\""
+    },
+    "search": {
+      "placeholder": "Search titles…"
+    },
+    "selectAll": "Select all on this page",
+    "tabs": {
+      "archived": "Archived",
+      "collections": "Collections",
+      "protected": "Protected"
+    },
+    "toasts": {
+      "bulkMsg": "{{ok}} of {{total}} released",
+      "bulkTitle": "Protection removed",
+      "checkFailed": "Check failed",
+      "checked": "Availability checked",
+      "failed": "Could not update",
+      "releasedMsg": "\"{{title}}\" can be considered by rules again.",
+      "unarchived": "Unarchived",
+      "unprotected": "Protection removed"
     }
   },
   "queue": {

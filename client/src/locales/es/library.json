@@ -122,9 +122,11 @@
   "filters": {
     "all": "Todos",
     "allStatus": "Todos los estados",
+    "archived": "",
     "deleted": "Eliminado",
     "inProgress": "",
     "movies": "Películas",
+    "protected": "",
     "queued": "En cola",
     "resultCount_one": "{{count}} resultado",
     "resultCount_many": "{{count}} resultados",

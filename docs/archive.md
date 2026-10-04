@@ -62,9 +62,11 @@ so an outage never turns into a deletion on a guess.
 
 An archived title is a protected title with an archive mark. Every rule, scan,
 bulk action and the MCP connector already leave protected titles alone, so
-nothing new has to learn about it. The library and detail pages show it as
-**Archived** with the verdict that led there; **Unarchive** on its page lifts
-the protection again.
+nothing new has to learn about it. The **Protected** page in the sidebar lists
+every archived title under its own tab, with the verdict that led there, the
+date, a re-check button and Unarchive; the Library's status filter has
+*Protected* and *Archived* entries too. The detail page shows the same badge
+and **Unarchive** on its page lifts the protection again.
 
 You can archive any title from its page, queued or not, when you simply know
 it is hard to find again.

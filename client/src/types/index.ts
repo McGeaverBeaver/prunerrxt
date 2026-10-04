@@ -18,6 +18,12 @@ export interface MediaItem {
   isProtected: boolean;
   /** Collection info if protection is derived from a protected collection. */
   protectedByCollection?: { id: number; title: string } | null;
+  /** Why the item itself is protected (null when only a collection protects it). */
+  protectionReason?: string | null;
+  protectedAt?: string | null;
+  /** Set while Archive keeps the item because it could not be downloaded again. */
+  archivedAt?: string | null;
+  availability?: AvailabilityReport | null;
   plexId?: string;
   sonarrId?: number;
   radarrId?: number;
@@ -56,7 +62,7 @@ export interface LibraryFilters {
   page: number;
   limit: number;
   type?: MediaType;
-  status?: 'watched' | 'unwatched' | 'queued' | 'deleted' | 'in_progress';
+  status?: 'watched' | 'unwatched' | 'queued' | 'deleted' | 'in_progress' | 'protected' | 'archived';
   sortBy: string;
   sortOrder: 'asc' | 'desc';
 }

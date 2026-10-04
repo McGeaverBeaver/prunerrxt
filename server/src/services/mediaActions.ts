@@ -246,6 +246,7 @@ export function archiveItems(ids: number[], reason: string = 'Archived', actorNa
       is_protected: true,
       protection_reason: reason,
       archived_at: now,
+      protected_at: now,
       status: 'protected',
       marked_at: null,
       delete_after: null,

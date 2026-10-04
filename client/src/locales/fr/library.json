@@ -122,9 +122,11 @@
   "filters": {
     "all": "Tous",
     "allStatus": "Tous les statuts",
+    "archived": "",
     "deleted": "Supprimé",
     "inProgress": "",
     "movies": "Films",
+    "protected": "",
     "queued": "En file d'attente",
     "resultCount_one": "{{count}} résultat",
     "resultCount_many": "{{count}} résultats",

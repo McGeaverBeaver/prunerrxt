@@ -112,9 +112,11 @@
   "filters": {
     "all": "Alle",
     "allStatus": "Alle Status",
+    "archived": "",
     "deleted": "Gelöscht",
     "inProgress": "",
     "movies": "Filme",
+    "protected": "",
     "queued": "In Warteschlange",
     "resultCount_one": "{{count}} Ergebnis",
     "resultCount_other": "{{count}} Ergebnisse",

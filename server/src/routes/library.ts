@@ -39,7 +39,7 @@ const router = Router();
 // Query parameter schema for library filtering
 const LibraryFiltersSchema = z.object({
   type: z.enum(['movie', 'show', 'episode']).optional(),
-  status: z.enum(['monitored', 'flagged', 'pending_deletion', 'protected', 'deleted', 'watched', 'unwatched', 'queued', 'in_progress']).optional(),
+  status: z.enum(['monitored', 'flagged', 'pending_deletion', 'protected', 'archived', 'deleted', 'watched', 'unwatched', 'queued', 'in_progress']).optional(),
   search: z.string().optional(),
   page: z
     .string()
@@ -97,6 +97,11 @@ router.get('/', (req: Request, res: Response) => {
     let watchedFilter: boolean | undefined;
     let inProgressFilter: boolean | undefined;
 
+    // Protection is a flag, not a status: a sync can leave a protected row's
+    // status at 'monitored', so filter on the flag (and the archive mark).
+    let protectedFilter: boolean | undefined = filters.protected;
+    let archivedFilter: boolean | undefined;
+
     if (filters.status === 'queued') {
       serverStatus = 'pending_deletion';
     } else if (filters.status === 'in_progress') {
@@ -105,7 +110,11 @@ router.get('/', (req: Request, res: Response) => {
       watchedFilter = true;
     } else if (filters.status === 'unwatched') {
       watchedFilter = false;
-    } else if (filters.status && ['monitored', 'flagged', 'pending_deletion', 'protected', 'deleted'].includes(filters.status)) {
+    } else if (filters.status === 'protected') {
+      protectedFilter = true;
+    } else if (filters.status === 'archived') {
+      archivedFilter = true;
+    } else if (filters.status && ['monitored', 'flagged', 'pending_deletion', 'deleted'].includes(filters.status)) {
       serverStatus = filters.status as 'monitored' | 'flagged' | 'pending_deletion' | 'protected' | 'deleted';
     }
 
@@ -121,7 +130,8 @@ router.get('/', (req: Request, res: Response) => {
       watched: watchedFilter,
       inProgress: inProgressFilter,
       unwatchedDays: filters.unwatchedDays,
-      isProtected: filters.protected,
+      isProtected: protectedFilter,
+      archived: archivedFilter,
       // Deleted items are tombstones; hide them from every view except the
       // explicit "Deleted" filter (which sets serverStatus === 'deleted').
       excludeDeleted: serverStatus !== 'deleted',
@@ -166,6 +176,10 @@ router.get('/', (req: Request, res: Response) => {
         protectedByCollection: collectionProtected
           ? { id: protectedCollections[0]!.id, title: protectedCollections[0]!.title }
           : null,
+        protectionReason: item.is_protected ? item.protection_reason : null,
+        protectedAt: item.is_protected ? item.protected_at ?? null : null,
+        archivedAt: item.archived_at ?? null,
+        availability: parseAvailability(item.availability),
         plexId: item.plex_id,
         sonarrId: item.sonarr_id,
         radarrId: item.radarr_id,

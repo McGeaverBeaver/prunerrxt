@@ -8,6 +8,7 @@ import {
   LogOut,
   UserRound,
   HeartPulse,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   DashboardIcon,
@@ -58,6 +59,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
     { id: 'folders', label: t('nav.folders', 'Folders'), href: '/folders', icon: FoldersIcon },
     { id: 'rules', label: t('nav.rules', 'Rules'), href: '/rules', icon: RulesIcon },
     { id: 'queue', label: t('nav.queue', 'Queue'), href: '/queue', icon: QueueIcon },
+    { id: 'protected', label: t('nav.protected', 'Protected'), href: '/protected', icon: ShieldCheck },
     { id: 'history', label: t('nav.history', 'History'), href: '/history', icon: HistoryIcon },
     { id: 'activity', label: t('nav.activity', 'Activity'), href: '/activity', icon: ActivityIcon },
     { id: 'insights', label: t('nav.insights', 'Insights'), href: '/insights', icon: HeartPulse },

@@ -180,7 +180,7 @@ function SyncLogPanel({
 
 type ViewMode = 'table' | 'grid';
 type MediaType = 'all' | 'movie' | 'tv';
-type StatusFilter = 'all' | 'watched' | 'unwatched' | 'in_progress' | 'queued' | 'deleted';
+type StatusFilter = 'all' | 'watched' | 'unwatched' | 'in_progress' | 'queued' | 'protected' | 'archived' | 'deleted';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -757,6 +757,8 @@ export default function Library() {
                 { value: 'unwatched', label: t('filters.unwatched', 'Unwatched') },
                 { value: 'in_progress', label: t('filters.inProgress', 'In progress') },
                 { value: 'queued', label: t('filters.queued', 'Queued') },
+                { value: 'protected', label: t('filters.protected', 'Protected') },
+                { value: 'archived', label: t('filters.archived', 'Archived') },
                 { value: 'deleted', label: t('filters.deleted', 'Deleted') },
               ]}
               onChange={(next) => {

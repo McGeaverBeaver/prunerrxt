@@ -52,6 +52,8 @@ export interface MediaItem {
   deleted_at: string | null;
   is_protected: boolean;
   protection_reason: string | null;
+  /** When item-level protection was applied (null when not protected). */
+  protected_at?: string | null;
   /** Archive: the last re-acquisition check, as JSON (services/availabilityVerdict.ts). */
   availability?: string | null;
   availability_checked_at?: string | null;
@@ -216,6 +218,7 @@ export interface UpdateMediaItemInput {
   deleted_at?: string | null;
   is_protected?: boolean;
   protection_reason?: string;
+  protected_at?: string | null;
   availability?: string | null;
   availability_checked_at?: string | null;
   availability_decision?: string | null;
@@ -304,6 +307,8 @@ export interface MediaItemFilters {
   /** true = someone is in progress on it (watch state), false = nobody is */
   inProgress?: boolean;
   isProtected?: boolean;
+  /** true = archived by Archive (archived_at set), false = not archived */
+  archived?: boolean;
   /**
    * When true, exclude soft-deleted tombstone rows (status='deleted') from the
    * results. Used so the library hides deleted items by default unless the

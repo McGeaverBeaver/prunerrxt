@@ -713,6 +713,16 @@ const migrations: Migration[] = [
       ALTER TABLE media_items ADD COLUMN archived_at TEXT;
     `,
   },
+  {
+    version: 31,
+    name: 'media_items_protected_at',
+    up: `
+      -- When an item was protected, for the Protected page. Rows protected
+      -- before this column existed take their last update as the best guess.
+      ALTER TABLE media_items ADD COLUMN protected_at TEXT;
+      UPDATE media_items SET protected_at = updated_at WHERE is_protected = 1 AND protected_at IS NULL;
+    `,
+  },
 ];
 
 // Schema version tracking table

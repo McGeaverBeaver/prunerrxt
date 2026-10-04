@@ -65,6 +65,7 @@ interface MediaItemRow {
   availability_checked_at: string | null;
   availability_decision: string | null;
   archived_at: string | null;
+  protected_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -156,6 +157,9 @@ export function getAllMediaItems(filters?: MediaItemFilters): PaginatedResponse<
   if (filters?.isProtected !== undefined) {
     whereClause += ' AND is_protected = ?';
     params.push(filters.isProtected ? 1 : 0);
+  }
+  if (filters?.archived !== undefined) {
+    whereClause += filters.archived ? ' AND archived_at IS NOT NULL' : ' AND archived_at IS NULL';
   }
 
   // Get total count with all filters applied
@@ -466,6 +470,10 @@ export function updateMediaItem(id: number, input: UpdateMediaItemInput): MediaI
     updates.push('archived_at = ?');
     params.push(input.archived_at);
   }
+  if (input.protected_at !== undefined) {
+    updates.push('protected_at = ?');
+    params.push(input.protected_at);
+  }
   if ((input as any).overseerr_reset_at !== undefined) {
     updates.push('overseerr_reset_at = ?');
     params.push((input as any).overseerr_reset_at);
@@ -658,6 +666,7 @@ export function protectMediaItem(id: number, reason: string): MediaItem | null {
   return updateMediaItem(id, {
     is_protected: true,
     protection_reason: reason,
+    protected_at: new Date().toISOString(),
     status: 'protected',
   });
 }
@@ -668,6 +677,7 @@ export function unprotectMediaItem(id: number): MediaItem | null {
     protection_reason: undefined,
     // An archived item is protected; lifting the protection un-archives it.
     archived_at: null,
+    protected_at: null,
     status: 'monitored',
   });
 }
