@@ -38,7 +38,12 @@ vi.mock('../../services/deletion', () => ({
         daysRemaining: 1,
       },
     ],
+    getHeldDeletions: async () => [],
   }),
+}));
+
+vi.mock('../../services/availability', () => ({
+  checkQueue: async () => ({ checked: 0, replaceable: 0, atRisk: 0, unknown: 0, archived: 0, skipped: 0 }),
 }));
 
 vi.mock('../../db/repositories/rules', () => ({

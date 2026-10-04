@@ -137,6 +137,11 @@ protection, requester; sorted and paged), `get_media_item`,
 skipped), `protect_items`, `unprotect_items`, `queue_episodes_for_deletion`,
 `cancel_episode_deletions`, `get_deletion_defaults`
 
+**Archive** — `check_availability` (can it be downloaded again?),
+`archive_items` (keep for good), `unarchive_items`, `clear_availability_hold`
+(delete an at-risk item anyway). `list_queue` carries each item's verdict and
+whether Archive is holding it. See docs/archive.md.
+
 **Unmanaged folders** — `list_orphan_folders`, `lookup_orphan_folder`,
 `import_orphan_folder`, `delete_orphan_folder` (needs the opt-in),
 `ignore_orphan_folder`: folders under Sonarr's and Radarr's root folders that

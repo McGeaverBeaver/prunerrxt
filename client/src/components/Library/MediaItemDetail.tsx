@@ -20,6 +20,9 @@ import {
   History,
   PlayCircle,
   Check,
+  Archive,
+  ArchiveRestore,
+  RotateCw,
 } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
@@ -38,9 +41,13 @@ import {
   useUnprotectItem,
   useSettings,
   useSonarrDetail,
+  useArchiveItem,
+  useCheckItemAvailability,
 } from '@/hooks/useApi';
 import { cn, formatBytes, formatRelativeTime, formatDate } from '@/lib/utils';
-import type { Settings, WatchState } from '@/types';
+import type { AvailabilityReport, Settings, WatchState } from '@/types';
+import { AvailabilityBadge } from '@/components/common/AvailabilityBadge';
+import { useAvailabilityText } from '@/lib/availabilityText';
 
 /**
  * Spreads the poster backdrop across the whole page as a soft ellipse rather
@@ -84,6 +91,20 @@ interface RawMediaItem {
   marked_at?: string;
   delete_after?: string;
   file_path?: string;
+  availability?: string | null;
+  availability_decision?: string | null;
+  archived_at?: string | null;
+}
+
+/** The availability column is JSON; a row never checked has none. */
+function parseAvailabilityJson(raw: string | null | undefined): AvailabilityReport | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as AvailabilityReport;
+    return parsed && typeof parsed === 'object' && typeof parsed.verdict === 'string' ? parsed : null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizeItem(raw: RawMediaItem) {
@@ -124,6 +145,9 @@ function normalizeItem(raw: RawMediaItem) {
     deleteAfter: raw.delete_after,
     filePath: raw.file_path,
     createdAt: raw.created_at,
+    availability: parseAvailabilityJson(raw.availability),
+    deleteAnyway: raw.availability_decision === 'delete',
+    archivedAt: raw.archived_at ?? null,
   };
 }
 
@@ -160,6 +184,9 @@ export default function MediaItemDetail() {
   const deleteMutation = useMarkForDeletion();
   const protectMutation = useProtectItem();
   const unprotectMutation = useUnprotectItem();
+  const archiveMutation = useArchiveItem();
+  const checkAvailabilityMutation = useCheckItemAvailability();
+  const { reasonLine } = useAvailabilityText();
 
   // Normalize the raw server response
   const item = rawItem ? normalizeItem(rawItem as unknown as RawMediaItem) : null;
@@ -197,6 +224,19 @@ export default function MediaItemDetail() {
         queryClient.invalidateQueries({ queryKey: ['activity', 'item', id] });
       },
     });
+  };
+
+  const afterArchiveChange = () => {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ['activity', 'item', id] });
+  };
+  const handleArchive = () => {
+    if (!item) return;
+    archiveMutation.mutate(item.id, { onSuccess: afterArchiveChange });
+  };
+  const handleCheckAvailability = () => {
+    if (!item) return;
+    checkAvailabilityMutation.mutate(item.id, { onSuccess: afterArchiveChange });
   };
 
   // Build external links
@@ -359,10 +399,12 @@ export default function MediaItemDetail() {
               {/* Protected badge */}
               {item.isProtected && item.status !== 'queued' && item.status !== 'deleted' && (
                 <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-accent-500/90 backdrop-blur-sm text-amber-950 text-xs font-semibold shadow-md shadow-black/30">
-                  <Shield className="w-3.5 h-3.5" />
-                  {item.protectedByCollection
-                    ? t('detail.protectedVia', 'Protected via {{title}}', { title: item.protectedByCollection.title })
-                    : t('status.protected', 'Protected')}
+                  {item.archivedAt ? <Archive className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
+                  {item.archivedAt
+                    ? t('status.archived', 'Archived')
+                    : item.protectedByCollection
+                      ? t('detail.protectedVia', 'Protected via {{title}}', { title: item.protectedByCollection.title })
+                      : t('status.protected', 'Protected')}
                 </div>
               )}
             </div>
@@ -376,9 +418,26 @@ export default function MediaItemDetail() {
               onClick={handleProtectToggle}
               isLoading={protectMutation.isPending || unprotectMutation.isPending}
             >
-              <Shield className="w-4 h-4" />
-              {item.isProtected ? t('menu.removeProtection', 'Remove Protection') : t('menu.protectItem', 'Protect Item')}
+              {item.archivedAt ? <ArchiveRestore className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+              {item.archivedAt
+                ? t('menu.unarchive', 'Unarchive')
+                : item.isProtected
+                  ? t('menu.removeProtection', 'Remove Protection')
+                  : t('menu.protectItem', 'Protect Item')}
             </Button>
+
+            {!item.archivedAt && item.status !== 'deleted' && (
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={handleArchive}
+                isLoading={archiveMutation.isPending}
+                title={t('menu.archiveHint', 'Keep for good: protected and never scanned, because it may not be downloadable again')}
+              >
+                <Archive className="w-4 h-4" />
+                {t('menu.archive', 'Archive')}
+              </Button>
+            )}
 
             {!item.isProtected && item.status !== 'queued' && item.status !== 'deleted' && (
               <Button
@@ -439,6 +498,8 @@ export default function MediaItemDetail() {
               )}
               {item.status === 'queued' ? (
                 <Badge variant="danger">{t('status.queued', 'Queued')}</Badge>
+              ) : item.archivedAt ? (
+                <Badge variant="accent"><Archive className="w-3 h-3" />{t('status.archived', 'Archived')}</Badge>
               ) : item.isProtected ? (
                 <Badge variant="accent">{t('status.protected', 'Protected')}</Badge>
               ) : item.status === 'deleted' ? (
@@ -527,6 +588,35 @@ export default function MediaItemDetail() {
                     value={item.protectionReason}
                     className="sm:col-span-2"
                   />
+                )}
+                {item.status !== 'deleted' && (
+                  <div className="flex items-start gap-3 sm:col-span-2">
+                    <div className="p-2 rounded-lg bg-surface-800/60 text-surface-400 flex-shrink-0"><Archive className="w-4 h-4" /></div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-surface-500 font-medium">{t('detail.availability', 'Can it be downloaded again?')}</p>
+                      <div className="flex items-center flex-wrap gap-2 mt-1">
+                        <AvailabilityBadge report={item.availability} archived={Boolean(item.archivedAt)} />
+                        <span className="text-sm text-surface-200 min-w-0">{reasonLine(item.availability)}</span>
+                        {item.availability?.checkedAt && (
+                          <span className="text-xs text-surface-500">{t('detail.checkedAt', 'checked {{time}}', { time: formatRelativeTime(item.availability.checkedAt) })}</span>
+                        )}
+                        {item.deleteAnyway && item.status === 'queued' && (
+                          <span className="text-xs text-surface-500">{t('detail.deleteAnywayChosen', 'Delete anyway chosen')}</span>
+                        )}
+                        {hasArrService && (
+                          <button
+                            type="button"
+                            onClick={handleCheckAvailability}
+                            disabled={checkAvailabilityMutation.isPending}
+                            className="inline-flex items-center gap-1 text-xs text-surface-500 hover:text-surface-200 disabled:opacity-50 transition-colors"
+                          >
+                            <RotateCw className={cn('w-3 h-3', checkAvailabilityMutation.isPending && 'animate-spin')} />
+                            {checkAvailabilityMutation.isPending ? t('detail.checking', 'Asking Radarr/Sonarr…') : t('detail.checkAvailability', 'Check now')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {item.status === 'queued' && item.deleteAfter && (
                   <DetailField

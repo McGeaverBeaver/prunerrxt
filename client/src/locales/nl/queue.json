@@ -14,6 +14,11 @@
     "removeSelected_other": "Geselecteerde verwijderen ({{count}})",
     "removingProgress": "Bezig met verwijderen {{current}}/{{total}}..."
   },
+  "archiveHold": {
+    "desc": "",
+    "title_one": "",
+    "title_other": ""
+  },
   "arrWarning": {
     "bannerDesc": "Voor verwijdering is Sonarr of Radarr nodig om bestanden van de schijf te verwijderen. Items kunnen in de wachtrij worden geplaatst, maar worden pas verwerkt zodra een service is ingesteld.",
     "goToSettings": "Naar Instellingen",
@@ -127,18 +132,26 @@
     "warning": "Hiermee worden items verwijderd waarvan de respijtperiode is verstreken."
   },
   "row": {
+    "archive": "",
+    "archiveTitle": "",
+    "checkAvailability": "",
+    "checking": "",
     "daysLeft_one": "Nog {{count}} dag",
     "daysLeft_other": "Nog {{count}} dagen",
     "daysLeftShort_one": "Nog {{count}}d",
     "daysLeftShort_other": "Nog {{count}}d",
+    "deleteAnyway": "",
+    "deleteAnywayChosen": "",
     "deleteNow": "Nu verwijderen",
     "deleteNowDisabled": "Configureer Sonarr/Radarr in Instellingen om verwijdering in te schakelen",
     "deletesOn": "Verwijdert {{date}}",
     "episode": "",
+    "held": "",
     "protect": "Beschermen",
     "queued": "In wachtrij geplaatst {{time}}",
     "ready": "Gereed",
     "readyToDelete": "Gereed om te verwijderen",
+    "recheck": "",
     "remove": "Verwijderen",
     "removeFromQueue": "Uit wachtrij verwijderen",
     "requestedBy": "Aangevraagd door: {{user}}",
@@ -162,6 +175,13 @@
   },
   "toasts": {
     "alreadyDeletingTitle": "",
+    "archivedMsg": "",
+    "archivedTitle": "",
+    "archiveFailedTitle": "",
+    "checkedTitle": "",
+    "checkFailedTitle": "",
+    "deleteAnywayMsg": "",
+    "deleteAnywayTitle": "",
     "deleteFailedMsg": "Item verwijderen mislukt",
     "deleteFailedTitle": "Verwijderen mislukt",
     "deletingMsg": "",

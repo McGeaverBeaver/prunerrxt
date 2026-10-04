@@ -347,6 +347,40 @@ export function useRunRule() {
   });
 }
 
+// Archive hooks: the re-acquisition verdict, archiving and lifting a hold all
+// change both the queue and the library item, so every one invalidates both.
+function useArchiveMutation<TArgs, TResult>(fn: (args: TArgs) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue });
+      queryClient.invalidateQueries({ queryKey: ['library'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+    },
+  });
+}
+
+export function useCheckQueueAvailability() {
+  return useArchiveMutation((id: string) => queueApi.checkAvailability(id));
+}
+
+export function useArchiveQueueItem() {
+  return useArchiveMutation((id: string) => queueApi.archive(id));
+}
+
+export function useDeleteAnyway() {
+  return useArchiveMutation((id: string) => queueApi.deleteAnyway(id));
+}
+
+export function useArchiveItem() {
+  return useArchiveMutation((id: string) => libraryApi.archiveItem(id));
+}
+
+export function useCheckItemAvailability() {
+  return useArchiveMutation((id: string) => libraryApi.checkAvailability(id));
+}
+
 // Queue Hooks
 export function useDeletionQueue() {
   return useQuery({

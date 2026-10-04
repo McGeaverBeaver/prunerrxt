@@ -18,6 +18,7 @@ import { episodeLabel, executeQueuedDeletions } from './episodeDeletions';
 import { DeletionAction, DELETION_ACTION_LABELS } from '../rules/types';
 import rulesRepo from '../db/repositories/rules';
 import { getNotificationService } from '../notifications';
+import { getArchiveSettings, holdState, type ArchiveSettings, type AvailabilityReport, type HoldReason } from './availabilityVerdict';
 
 // ============================================================================
 // Shapes
@@ -47,6 +48,13 @@ export interface QueueItemResponse {
   overseerrResetAt?: string;
   seasonNumber?: number;
   episodeNumber?: number;
+  /** Archive: the last re-acquisition check; absent for episodes and unchecked items. */
+  availability?: AvailabilityReport;
+  /** Archive is holding the item from automatic deletion until a person decides. */
+  held: boolean;
+  heldReason?: HoldReason;
+  /** A person chose "delete anyway" on an at-risk item. */
+  deleteAnyway: boolean;
 }
 
 export interface QueueSummary {
@@ -54,6 +62,9 @@ export interface QueueSummary {
   totalSize: number;
   readyForDeletion: number;
   willResetOverseerr: number;
+  /** Items Archive is holding for a decision. */
+  held: number;
+  atRisk: number;
 }
 
 export interface QueueListing {
@@ -122,12 +133,14 @@ export function createRuleNameResolver(): (id: number | null | undefined) => str
 export function mediaRowToQueueItem(
   item: MediaItem,
   now: Date,
-  ruleName: (id: number | null | undefined) => string | undefined
+  ruleName: (id: number | null | undefined) => string | undefined,
+  archiveSettings?: ArchiveSettings
 ): QueueItemResponse {
   const itemAny = item as unknown as Record<string, unknown>;
   const deletionAction = normalizeDeletionAction(itemAny['deletion_action'] as string | undefined);
   const matchedRuleId = itemAny['matched_rule_id'] as number | null | undefined;
   const matchedRule = ruleName(matchedRuleId);
+  const hold = holdState(item, archiveSettings ?? getArchiveSettings());
 
   return {
     id: String(item.id),
@@ -149,11 +162,16 @@ export function mediaRowToQueueItem(
     // Only surface the id alongside a name — a rule that has since been
     // deleted would otherwise link nowhere.
     ...(matchedRule ? { matchedRule, ruleId: String(matchedRuleId) } : {}),
+    ...(hold.report ? { availability: hold.report } : {}),
+    held: hold.held,
+    ...(hold.reason ? { heldReason: hold.reason } : {}),
+    deleteAnyway: item.availability_decision === 'delete',
   };
 }
 
 /** Map a queued episode row into the same shape the Queue page already renders. */
 export function episodeRowToQueueItem(row: EpisodeDeletion, now: Date): QueueItemResponse {
+  // Episodes are partial deletions of a show that stays; Archive does not weigh in.
   const deletionAction = normalizeDeletionAction(row.deletion_action);
   const show = mediaItemsRepo.getById(row.media_item_id);
 
@@ -173,6 +191,8 @@ export function episodeRowToQueueItem(row: EpisodeDeletion, now: Date): QueueIte
     resetOverseerr: false,
     seasonNumber: row.season_number,
     episodeNumber: row.episode_number,
+    held: false,
+    deleteAnyway: false,
   };
 }
 
@@ -187,9 +207,10 @@ export function pendingEpisodeQueueItems(now: Date): QueueItemResponse[] {
 export function getAllQueueItems(now: Date = new Date()): QueueItemResponse[] {
   const pendingItems = mediaItemsRepo.getPendingDeletion();
   const ruleName = createRuleNameResolver();
+  const archiveSettings = getArchiveSettings();
   return pendingItems
     .filter((item) => item.delete_after && item.marked_at)
-    .map<QueueItemResponse>((item) => mediaRowToQueueItem(item, now, ruleName))
+    .map<QueueItemResponse>((item) => mediaRowToQueueItem(item, now, ruleName, archiveSettings))
     .concat(pendingEpisodeQueueItems(now))
     .sort((a, b) => a.daysRemaining - b.daysRemaining);
 }
@@ -198,8 +219,10 @@ export function summarizeQueue(items: QueueItemResponse[]): QueueSummary {
   return {
     totalItems: items.length,
     totalSize: items.reduce((sum, item) => sum + item.size, 0),
-    readyForDeletion: items.filter((item) => item.daysRemaining === 0).length,
+    readyForDeletion: items.filter((item) => item.daysRemaining === 0 && !item.held).length,
     willResetOverseerr: items.filter((item) => item.resetOverseerr).length,
+    held: items.filter((item) => item.held).length,
+    atRisk: items.filter((item) => item.availability?.verdict === 'at_risk').length,
   };
 }
 
@@ -345,6 +368,8 @@ export interface ProcessedItem {
 }
 
 export interface ProcessQueueResult {
+  /** Items Archive kept back for a decision. */
+  held: number;
   processed: number;
   deleted: number;
   failed: number;
@@ -372,7 +397,10 @@ export interface ProcessQueueResult {
  * media items first, then queued episodes. What Delete All turns into jobs.
  */
 export function readyQueueIds(force: boolean, now: Date = new Date()): string[] {
-  const pendingItems = mediaItemsRepo.getPendingDeletion();
+  // Archive holds at-risk items even from Delete All: a person has to decide
+  // per item ("delete anyway" or archive), and the Queue page says which.
+  const archiveSettings = getArchiveSettings();
+  const pendingItems = mediaItemsRepo.getPendingDeletion().filter((item) => !holdState(item, archiveSettings).held);
   const items = force
     ? pendingItems
     : pendingItems.filter((item) => item.delete_after && daysUntil(item.delete_after, now) === 0);
@@ -387,7 +415,10 @@ export async function processQueue(
   const force = options.force === true;
 
   const deletionService = getDeletionService();
-  const pendingItems = mediaItemsRepo.getPendingDeletion();
+  const archiveSettings = getArchiveSettings();
+  const allPending = mediaItemsRepo.getPendingDeletion();
+  const pendingItems = allPending.filter((item) => !holdState(item, archiveSettings).held);
+  const heldCount = allPending.length - pendingItems.length;
   const now = new Date();
 
   const itemsReadyForDeletion = force
@@ -407,9 +438,10 @@ export async function processQueue(
       freedSpaceFormatted: '0.00 GB',
       overseerrResets: 0,
       episodes: { processed: 0, deleted: 0, failed: 0 },
+      held: heldCount,
       dryRun,
       results,
-      message: 'No items ready for deletion',
+      message: heldCount > 0 ? `No items ready for deletion (${heldCount} held by Archive for a decision)` : 'No items ready for deletion',
     };
   }
 
@@ -512,11 +544,14 @@ export async function processQueue(
     freedSpaceFormatted: `${freedSpaceGB} GB`,
     overseerrResets,
     episodes: { processed: episodeRowsReady.length, deleted: episodesDeleted, failed: episodesFailed },
+    held: heldCount,
     dryRun,
     results,
-    message: dryRun
-      ? `Dry run complete: ${totalDeleted} item(s) would be processed`
-      : `Processed ${totalDeleted} item(s), ${totalFailed} failed, ${overseerrResets} Overseerr resets`,
+    message: `${
+      dryRun
+        ? `Dry run complete: ${totalDeleted} item(s) would be processed`
+        : `Processed ${totalDeleted} item(s), ${totalFailed} failed, ${overseerrResets} Overseerr resets`
+    }${heldCount > 0 ? `; ${heldCount} held by Archive for a decision` : ''}`,
   };
 }
 

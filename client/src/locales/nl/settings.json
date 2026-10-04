@@ -64,6 +64,29 @@
     "usageBody": "Voeg de sleutel toe aan de <1>X-Api-Key</1>-header wanneer je API-verzoeken doet vanuit externe tools, scripts of apps zoals nzb360.",
     "yourKey": "Jouw API-sleutel"
   },
+  "archive": {
+    "description": "",
+    "enable": "",
+    "enableHint": "",
+    "footnote": "",
+    "minSeeders": "",
+    "minSeedersHint": "",
+    "mode": "",
+    "modeHints": {
+      "archive": "",
+      "ask": "",
+      "delete": ""
+    },
+    "modes": {
+      "archive": "",
+      "ask": "",
+      "delete": ""
+    },
+    "noArr": "",
+    "recheckDays": "",
+    "recheckDaysHint": "",
+    "title": ""
+  },
   "automation": {
     "diskPressure": {
       "arrVolumes": "",

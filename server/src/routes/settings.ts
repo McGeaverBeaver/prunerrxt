@@ -55,6 +55,7 @@ const KNOWN_SETTING_PREFIXES = [
   'watch_history_',
   'webhooks_',
   'diskPressure_',
+  'archive_',
   'api_key',
 ];
 
@@ -95,6 +96,7 @@ router.get('/', (_req: Request, res: Response) => {
     const display: Record<string, string> = {};
     const watchHistory: Record<string, string> = {};
     const diskPressure: Record<string, string | boolean | number | string[]> = {};
+    const archive: Record<string, string | boolean | number> = {};
     // Which media server backend the install talks to. Resolved by the same
     // helper the rest of the app uses, so a stored choice wins but an install
     // configured only by MEDIA_SERVER_TYPE still reports its real backend.
@@ -153,6 +155,19 @@ router.get('/', (_req: Request, res: Response) => {
           diskPressure[field] = Number(value);
         } else {
           diskPressure[field] = value;
+        }
+        continue;
+      }
+
+      // Parse Archive settings (re-acquisition checks before deletion)
+      if (key.startsWith('archive_')) {
+        const field = key.replace('archive_', '');
+        if (value === 'true' || value === 'false') {
+          archive[field] = value === 'true';
+        } else if (value !== '' && !isNaN(Number(value))) {
+          archive[field] = Number(value);
+        } else {
+          archive[field] = value;
         }
         continue;
       }
@@ -228,6 +243,7 @@ router.get('/', (_req: Request, res: Response) => {
         display,
         watchHistory,
         diskPressure,
+        archive,
         exclusionPatterns,
         excludedLibraryKeys,
         webhooks,
@@ -712,6 +728,17 @@ router.put('/', async (req: Request, res: Response) => {
           const stored = field === 'paths' ? JSON.stringify(value) : String(value);
           settingsRepo.set({ key, value: stored });
           savedSettings.push({ key, value: stored });
+        }
+      }
+    }
+
+    // Save Archive configuration
+    if (settings.archive) {
+      for (const [field, value] of Object.entries(settings.archive)) {
+        if (value !== undefined && value !== null) {
+          const key = `archive_${field}`;
+          settingsRepo.set({ key, value: String(value) });
+          savedSettings.push({ key, value: String(value) });
         }
       }
     }

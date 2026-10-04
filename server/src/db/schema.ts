@@ -698,6 +698,21 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_media_items_in_progress ON media_items(in_progress);
     `,
   },
+  {
+    version: 30,
+    name: 'media_items_availability',
+    up: `
+      -- Archive (services/availability.ts): before a queued item is deleted,
+      -- Radarr/Sonarr are asked whether it could be downloaded again.
+      -- availability holds the verdict as JSON, availability_decision is set
+      -- to 'delete' when a person chose to delete an at-risk item anyway, and
+      -- archived_at marks an item protected because it is not replaceable.
+      ALTER TABLE media_items ADD COLUMN availability TEXT;
+      ALTER TABLE media_items ADD COLUMN availability_checked_at TEXT;
+      ALTER TABLE media_items ADD COLUMN availability_decision TEXT;
+      ALTER TABLE media_items ADD COLUMN archived_at TEXT;
+    `,
+  },
 ];
 
 // Schema version tracking table

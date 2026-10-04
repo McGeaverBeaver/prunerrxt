@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import type {
+  AvailabilityCheckResult,
   MediaItem,
   LibraryFilters,
   LibraryResponse,
@@ -196,6 +197,17 @@ export const libraryApi = {
 
   unprotectItem: async (id: string): Promise<void> => {
     await api.delete(`/library/${id}/protect`);
+  },
+
+  /** Archive: keep the item for good (protect it, leave the queue). */
+  archiveItem: async (id: string, reason?: string): Promise<void> => {
+    await api.post(`/library/${id}/archive`, reason ? { reason } : {});
+  },
+
+  /** Archive: ask Radarr/Sonarr whether the item could be downloaded again. Slow (runs the search). */
+  checkAvailability: async (id: string): Promise<AvailabilityCheckResult & { message?: string }> => {
+    const { data } = await api.post<ApiResponse<AvailabilityCheckResult>>(`/library/${id}/availability`, undefined, { timeout: 180_000 });
+    return { ...data.data!, message: data.message };
   },
 
   bulkMarkForDeletion: async (
@@ -514,6 +526,22 @@ export const queueApi = {
   deleteNow: async (id: string): Promise<{ job: DeletionJob; alreadyQueued: boolean; message?: string }> => {
     const { data } = await api.post<ApiResponse<{ job: DeletionJob; alreadyQueued: boolean }>>(`/queue/${id}/delete-now`);
     return { ...data.data!, message: data.message };
+  },
+
+  /** Archive: ask Radarr/Sonarr again whether the item could be downloaded again. Slow (runs the search). */
+  checkAvailability: async (id: string): Promise<AvailabilityCheckResult & { message?: string }> => {
+    const { data } = await api.post<ApiResponse<AvailabilityCheckResult>>(`/queue/${id}/availability`, undefined, { timeout: 180_000 });
+    return { ...data.data!, message: data.message };
+  },
+
+  /** Archive: keep the item for good (protect it, leave the queue). */
+  archive: async (id: string, reason?: string): Promise<void> => {
+    await api.post(`/queue/${id}/archive`, reason ? { reason } : {});
+  },
+
+  /** Archive: lift the hold on an at-risk item so it goes when its grace period ends. */
+  deleteAnyway: async (id: string): Promise<void> => {
+    await api.post(`/queue/${id}/delete-anyway`);
   },
 };
 

@@ -12,6 +12,29 @@ import type { AxiosError } from 'axios';
 /** Default per-request timeout for ordinary Sonarr/Radarr calls. */
 export const ARR_REQUEST_TIMEOUT_MS = 30_000;
 
+/**
+ * An interactive release search waits on every indexer in turn, so it gets
+ * far longer than an ordinary call before it counts as failed.
+ */
+export const ARR_SEARCH_TIMEOUT_MS = 120_000;
+
+/**
+ * Count enabled indexers and how many the app has backed off from right now
+ * (a `disabledTill` in the future). Shared by Sonarr and Radarr.
+ */
+export function summariseIndexerHealth(
+  indexers: Array<{ id: number; enable: boolean }>,
+  statuses: Array<{ indexerId: number; disabledTill?: string | null }>,
+  now: Date = new Date()
+): { total: number; failing: number } {
+  const enabled = Array.isArray(indexers) ? indexers.filter((i) => i.enable !== false) : [];
+  const enabledIds = new Set(enabled.map((i) => i.id));
+  const failing = (Array.isArray(statuses) ? statuses : []).filter(
+    (s) => enabledIds.has(s.indexerId) && s.disabledTill && new Date(s.disabledTill).getTime() > now.getTime()
+  ).length;
+  return { total: enabled.length, failing };
+}
+
 /** Progress callback payload for multi-file deletions. */
 export interface FileDeletionProgress {
   current: number;

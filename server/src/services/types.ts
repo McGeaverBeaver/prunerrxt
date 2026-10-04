@@ -717,3 +717,43 @@ export interface SyncedMediaData {
   };
   libraryKey?: string;
 }
+
+// ============================================================================
+// Release search (Radarr and Sonarr share the shape)
+// ============================================================================
+
+/** One result of an interactive search: GET /api/v3/release?movieId= or ?seriesId=&seasonNumber=. */
+export interface ArrRelease {
+  guid: string;
+  title: string;
+  indexerId: number;
+  indexer: string;
+  protocol: 'usenet' | 'torrent' | string;
+  size: number;
+  /** Days since the release was posted. */
+  age: number;
+  ageHours?: number;
+  seeders?: number | null;
+  leechers?: number | null;
+  quality: { quality: { id: number; name: string; source?: string; resolution: number } };
+  rejected?: boolean;
+  rejections?: string[];
+  approved?: boolean;
+  fullSeason?: boolean;
+  seasonNumber?: number;
+}
+
+/** One row of GET /api/v3/indexerstatus: an indexer the app has backed off from. */
+export interface ArrIndexerStatus {
+  indexerId: number;
+  disabledTill?: string | null;
+  mostRecentFailure?: string | null;
+  initialFailure?: string | null;
+}
+
+export interface ArrIndexer {
+  id: number;
+  name: string;
+  enable: boolean;
+  protocol: 'usenet' | 'torrent' | string;
+}

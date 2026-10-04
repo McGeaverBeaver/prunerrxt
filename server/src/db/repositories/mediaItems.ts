@@ -61,6 +61,10 @@ interface MediaItemRow {
   watch_state: string | null;
   in_progress: number;
   watch_completion: number | null;
+  availability: string | null;
+  availability_checked_at: string | null;
+  availability_decision: string | null;
+  archived_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -446,6 +450,22 @@ export function updateMediaItem(id: number, input: UpdateMediaItemInput): MediaI
     updates.push('matched_rule_id = ?');
     params.push(input.matched_rule_id);
   }
+  if (input.availability !== undefined) {
+    updates.push('availability = ?');
+    params.push(input.availability);
+  }
+  if (input.availability_checked_at !== undefined) {
+    updates.push('availability_checked_at = ?');
+    params.push(input.availability_checked_at);
+  }
+  if (input.availability_decision !== undefined) {
+    updates.push('availability_decision = ?');
+    params.push(input.availability_decision);
+  }
+  if (input.archived_at !== undefined) {
+    updates.push('archived_at = ?');
+    params.push(input.archived_at);
+  }
   if ((input as any).overseerr_reset_at !== undefined) {
     updates.push('overseerr_reset_at = ?');
     params.push((input as any).overseerr_reset_at);
@@ -646,8 +666,19 @@ export function unprotectMediaItem(id: number): MediaItem | null {
   return updateMediaItem(id, {
     is_protected: false,
     protection_reason: undefined,
+    // An archived item is protected; lifting the protection un-archives it.
+    archived_at: null,
     status: 'monitored',
   });
+}
+
+/** Every item carrying an Archive verdict, newest check first. */
+export function getArchivedMediaItems(): MediaItem[] {
+  const db = getDatabase();
+  const rows = db
+    .prepare<[], MediaItemRow>('SELECT * FROM media_items WHERE archived_at IS NOT NULL ORDER BY archived_at DESC')
+    .all();
+  return rows.map(rowToMediaItem);
 }
 
 export function getMediaItemsByStatus(status: MediaStatus): MediaItem[] {
@@ -772,6 +803,7 @@ export default {
   getByStatus: getMediaItemsByStatus,
   getFlagged: getFlaggedMediaItems,
   getProtected: getProtectedMediaItems,
+  getArchived: getArchivedMediaItems,
   getPendingDeletion: getPendingDeletionItems,
   getOlderThan: getMediaItemsOlderThan,
   getUnwatched: getUnwatchedMediaItems,

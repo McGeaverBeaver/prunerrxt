@@ -1,4 +1,36 @@
 {
+  "availability": {
+    "archived": "Archived",
+    "atRisk": "At risk",
+    "hold": {
+      "atRisk": "Held: may not be downloadable again",
+      "unchecked": "Held: availability not checked yet",
+      "unknown": "Held: could not check availability"
+    },
+    "reasons": {
+      "downgrade": "Best on offer is {{best}}p, your file is {{current}}p",
+      "indexersDown": "Every indexer is failing right now",
+      "lowSeeders_one": "Torrents only, best has {{count}} seeders",
+      "lowSeeders_other": "Torrents only, best has {{count}} seeders",
+      "missingSeasons": "{{missing}} of {{checked}} seasons checked have no pack",
+      "noReleases_one": "No release on any of {{count}} indexers",
+      "noReleases_other": "No release on any of {{count}} indexers",
+      "noReleasesPlain": "No release on any indexer",
+      "noService": "Radarr or Sonarr is not configured",
+      "notLinked": "Not linked to Radarr or Sonarr",
+      "searchFailed": "Search failed",
+      "searchFailedWith": "Search failed: {{error}}",
+      "smaller": "Every release is under half the size of your file"
+    },
+    "replaceable": "Replaceable",
+    "replaceableDetail_one": "{{count}} releases available, best {{quality}} ({{size}}) on {{indexer}}",
+    "replaceableDetail_other": "{{count}} releases available, best {{quality}} ({{size}}) on {{indexer}}",
+    "replaceablePlain_one": "{{count}} releases available",
+    "replaceablePlain_other": "{{count}} releases available",
+    "unchecked": "Not checked yet",
+    "uncheckedHint": "Archive has not asked Radarr/Sonarr about this title yet.",
+    "unknown": "Unknown"
+  },
   "dismissNotification": "Dismiss notification",
   "dropdown": {
     "noMatches": "No matches",

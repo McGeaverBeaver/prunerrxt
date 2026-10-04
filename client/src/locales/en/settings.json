@@ -64,6 +64,29 @@
     "usageBody": "Include the key in the <1>X-Api-Key</1> header when making API requests from external tools, scripts, or apps like nzb360.",
     "yourKey": "Your API Key"
   },
+  "archive": {
+    "description": "Before a queued movie or show is deleted, ask Radarr/Sonarr whether it could be downloaded again as good as the copy you have",
+    "enable": "Check before deleting",
+    "enableHint": "Runs the indexer search for each queued item during its grace period and marks it replaceable, at risk or unknown",
+    "footnote": "An archived title is a protected title with an archive mark: no rule, scan or deletion touches it until you unarchive it from its page. The verdict and the hold also show in the queue and through the MCP connector.",
+    "minSeeders": "Minimum seeders",
+    "minSeedersHint": "A torrent-only title with fewer seeders than this on its best release counts as at risk. Usenet releases need none.",
+    "mode": "When an item is at risk",
+    "modeHints": {
+      "archive": "At-risk items are archived the moment the check runs: protected for good and out of the queue. The hands-off setting.",
+      "ask": "At-risk items stay in the queue, skipped by automatic processing, until you archive them or choose Delete anyway.",
+      "delete": "The verdict is recorded and shown, but nothing is held or archived."
+    },
+    "modes": {
+      "archive": "Archive automatically",
+      "ask": "Hold and ask",
+      "delete": "Delete anyway"
+    },
+    "noArr": "Needs Sonarr or Radarr: the check uses their release search and indexers.",
+    "recheckDays": "Re-check after (days)",
+    "recheckDaysHint": "A verdict older than this is asked again before the queue acts on it.",
+    "title": "Archive"
+  },
   "automation": {
     "diskPressure": {
       "arrVolumes": "Watch the volumes Sonarr and Radarr report",

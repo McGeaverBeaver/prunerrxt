@@ -202,6 +202,38 @@ export default interface Resources {
     }
   },
   "common": {
+    "availability": {
+      "archived": "Archived",
+      "atRisk": "At risk",
+      "hold": {
+        "atRisk": "Held: may not be downloadable again",
+        "unchecked": "Held: availability not checked yet",
+        "unknown": "Held: could not check availability"
+      },
+      "reasons": {
+        "downgrade": "Best on offer is {{best}}p, your file is {{current}}p",
+        "indexersDown": "Every indexer is failing right now",
+        "lowSeeders_one": "Torrents only, best has {{count}} seeders",
+        "lowSeeders_other": "Torrents only, best has {{count}} seeders",
+        "missingSeasons": "{{missing}} of {{checked}} seasons checked have no pack",
+        "noReleasesPlain": "No release on any indexer",
+        "noReleases_one": "No release on any of {{count}} indexers",
+        "noReleases_other": "No release on any of {{count}} indexers",
+        "noService": "Radarr or Sonarr is not configured",
+        "notLinked": "Not linked to Radarr or Sonarr",
+        "searchFailed": "Search failed",
+        "searchFailedWith": "Search failed: {{error}}",
+        "smaller": "Every release is under half the size of your file"
+      },
+      "replaceable": "Replaceable",
+      "replaceableDetail_one": "{{count}} releases available, best {{quality}} ({{size}}) on {{indexer}}",
+      "replaceableDetail_other": "{{count}} releases available, best {{quality}} ({{size}}) on {{indexer}}",
+      "replaceablePlain_one": "{{count}} releases available",
+      "replaceablePlain_other": "{{count}} releases available",
+      "unchecked": "Not checked yet",
+      "uncheckedHint": "Archive has not asked Radarr/Sonarr about this title yet.",
+      "unknown": "Unknown"
+    },
     "dismissNotification": "Dismiss notification",
     "dropdown": {
       "noMatches": "No matches",
@@ -959,9 +991,14 @@ export default interface Resources {
     "detail": {
       "activityTimeline": "Activity Timeline",
       "added": "Added",
+      "availability": "Can it be downloaded again?",
       "backToLibrary": "Back to Library",
+      "checkAvailability": "Check now",
+      "checkedAt": "checked {{time}}",
+      "checking": "Asking Radarr/Sonarr…",
       "codec": "Codec",
       "completedBy": "Finished by",
+      "deleteAnywayChosen": "Delete anyway chosen",
       "detailsHeading": "Details",
       "episodesWatched": "Episodes watched",
       "episodesWatchedValue": "{{watched}} of {{total}}",
@@ -1061,11 +1098,14 @@ export default interface Resources {
       "tvShow": "TV Show"
     },
     "menu": {
+      "archive": "Archive",
+      "archiveHint": "Keep for good: protected and never scanned, because it may not be downloadable again",
       "markForDeletion": "Mark for Deletion",
       "openIn": "Open in",
       "protect": "Protect",
       "protectItem": "Protect Item",
-      "removeProtection": "Remove Protection"
+      "removeProtection": "Remove Protection",
+      "unarchive": "Unarchive"
     },
     "pagination": {
       "showing": "Showing <0>{{from}}</0> to <1>{{to}}</1> of <2>{{total}}</2> items"
@@ -1158,6 +1198,7 @@ export default interface Resources {
     },
     "status": {
       "active": "Active",
+      "archived": "Archived",
       "deleted": "Deleted",
       "protected": "Protected",
       "queued": "Queued",
@@ -1218,6 +1259,11 @@ export default interface Resources {
       "removeSelected_one": "Remove Selected ({{count}})",
       "removeSelected_other": "Remove Selected ({{count}})",
       "removingProgress": "Removing {{current}}/{{total}}..."
+    },
+    "archiveHold": {
+      "desc": "These may not be downloadable again, so automatic processing leaves them alone. Archive one to keep it for good, or choose Delete anyway.",
+      "title_one": "{{count}} item(s) held by Archive",
+      "title_other": "{{count}} item(s) held by Archive"
     },
     "arrWarning": {
       "bannerDesc": "Deletion requires Sonarr or Radarr to remove files from disk. Items can be queued but won't be processed until a service is set up.",
@@ -1332,18 +1378,26 @@ export default interface Resources {
       "warning": "This will delete items that have passed their grace period."
     },
     "row": {
+      "archive": "Archive",
+      "archiveTitle": "Archive: keep for good",
+      "checkAvailability": "Ask Radarr/Sonarr again",
+      "checking": "Checking…",
       "daysLeftShort_one": "{{count}}d left",
       "daysLeftShort_other": "{{count}}d left",
       "daysLeft_one": "{{count}} day left",
       "daysLeft_other": "{{count}} days left",
+      "deleteAnyway": "Delete anyway",
+      "deleteAnywayChosen": "Delete anyway chosen",
       "deleteNow": "Delete now",
       "deleteNowDisabled": "Configure Sonarr/Radarr in Settings to enable deletion",
       "deletesOn": "Deletes {{date}}",
       "episode": "episode",
+      "held": "Held",
       "protect": "Protect",
       "queued": "Queued {{time}}",
       "ready": "Ready",
       "readyToDelete": "Ready to Delete",
+      "recheck": "Re-check",
       "remove": "Remove",
       "removeFromQueue": "Remove from queue",
       "requestedBy": "Requested by: {{user}}",
@@ -1367,6 +1421,13 @@ export default interface Resources {
     },
     "toasts": {
       "alreadyDeletingTitle": "Already in progress",
+      "archiveFailedTitle": "Could not archive",
+      "archivedMsg": "\"{{title}}\" is protected and out of the queue.",
+      "archivedTitle": "Archived",
+      "checkFailedTitle": "Check failed",
+      "checkedTitle": "Availability checked",
+      "deleteAnywayMsg": "\"{{title}}\" will be deleted when its grace period ends.",
+      "deleteAnywayTitle": "Hold lifted",
       "deleteFailedMsg": "Failed to delete item",
       "deleteFailedTitle": "Delete failed",
       "deletingMsg": "\"{{title}}\" is being deleted. Progress shows in the sidebar.",
@@ -1726,6 +1787,29 @@ export default interface Resources {
       },
       "usageBody": "Include the key in the <1>X-Api-Key</1> header when making API requests from external tools, scripts, or apps like nzb360.",
       "yourKey": "Your API Key"
+    },
+    "archive": {
+      "description": "Before a queued movie or show is deleted, ask Radarr/Sonarr whether it could be downloaded again as good as the copy you have",
+      "enable": "Check before deleting",
+      "enableHint": "Runs the indexer search for each queued item during its grace period and marks it replaceable, at risk or unknown",
+      "footnote": "An archived title is a protected title with an archive mark: no rule, scan or deletion touches it until you unarchive it from its page. The verdict and the hold also show in the queue and through the MCP connector.",
+      "minSeeders": "Minimum seeders",
+      "minSeedersHint": "A torrent-only title with fewer seeders than this on its best release counts as at risk. Usenet releases need none.",
+      "mode": "When an item is at risk",
+      "modeHints": {
+        "archive": "At-risk items are archived the moment the check runs: protected for good and out of the queue. The hands-off setting.",
+        "ask": "At-risk items stay in the queue, skipped by automatic processing, until you archive them or choose Delete anyway.",
+        "delete": "The verdict is recorded and shown, but nothing is held or archived."
+      },
+      "modes": {
+        "archive": "Archive automatically",
+        "ask": "Hold and ask",
+        "delete": "Delete anyway"
+      },
+      "noArr": "Needs Sonarr or Radarr: the check uses their release search and indexers.",
+      "recheckDays": "Re-check after (days)",
+      "recheckDaysHint": "A verdict older than this is asked again before the queue acts on it.",
+      "title": "Archive"
     },
     "automation": {
       "diskPressure": {

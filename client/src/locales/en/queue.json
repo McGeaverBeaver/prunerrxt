@@ -14,6 +14,11 @@
     "removeSelected_other": "Remove Selected ({{count}})",
     "removingProgress": "Removing {{current}}/{{total}}..."
   },
+  "archiveHold": {
+    "desc": "These may not be downloadable again, so automatic processing leaves them alone. Archive one to keep it for good, or choose Delete anyway.",
+    "title_one": "{{count}} item(s) held by Archive",
+    "title_other": "{{count}} item(s) held by Archive"
+  },
   "arrWarning": {
     "bannerDesc": "Deletion requires Sonarr or Radarr to remove files from disk. Items can be queued but won't be processed until a service is set up.",
     "goToSettings": "Go to Settings",
@@ -127,18 +132,26 @@
     "warning": "This will delete items that have passed their grace period."
   },
   "row": {
+    "archive": "Archive",
+    "archiveTitle": "Archive: keep for good",
+    "checkAvailability": "Ask Radarr/Sonarr again",
+    "checking": "Checking…",
     "daysLeft_one": "{{count}} day left",
     "daysLeft_other": "{{count}} days left",
     "daysLeftShort_one": "{{count}}d left",
     "daysLeftShort_other": "{{count}}d left",
+    "deleteAnyway": "Delete anyway",
+    "deleteAnywayChosen": "Delete anyway chosen",
     "deleteNow": "Delete now",
     "deleteNowDisabled": "Configure Sonarr/Radarr in Settings to enable deletion",
     "deletesOn": "Deletes {{date}}",
     "episode": "episode",
+    "held": "Held",
     "protect": "Protect",
     "queued": "Queued {{time}}",
     "ready": "Ready",
     "readyToDelete": "Ready to Delete",
+    "recheck": "Re-check",
     "remove": "Remove",
     "removeFromQueue": "Remove from queue",
     "requestedBy": "Requested by: {{user}}",
@@ -162,6 +175,13 @@
   },
   "toasts": {
     "alreadyDeletingTitle": "Already in progress",
+    "archivedMsg": "\"{{title}}\" is protected and out of the queue.",
+    "archivedTitle": "Archived",
+    "archiveFailedTitle": "Could not archive",
+    "checkedTitle": "Availability checked",
+    "checkFailedTitle": "Check failed",
+    "deleteAnywayMsg": "\"{{title}}\" will be deleted when its grace period ends.",
+    "deleteAnywayTitle": "Hold lifted",
     "deleteFailedMsg": "Failed to delete item",
     "deleteFailedTitle": "Delete failed",
     "deletingMsg": "\"{{title}}\" is being deleted. Progress shows in the sidebar.",

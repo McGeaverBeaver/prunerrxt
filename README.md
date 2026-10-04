@@ -44,6 +44,8 @@ You set up rules like "delete movies nobody's watched in 6 months that are over 
 
 - **Smart Deletion** &mdash; Grace periods, four deletion actions (unmonitor, delete files, full removal, etc.), Seerr request resets, and a review queue. Nothing gets deleted without your say-so. [More &rarr;](https://github.com/helliott20/prunerr/wiki/Deletion-Management)
 
+- **Archive** &mdash; Before a queued title is deleted, Prunerr asks Radarr/Sonarr whether it could be downloaded again as good as the copy you have. Titles that could not be (no release, a downgrade, a few seeders) are held for a decision or archived automatically: protected for good, still playable, never scanned again. [More &rarr;](docs/archive.md)
+
 - **Dashboard** &mdash; Library stats, storage trends, service health monitoring, upcoming deletions, and recommendations at a glance.
 
 - **Insights** &mdash; One page on how the whole setup is doing: every problem across Prunerr, Sonarr, Radarr and the media server with a next step, the library's resolution and codec mix, what people actually watch, and where playback transcodes or gets abandoned. [More &rarr;](docs/insights.md)
@@ -138,6 +140,7 @@ Full docs are in the **[Wiki](https://github.com/helliott20/prunerr/wiki)**:
 - [AI assistant (MCP)](docs/mcp.md) &mdash; Connect Claude, Cursor and other MCP clients
 - [Insights](docs/insights.md) &mdash; Stack health, library quality, watch patterns, playback friction
 - [Watch state](docs/watch-state.md) &mdash; In-progress and finished detection per viewer, and the rule fields built on it
+- [Archive](docs/archive.md) &mdash; Re-acquisition checks before deletion, holds and archived titles
 - [Troubleshooting](https://github.com/helliott20/prunerr/wiki/Troubleshooting) &mdash; Common issues
 
 ## Privacy

@@ -1,10 +1,12 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import logger from '../utils/logger';
-import type { RadarrMovie, RadarrMovieFile, RadarrCollectionResource } from './types';
+import type { RadarrMovie, RadarrMovieFile, RadarrCollectionResource, ArrRelease, ArrIndexer, ArrIndexerStatus } from './types';
 import collectionsRepo from '../db/repositories/collections';
 import { getDatabase } from '../db/index';
 import {
   ARR_REQUEST_TIMEOUT_MS,
+  ARR_SEARCH_TIMEOUT_MS,
+  summariseIndexerHealth,
   isNotFound,
   isTimeout,
   resolveArrTiming,
@@ -113,6 +115,28 @@ export class RadarrService {
       });
       throw error;
     }
+  }
+
+  /**
+   * Interactive search for a movie: what every enabled indexer can offer right
+   * now. Radarr queries the indexers synchronously, so this can take a minute;
+   * the request gets its own, longer timeout.
+   */
+  async getReleases(movieId: number): Promise<ArrRelease[]> {
+    const response = await this.client.get<ArrRelease[]>('/release', {
+      params: { movieId },
+      timeout: ARR_SEARCH_TIMEOUT_MS,
+    });
+    return Array.isArray(response.data) ? response.data : [];
+  }
+
+  /** Enabled indexers, and which of them Radarr is currently backing off from. */
+  async getIndexerHealth(): Promise<{ total: number; failing: number }> {
+    const [indexers, statuses] = await Promise.all([
+      this.client.get<ArrIndexer[]>('/indexer'),
+      this.client.get<ArrIndexerStatus[]>('/indexerstatus'),
+    ]);
+    return summariseIndexerHealth(indexers.data, statuses.data);
   }
 
   /**

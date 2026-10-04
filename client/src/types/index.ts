@@ -168,6 +168,58 @@ export interface QueueItem {
   overseerrResetAt?: string;
   seasonNumber?: number;
   episodeNumber?: number;
+  /** Archive: the last re-acquisition check; absent for episodes and unchecked items. */
+  availability?: AvailabilityReport;
+  /** Archive is holding the item from automatic deletion until someone decides. */
+  held?: boolean;
+  heldReason?: HoldReason;
+  /** Someone chose "delete anyway" on an at-risk item. */
+  deleteAnyway?: boolean;
+}
+
+// Archive: can a title be downloaded again? (services/availabilityVerdict.ts)
+export type AvailabilityVerdict = 'replaceable' | 'at_risk' | 'unknown';
+export type AvailabilityReason =
+  | 'no_releases'
+  | 'downgrade'
+  | 'smaller'
+  | 'low_seeders'
+  | 'missing_seasons'
+  | 'not_linked'
+  | 'indexers_down'
+  | 'no_service'
+  | 'search_failed';
+export type HoldReason = 'at_risk' | 'unknown' | 'unchecked';
+
+export interface AvailabilityReport {
+  verdict: AvailabilityVerdict;
+  reasons: AvailabilityReason[];
+  checkedAt: string;
+  service: 'radarr' | 'sonarr' | null;
+  releases: number;
+  usenet: number;
+  torrents: number;
+  maxSeeders: number | null;
+  best: { title: string; indexer: string; protocol: string; sizeBytes: number; resolution: number | null; qualityName: string; ageDays: number } | null;
+  current: { sizeBytes: number | null; resolution: number | null; qualityName: string | null };
+  indexers: { total: number; failing: number } | null;
+  seasons?: { checked: number; withReleases: number };
+  error?: string;
+}
+
+export interface AvailabilityCheckResult {
+  report: AvailabilityReport;
+  archived: boolean;
+  hold: { held: boolean; reason: HoldReason | null };
+}
+
+export type ArchiveMode = 'ask' | 'archive' | 'delete';
+
+export interface ArchiveSettings {
+  enabled?: boolean;
+  mode?: ArchiveMode;
+  minSeeders?: number;
+  recheckDays?: number;
 }
 
 // Unmanaged folders (GET /api/folders)
@@ -598,6 +650,7 @@ export interface Settings {
   excludedLibraryKeys?: string[];
   webhooks?: WebhookTarget[];
   diskPressure?: DiskPressureSettings;
+  archive?: ArchiveSettings;
 }
 
 // Events a webhook target / notification can opt into. Mirrors the server

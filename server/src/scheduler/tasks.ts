@@ -22,6 +22,9 @@ import { DeletionAction } from '../rules/types';
 import type { DiskPressureData } from '../notifications/templates';
 import type { EvaluationContext } from '../rules/conditions';
 import type { MediaItem } from '../types';
+import { kickAvailabilityChecks } from '../services/availabilityKick';
+import { checkQueue } from '../services/availability';
+import { holdState } from '../services/availabilityVerdict';
 
 // ============================================================================
 // Task Result Types
@@ -253,6 +256,8 @@ export function queueItemForDeletion(
   } catch (activityError) {
     logger.warn('Failed to log activity for rule-triggered queue:', activityError);
   }
+
+  kickAvailabilityChecks();
 
   return { deleteAfter: deleteAfterIso };
 }
@@ -566,6 +571,15 @@ export async function processDeletionQueue(): Promise<DeletionProcessingResult> 
   try {
     const deletionService = getDeletionService();
 
+    // Archive: every queued item gets a verdict before anything is deleted,
+    // so at-risk titles can be held (or archived) instead of going.
+    try {
+      await checkQueue({ actorName: 'Scheduler' });
+    } catch (availabilityError) {
+      logger.warn('Availability checks failed before queue processing:', availabilityError);
+    }
+    const heldItems = await deletionService.getHeldDeletions();
+
     // Snapshot the queue BEFORE deletion so we can enrich the notification with
     // item types and matched rule names (the DeletionResult stream only has title + id).
     const preSnapshot = await deletionService.getPendingDeletions();
@@ -656,7 +670,7 @@ export async function processDeletionQueue(): Promise<DeletionProcessingResult> 
       startedAt,
       completedAt,
       durationMs,
-      message: `Processed ${results.length} items, deleted ${itemsDeleted}`,
+      message: `Processed ${results.length} items, deleted ${itemsDeleted}${heldItems.length > 0 ? `, ${heldItems.length} held by Archive for a decision` : ''}`,
       data: {
         itemsProcessed: results.length,
         itemsDeleted,
@@ -1508,6 +1522,42 @@ export async function monitorDiskPressure(): Promise<TaskResult> {
   );
 }
 
+/**
+ * Archive: give every queued item a re-acquisition verdict ahead of the
+ * nightly queue run, so holds and auto-archives are visible on the Queue
+ * page long before anything would be deleted.
+ */
+export async function checkAvailability(): Promise<TaskResult> {
+  const startedAt = new Date();
+  const taskName = 'checkAvailability';
+  try {
+    const result = await checkQueue({ actorName: 'Scheduler' });
+    const completedAt = new Date();
+    return {
+      success: true,
+      taskName,
+      startedAt,
+      completedAt,
+      durationMs: completedAt.getTime() - startedAt.getTime(),
+      message:
+        result.checked === 0
+          ? 'Every queued item already has a fresh verdict'
+          : `Checked ${result.checked} item(s): ${result.replaceable} replaceable, ${result.atRisk} at risk, ${result.unknown} unknown, ${result.archived} archived`,
+      data: { ...result },
+    };
+  } catch (error) {
+    const completedAt = new Date();
+    return {
+      success: false,
+      taskName,
+      startedAt,
+      completedAt,
+      durationMs: completedAt.getTime() - startedAt.getTime(),
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 export type TaskFunction = () => Promise<TaskResult>;
 
 export const taskRegistry: Record<string, TaskFunction> = {
@@ -1520,6 +1570,7 @@ export const taskRegistry: Record<string, TaskFunction> = {
   syncPlexUsers,
   monitorDiskPressure,
   captureInsightSnapshot,
+  checkAvailability,
 };
 
 /**

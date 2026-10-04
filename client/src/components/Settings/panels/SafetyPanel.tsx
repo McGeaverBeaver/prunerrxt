@@ -13,7 +13,12 @@ import { PanelSection } from '../components/PanelSection';
 import { SettingsCard } from '../components/SettingsCard';
 import { SettingsEmptyState } from '../components/SettingsEmptyState';
 import type { PanelProps } from '../types';
+import type { ArchiveMode, ArchiveSettings } from '@/types';
 import { Dropdown } from '@/components/common/dropdown';
+import { SegmentedControl } from '../components/SegmentedControl';
+import { Toggle } from '../components/Toggle';
+
+const ARCHIVE_DEFAULTS: Required<ArchiveSettings> = { enabled: true, mode: 'ask', minSeeders: 5, recheckDays: 7 };
 
 /** One library reported by `GET /api/library/plex-libraries`. */
 interface LibraryInfo {
@@ -58,6 +63,7 @@ function keysOf(libraries: LibraryInfo[]): string {
  */
 export default function SafetyPanel({
   draft,
+  onChange,
   fresh,
   mediaServer,
   registerSection,
@@ -68,6 +74,22 @@ export default function SafetyPanel({
   const { addToast } = useToast();
   const queryClient = useQueryClient();
   const { data: stats } = useStats();
+
+  // --- archive ---------------------------------------------------------------
+
+  const archive: Required<ArchiveSettings> = { ...ARCHIVE_DEFAULTS, ...(draft.archive ?? {}) };
+  const patchArchive = (patch: Partial<ArchiveSettings>) => onChange('archive', { ...archive, ...patch });
+  const hasArr = Boolean(draft.services?.sonarr?.url || draft.services?.radarr?.url);
+  const archiveModes: Array<{ value: ArchiveMode; label: string }> = [
+    { value: 'ask', label: t('archive.modes.ask', 'Hold and ask') },
+    { value: 'archive', label: t('archive.modes.archive', 'Archive automatically') },
+    { value: 'delete', label: t('archive.modes.delete', 'Delete anyway') },
+  ];
+  const archiveModeHint: Record<ArchiveMode, string> = {
+    ask: t('archive.modeHints.ask', 'At-risk items stay in the queue, skipped by automatic processing, until you archive them or choose Delete anyway.'),
+    archive: t('archive.modeHints.archive', 'At-risk items are archived the moment the check runs: protected for good and out of the queue. The hands-off setting.'),
+    delete: t('archive.modeHints.delete', 'The verdict is recorded and shown, but nothing is held or archived.'),
+  };
 
   // --- library exclusions ---------------------------------------------------
 
@@ -380,6 +402,87 @@ export default function SafetyPanel({
                   );
                 })}
               </ul>
+            )}
+          </SettingsCard>
+        </PanelSection>
+
+        {/* ---------------- archive ---------------- */}
+        <PanelSection
+          id="archive"
+          register={registerSection}
+          title={t('archive.title', 'Archive')}
+          description={t(
+            'archive.description',
+            'Before a queued movie or show is deleted, ask Radarr/Sonarr whether it could be downloaded again as good as the copy you have'
+          )}
+        >
+          <SettingsCard className="flex flex-col gap-3.5 px-[18px] py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-0.5">
+                <p className="font-display text-[14.5px] font-semibold text-surface-50">{t('archive.enable', 'Check before deleting')}</p>
+                <p className="text-[12.5px] text-surface-400">
+                  {t('archive.enableHint', 'Runs the indexer search for each queued item during its grace period and marks it replaceable, at risk or unknown')}
+                </p>
+              </div>
+              <Toggle checked={archive.enabled} onChange={(checked) => patchArchive({ enabled: checked })} label={t('archive.enable', 'Check before deleting')} />
+            </div>
+
+            {!hasArr && (
+              <p className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[12.5px] text-surface-200">
+                {t('archive.noArr', 'Needs Sonarr or Radarr: the check uses their release search and indexers.')}
+              </p>
+            )}
+
+            {archive.enabled && (
+              <>
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-medium text-surface-200">{t('archive.mode', 'When an item is at risk')}</p>
+                  <SegmentedControl value={archive.mode} options={archiveModes} onChange={(mode) => patchArchive({ mode })} ariaLabel={t('archive.mode', 'When an item is at risk')} />
+                  <p className="text-[12.5px] text-surface-400">{archiveModeHint[archive.mode]}</p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="archive-min-seeders" className="text-xs font-medium text-surface-200">
+                      {t('archive.minSeeders', 'Minimum seeders')}
+                    </label>
+                    <Input
+                      id="archive-min-seeders"
+                      type="number"
+                      min={0}
+                      max={1000}
+                      value={archive.minSeeders}
+                      onChange={(e) => patchArchive({ minSeeders: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                    />
+                    <p className="text-[11.5px] text-surface-500">
+                      {t('archive.minSeedersHint', 'A torrent-only title with fewer seeders than this on its best release counts as at risk. Usenet releases need none.')}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="archive-recheck-days" className="text-xs font-medium text-surface-200">
+                      {t('archive.recheckDays', 'Re-check after (days)')}
+                    </label>
+                    <Input
+                      id="archive-recheck-days"
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={archive.recheckDays}
+                      onChange={(e) => patchArchive({ recheckDays: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                    />
+                    <p className="text-[11.5px] text-surface-500">
+                      {t('archive.recheckDaysHint', 'A verdict older than this is asked again before the queue acts on it.')}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-[12px] text-surface-500">
+                  {t(
+                    'archive.footnote',
+                    'An archived title is a protected title with an archive mark: no rule, scan or deletion touches it until you unarchive it from its page. The verdict and the hold also show in the queue and through the MCP connector.'
+                  )}
+                </p>
+              </>
             )}
           </SettingsCard>
         </PanelSection>

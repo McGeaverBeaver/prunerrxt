@@ -25,6 +25,10 @@ import {
   getSyncProgressLog,
 } from '../services/syncCoordinator';
 import logger from '../utils/logger';
+import { checkItem } from '../services/availability';
+import { archiveItems } from '../services/mediaActions';
+import { requestActorName } from '../utils/actor';
+import { describeReasons, holdState, parseAvailability } from '../services/availabilityVerdict';
 import { parseWatchState } from '../services/watchState';
 import { formatBytes } from '../utils/format';
 import { toThumbnailUrl } from '../utils/posterUrl';
@@ -1238,6 +1242,57 @@ router.post('/:id/protect', (req: Request, res: Response) => {
       success: false,
       error: 'Failed to protect item',
     });
+  }
+});
+
+// POST /api/library/:id/archive - Archive an item: protect it for good because
+// it could not (or should not) be downloaded again. Leaves the queue if queued.
+router.post('/:id/archive', (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params['id'] as string, 10);
+    const item = Number.isNaN(id) ? null : mediaItemsRepo.getById(id);
+    if (!item) {
+      res.status(404).json({ success: false, error: 'Media item not found' });
+      return;
+    }
+    const report = parseAvailability(item.availability);
+    const reason =
+      typeof req.body?.reason === 'string' && req.body.reason.trim()
+        ? req.body.reason.trim().slice(0, 200)
+        : report?.verdict === 'at_risk'
+          ? `Archived: ${describeReasons(report)}`
+          : 'Archived';
+    const result = archiveItems([id], reason, requestActorName(req));
+    if (result.archived.length === 0) {
+      res.status(409).json({ success: false, error: result.skipped[0]?.reason ?? result.failed[0]?.error ?? 'Could not archive' });
+      return;
+    }
+    res.json({ success: true, data: mediaItemsRepo.getById(id), message: 'Item archived' });
+  } catch (error) {
+    logger.error('Failed to archive item:', error);
+    res.status(500).json({ success: false, error: 'Failed to archive item' });
+  }
+});
+
+// POST /api/library/:id/availability - Ask Radarr/Sonarr whether the item could
+// be downloaded again (Archive). Runs the search now; can take a minute.
+router.post('/:id/availability', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params['id'] as string, 10);
+    const item = Number.isNaN(id) ? null : mediaItemsRepo.getById(id);
+    if (!item) {
+      res.status(404).json({ success: false, error: 'Media item not found' });
+      return;
+    }
+    const result = await checkItem(item, { force: true, actorName: requestActorName(req) });
+    res.json({
+      success: true,
+      data: { report: result.report, archived: result.archived, hold: holdState(result.item) },
+      message: `${result.report.verdict.replace('_', ' ')}: ${describeReasons(result.report)}`,
+    });
+  } catch (error) {
+    logger.error('Availability check failed:', error);
+    res.status(500).json({ success: false, error: 'Availability check failed' });
   }
 });
 

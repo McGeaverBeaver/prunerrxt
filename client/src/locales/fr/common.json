@@ -1,4 +1,40 @@
 {
+  "availability": {
+    "archived": "",
+    "atRisk": "",
+    "hold": {
+      "atRisk": "",
+      "unchecked": "",
+      "unknown": ""
+    },
+    "reasons": {
+      "downgrade": "",
+      "indexersDown": "",
+      "lowSeeders_one": "",
+      "lowSeeders_many": "",
+      "lowSeeders_other": "",
+      "missingSeasons": "",
+      "noReleases_one": "",
+      "noReleases_many": "",
+      "noReleases_other": "",
+      "noReleasesPlain": "",
+      "noService": "",
+      "notLinked": "",
+      "searchFailed": "",
+      "searchFailedWith": "",
+      "smaller": ""
+    },
+    "replaceable": "",
+    "replaceableDetail_one": "",
+    "replaceableDetail_many": "",
+    "replaceableDetail_other": "",
+    "replaceablePlain_one": "",
+    "replaceablePlain_many": "",
+    "replaceablePlain_other": "",
+    "unchecked": "",
+    "uncheckedHint": "",
+    "unknown": ""
+  },
   "dismissNotification": "Ignorer la notification",
   "dropdown": {
     "noMatches": "Aucun résultat",

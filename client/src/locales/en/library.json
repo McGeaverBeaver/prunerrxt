@@ -30,9 +30,14 @@
   "detail": {
     "activityTimeline": "Activity Timeline",
     "added": "Added",
+    "availability": "Can it be downloaded again?",
     "backToLibrary": "Back to Library",
+    "checkAvailability": "Check now",
+    "checkedAt": "checked {{time}}",
+    "checking": "Asking Radarr/Sonarr…",
     "codec": "Codec",
     "completedBy": "Finished by",
+    "deleteAnywayChosen": "Delete anyway chosen",
     "detailsHeading": "Details",
     "episodesWatched": "Episodes watched",
     "episodesWatchedValue": "{{watched}} of {{total}}",
@@ -132,11 +137,14 @@
     "tvShow": "TV Show"
   },
   "menu": {
+    "archive": "Archive",
+    "archiveHint": "Keep for good: protected and never scanned, because it may not be downloadable again",
     "markForDeletion": "Mark for Deletion",
     "openIn": "Open in",
     "protect": "Protect",
     "protectItem": "Protect Item",
-    "removeProtection": "Remove Protection"
+    "removeProtection": "Remove Protection",
+    "unarchive": "Unarchive"
   },
   "pagination": {
     "showing": "Showing <0>{{from}}</0> to <1>{{to}}</1> of <2>{{total}}</2> items"
@@ -229,6 +237,7 @@
   },
   "status": {
     "active": "Active",
+    "archived": "Archived",
     "deleted": "Deleted",
     "protected": "Protected",
     "queued": "Queued",

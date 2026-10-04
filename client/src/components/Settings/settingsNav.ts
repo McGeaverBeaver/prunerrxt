@@ -63,9 +63,10 @@ export const SETTINGS_NAV: NavCategory[] = [
     icon: ShieldCheck,
     subItems: [
       { id: 'library-exclusions', labelKey: 'nav.sub.libraryExclusions', fallback: 'Library exclusions' },
+      { id: 'archive', labelKey: 'nav.sub.archive', fallback: 'Archive' },
       { id: 'exclusion-patterns', labelKey: 'nav.sub.exclusionPatterns', fallback: 'Exclusion patterns' },
     ],
-    keywords: 'exclude protect skip ignore pattern library never delete shield',
+    keywords: 'exclude protect skip ignore pattern library never delete shield archive availability indexer seeders re-acquire replaceable',
   },
   {
     id: 'alerts',

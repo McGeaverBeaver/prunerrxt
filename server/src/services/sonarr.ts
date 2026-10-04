@@ -7,9 +7,14 @@ import type {
   SonarrQualityProfile,
   SonarrQueueRecord,
   SonarrHistoryRecord,
+  ArrRelease,
+  ArrIndexer,
+  ArrIndexerStatus,
 } from './types';
 import {
   ARR_REQUEST_TIMEOUT_MS,
+  ARR_SEARCH_TIMEOUT_MS,
+  summariseIndexerHealth,
   isNotFound,
   isTimeout,
   resolveArrTiming,
@@ -153,6 +158,28 @@ export class SonarrService {
   /**
    * Get a specific series by ID
    */
+  /**
+   * Interactive search for one season's packs: what every enabled indexer can
+   * offer right now. Sonarr queries the indexers synchronously, so this can
+   * take a minute; the request gets its own, longer timeout.
+   */
+  async getSeasonReleases(seriesId: number, seasonNumber: number): Promise<ArrRelease[]> {
+    const response = await this.client.get<ArrRelease[]>('/release', {
+      params: { seriesId, seasonNumber },
+      timeout: ARR_SEARCH_TIMEOUT_MS,
+    });
+    return Array.isArray(response.data) ? response.data : [];
+  }
+
+  /** Enabled indexers, and which of them Sonarr is currently backing off from. */
+  async getIndexerHealth(): Promise<{ total: number; failing: number }> {
+    const [indexers, statuses] = await Promise.all([
+      this.client.get<ArrIndexer[]>('/indexer'),
+      this.client.get<ArrIndexerStatus[]>('/indexerstatus'),
+    ]);
+    return summariseIndexerHealth(indexers.data, statuses.data);
+  }
+
   async getSeriesById(id: number): Promise<SonarrSeries> {
     try {
       const response = await this.client.get<SonarrSeries>(`/series/${id}`);

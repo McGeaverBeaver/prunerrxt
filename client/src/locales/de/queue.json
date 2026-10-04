@@ -14,6 +14,11 @@
     "removeSelected_other": "Auswahl entfernen ({{count}})",
     "removingProgress": "Wird entfernt {{current}}/{{total}}..."
   },
+  "archiveHold": {
+    "desc": "",
+    "title_one": "",
+    "title_other": ""
+  },
   "arrWarning": {
     "bannerDesc": "Zum Löschen wird Sonarr oder Radarr benötigt, um Dateien von der Festplatte zu entfernen. Elemente können in die Warteschlange aufgenommen werden, werden aber erst verarbeitet, wenn ein Dienst eingerichtet ist.",
     "goToSettings": "Zu den Einstellungen",
@@ -127,18 +132,26 @@
     "warning": "Dadurch werden Elemente gelöscht, deren Karenzzeit abgelaufen ist."
   },
   "row": {
+    "archive": "",
+    "archiveTitle": "",
+    "checkAvailability": "",
+    "checking": "",
     "daysLeft_one": "{{count}} Tag verbleibend",
     "daysLeft_other": "{{count}} Tage verbleibend",
     "daysLeftShort_one": "{{count}} T verbleibend",
     "daysLeftShort_other": "{{count}} T verbleibend",
+    "deleteAnyway": "",
+    "deleteAnywayChosen": "",
     "deleteNow": "Jetzt löschen",
     "deleteNowDisabled": "Konfiguriere Sonarr/Radarr in den Einstellungen, um das Löschen zu aktivieren",
     "deletesOn": "Löschung am {{date}}",
     "episode": "",
+    "held": "",
     "protect": "Schützen",
     "queued": "In Warteschlange seit {{time}}",
     "ready": "Bereit",
     "readyToDelete": "Bereit zum Löschen",
+    "recheck": "",
     "remove": "Entfernen",
     "removeFromQueue": "Aus Warteschlange entfernen",
     "requestedBy": "Angefragt von: {{user}}",
@@ -162,6 +175,13 @@
   },
   "toasts": {
     "alreadyDeletingTitle": "",
+    "archivedMsg": "",
+    "archivedTitle": "",
+    "archiveFailedTitle": "",
+    "checkedTitle": "",
+    "checkFailedTitle": "",
+    "deleteAnywayMsg": "",
+    "deleteAnywayTitle": "",
     "deleteFailedMsg": "Element konnte nicht gelöscht werden",
     "deleteFailedTitle": "Löschen fehlgeschlagen",
     "deletingMsg": "",

@@ -12,6 +12,7 @@ import settingsRepo from '../db/repositories/settings';
 import { logActivity } from '../db/repositories/activity';
 import type { MediaItem } from '../types';
 import logger from '../utils/logger';
+import { kickAvailabilityChecks } from './availabilityKick';
 
 export const DELETION_ACTIONS = [
   'unmonitor_only',
@@ -158,6 +159,8 @@ export function markItemsForDeletion(ids: number[], options: MarkForDeletionOpti
     `Mark for deletion: ${result.queued.length} queued, ${result.skipped.length} skipped, ${result.failed.length} failed`
   );
 
+  if (result.queued.length > 0) kickAvailabilityChecks();
+
   return result;
 }
 
@@ -207,6 +210,88 @@ export function protectItems(ids: number[], reason: string = 'Manually protected
   return result;
 }
 
+export interface ArchiveResult {
+  archived: ItemOutcome[];
+  skipped: SkippedOutcome[];
+  failed: FailedOutcome[];
+}
+
+/**
+ * Archive items: protect them because they could not be downloaded again
+ * (or because a person decided they are not worth the risk). An archived item
+ * is a protected item with `archived_at` set, so every rule, scan and manual
+ * deletion already leaves it alone; it leaves the queue if it was in it. The
+ * only way out is "Remove protection" / unarchive.
+ */
+export function archiveItems(ids: number[], reason: string = 'Archived', actorName?: string): ArchiveResult {
+  const result: ArchiveResult = { archived: [], skipped: [], failed: [] };
+  const now = new Date().toISOString();
+
+  for (const id of ids) {
+    const item = mediaItemsRepo.getById(id);
+    if (!item) {
+      result.failed.push({ id, error: 'Item not found' });
+      continue;
+    }
+    if (item.archived_at) {
+      result.skipped.push({ id, title: item.title, reason: 'Already archived' });
+      continue;
+    }
+    if (item.status === 'deleted') {
+      result.skipped.push({ id, title: item.title, reason: 'Item is already deleted' });
+      continue;
+    }
+
+    const updated = mediaItemsRepo.update(id, {
+      is_protected: true,
+      protection_reason: reason,
+      archived_at: now,
+      status: 'protected',
+      marked_at: null,
+      delete_after: null,
+      availability_decision: null,
+    });
+    if (!updated) {
+      result.failed.push({ id, error: 'Failed to archive' });
+      continue;
+    }
+
+    result.archived.push({ id, title: item.title });
+    logActivity({
+      eventType: 'protection',
+      action: 'archived',
+      actorType: actorName ? 'user' : 'scheduler',
+      actorName: actorName ?? null,
+      targetType: 'media_item',
+      targetId: id,
+      targetTitle: item.title,
+      metadata: JSON.stringify({ reason, wasQueued: item.status === 'pending_deletion' }),
+    });
+  }
+
+  logger.info(`Archive: ${result.archived.length} archived, ${result.skipped.length} skipped, ${result.failed.length} failed`);
+  return result;
+}
+
+/** Record that a person wants an at-risk queued item deleted anyway. */
+export function allowDeletionAnyway(id: number, actorName?: string): { ok: true; item: MediaItem } | { ok: false; status: number; error: string } {
+  const item = mediaItemsRepo.getById(id);
+  if (!item) return { ok: false, status: 404, error: `Item not found: ${id}` };
+  if (item.status !== 'pending_deletion') return { ok: false, status: 400, error: 'Item is not in the deletion queue' };
+  const updated = mediaItemsRepo.update(id, { availability_decision: 'delete' });
+  if (!updated) return { ok: false, status: 500, error: 'Failed to update item' };
+  logActivity({
+    eventType: 'protection',
+    action: 'availability_overridden',
+    actorType: 'user',
+    actorName: actorName ?? null,
+    targetType: 'media_item',
+    targetId: id,
+    targetTitle: item.title,
+  });
+  return { ok: true, item: updated };
+}
+
 export interface UnprotectResult {
   unprotected: ItemOutcome[];
   skipped: SkippedOutcome[];
@@ -237,7 +322,7 @@ export function unprotectItems(ids: number[], actorName?: string): UnprotectResu
     result.unprotected.push({ id, title: item.title });
     logActivity({
       eventType: 'protection',
-      action: 'unprotected',
+      action: item.archived_at ? 'unarchived' : 'unprotected',
       actorType: 'user',
       actorName: actorName ?? null,
       targetType: 'media_item',

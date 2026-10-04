@@ -15,13 +15,18 @@ import {
   ExternalLink,
   Info,
   Loader2,
+  Archive,
+  ShieldAlert,
+  RotateCw,
 } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { MaybeLink } from '@/components/common/MaybeLink';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Modal } from '@/components/common/Modal';
-import { useDeletionQueue, useRemoveFromQueue, useProcessQueue, useProtectItem, useSettings } from '@/hooks/useApi';
+import { useArchiveQueueItem, useCheckQueueAvailability, useDeleteAnyway, useDeletionQueue, useRemoveFromQueue, useProcessQueue, useProtectItem, useSettings } from '@/hooks/useApi';
+import { AvailabilityBadge } from '@/components/common/AvailabilityBadge';
+import { useAvailabilityText } from '@/lib/availabilityText';
 import { useToast } from '@/components/common/Toast';
 import { formatBytes, formatDate, formatRelativeTime, getDaysUntil } from '@/lib/utils';
 import { deletionActionLabel } from '@/lib/deletionActions';
@@ -147,6 +152,40 @@ export default function Queue() {
     protectMutation.mutate(id, { onSuccess: () => refetch() });
   };
 
+  // Archive: keep for good, delete anyway, or ask Radarr/Sonarr again.
+  const archiveMutation = useArchiveQueueItem();
+  const deleteAnywayMutation = useDeleteAnyway();
+  const checkAvailabilityMutation = useCheckQueueAvailability();
+  const [checkingId, setCheckingId] = useState<string | null>(null);
+  const handleArchive = (item: QueueItem) => {
+    archiveMutation.mutate(item.id, {
+      onSuccess: () => {
+        addToast({ type: 'success', title: t('toasts.archivedTitle', 'Archived'), message: t('toasts.archivedMsg', '"{{title}}" is protected and out of the queue.', { title: item.title }) });
+        refetch();
+      },
+      onError: (error) => addToast({ type: 'error', title: t('toasts.archiveFailedTitle', 'Could not archive'), message: error instanceof Error ? error.message : String(error) }),
+    });
+  };
+  const handleDeleteAnyway = (item: QueueItem) => {
+    deleteAnywayMutation.mutate(item.id, {
+      onSuccess: () => {
+        addToast({ type: 'success', title: t('toasts.deleteAnywayTitle', 'Hold lifted'), message: t('toasts.deleteAnywayMsg', '"{{title}}" will be deleted when its grace period ends.', { title: item.title }) });
+        refetch();
+      },
+    });
+  };
+  const handleCheckAvailability = (item: QueueItem) => {
+    setCheckingId(item.id);
+    checkAvailabilityMutation.mutate(item.id, {
+      onSuccess: (result) => {
+        addToast({ type: result.report.verdict === 'at_risk' ? 'warning' : 'success', title: t('toasts.checkedTitle', 'Availability checked'), message: result.message || item.title });
+        refetch();
+      },
+      onError: (error) => addToast({ type: 'error', title: t('toasts.checkFailedTitle', 'Check failed'), message: error instanceof Error ? error.message : String(error) }),
+      onSettled: () => setCheckingId(null),
+    });
+  };
+
   const handleProcessQueue = () => {
     processQueueMutation.mutate(false, {
       onSuccess: (data) => {
@@ -210,7 +249,8 @@ export default function Queue() {
 
   // Calculate stats
   const totalSize = queue?.reduce((acc, item) => acc + item.size, 0) || 0;
-  const readyItems = queue?.filter((item) => (item.daysRemaining ?? getDaysUntil(item.deleteAt)) <= 0) || [];
+  const readyItems = queue?.filter((item) => (item.daysRemaining ?? getDaysUntil(item.deleteAt)) <= 0 && !item.held) || [];
+  const heldItems = queue?.filter((item) => item.held) || [];
   const readyToDelete = readyItems.length;
   const readyToDeleteSize = readyItems.reduce((acc, item) => acc + item.size, 0);
   const willResetOverseerr = queue?.filter((item) => item.resetOverseerr).length || 0;
@@ -299,6 +339,21 @@ export default function Queue() {
           <Button variant="secondary" size="sm" onClick={() => navigate('/settings')}>
             {t('arrWarning.goToSettings', 'Go to Settings')}
           </Button>
+        </div>
+      )}
+
+      {/* Archive holds */}
+      {heldItems.length > 0 && (
+        <div className="flex items-start gap-3 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
+          <ShieldAlert className="w-5 h-5 text-accent-text flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-surface-50">
+              {t('archiveHold.title', '{{count}} item(s) held by Archive', { count: heldItems.length })}
+            </p>
+            <p className="text-xs text-surface-400 mt-1">
+              {t('archiveHold.desc', 'These may not be downloadable again, so automatic processing leaves them alone. Archive one to keep it for good, or choose Delete anyway.')}
+            </p>
+          </div>
         </div>
       )}
 
@@ -404,6 +459,10 @@ export default function Queue() {
                 onSelect={() => handleSelectItem(item.id)}
                 onRemove={() => handleRemoveFromQueue(item.id)}
                 onProtect={() => handleProtect(item.id)}
+                onArchive={() => handleArchive(item)}
+                onDeleteAnyway={() => handleDeleteAnyway(item)}
+                onCheckAvailability={() => handleCheckAvailability(item)}
+                checking={checkingId === item.id}
                 onDeleteNow={() => handleDeleteNow(item)}
                 onRetryJob={() => {
                   const job = jobs.byQueueId(item.id);
@@ -619,6 +678,11 @@ interface QueueItemRowProps {
   onSelect: () => void;
   onRemove: () => void;
   onProtect: () => void;
+  onArchive: () => void;
+  onDeleteAnyway: () => void;
+  onCheckAvailability: () => void;
+  /** An availability check is running for this row. */
+  checking?: boolean;
   onDeleteNow: () => void;
   onRetryJob: () => void;
   /** The background deletion for this row, if any. */
@@ -629,13 +693,15 @@ interface QueueItemRowProps {
   hasArrService?: boolean;
 }
 
-const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRemove, onProtect, onDeleteNow, onRetryJob, job, now, overseerrUrl, hasArrService = true }: QueueItemRowProps) {
+const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRemove, onProtect, onArchive, onDeleteAnyway, onCheckAvailability, checking = false, onDeleteNow, onRetryJob, job, now, overseerrUrl, hasArrService = true }: QueueItemRowProps) {
   const { t } = useTranslation('queue');
+  const { reasonLine, holdLabel } = useAvailabilityText();
   // While a job owns the row nothing else may touch it.
   const jobActive = isActiveJob(job);
   const showJob = !!job && job.status !== 'cancelled';
   const daysLeft = item.daysRemaining ?? getDaysUntil(item.deleteAt);
-  const isReady = daysLeft <= 0;
+  const isHeld = Boolean(item.held);
+  const isReady = daysLeft <= 0 && !isHeld;
   const TypeIcon = item.type === 'movie' ? Film : Tv;
   // Protection is a property of the whole show, so a queued episode can't be
   // protected from here — it is removed from the queue instead.
@@ -700,6 +766,8 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
             <div className="hidden sm:block text-right min-w-[120px] flex-shrink-0">
               {showJob ? (
                 <div className="mb-1 flex justify-end"><QueueJobBadge job={job} now={now} onRetry={onRetryJob} /></div>
+              ) : isHeld && daysLeft <= 0 ? (
+                <Badge variant="warning" className="mb-1">{t('row.held', 'Held')}</Badge>
               ) : isReady ? (
                 <Badge variant="danger" className="mb-1">{t('row.readyToDelete', 'Ready to Delete')}</Badge>
               ) : (
@@ -757,11 +825,47 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
             )}
           </div>
 
+          {/* Archive: can it be downloaded again? */}
+          {!isEpisode && (
+            <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-1.5 text-xs">
+              <AvailabilityBadge report={item.availability} />
+              <span className="text-surface-400 min-w-0 truncate" title={reasonLine(item.availability)}>
+                {isHeld ? holdLabel(item.heldReason) : reasonLine(item.availability)}
+              </span>
+              {item.deleteAnyway && item.availability?.verdict !== 'replaceable' && (
+                <span className="text-surface-500">{t('row.deleteAnywayChosen', 'Delete anyway chosen')}</span>
+              )}
+              <button
+                type="button"
+                onClick={onCheckAvailability}
+                disabled={checking || jobActive}
+                className="inline-flex items-center gap-1 text-surface-500 hover:text-surface-200 disabled:opacity-50 transition-colors"
+                title={t('row.checkAvailability', 'Ask Radarr/Sonarr again')}
+              >
+                <RotateCw className={`w-3 h-3 ${checking ? 'animate-spin' : ''}`} />
+                {checking ? t('row.checking', 'Checking…') : t('row.recheck', 'Re-check')}
+              </button>
+              {isHeld && (
+                <>
+                  <Button variant="secondary" size="sm" onClick={onArchive} disabled={jobActive} className="!py-0.5 !px-2 !text-xs">
+                    <Archive className="w-3 h-3" />
+                    {t('row.archive', 'Archive')}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={onDeleteAnyway} disabled={jobActive} className="!py-0.5 !px-2 !text-xs text-ruby-text">
+                    {t('row.deleteAnyway', 'Delete anyway')}
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Mobile: grace period + actions row */}
           <div className="flex items-center justify-between mt-2 sm:hidden">
             <div className="text-left">
               {showJob ? (
                 <QueueJobBadge job={job} now={now} onRetry={onRetryJob} compact />
+              ) : isHeld && daysLeft <= 0 ? (
+                <Badge variant="warning">{t('row.held', 'Held')}</Badge>
               ) : isReady ? (
                 <Badge variant="danger">{t('row.ready', 'Ready')}</Badge>
               ) : (
@@ -811,6 +915,11 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
           {!isEpisode && (
             <Button variant="ghost" size="sm" onClick={onProtect} disabled={jobActive} title={t('row.protect', 'Protect')}>
               <Shield className="w-4 h-4 text-accent-text" />
+            </Button>
+          )}
+          {!isEpisode && !isHeld && (
+            <Button variant="ghost" size="sm" onClick={onArchive} disabled={jobActive} title={t('row.archiveTitle', 'Archive: keep for good')}>
+              <Archive className="w-4 h-4 text-surface-300" />
             </Button>
           )}
           <Button variant="ghost" size="sm" onClick={onRemove} disabled={jobActive} title={t('row.removeFromQueue', 'Remove from queue')}>

@@ -64,6 +64,29 @@
     "usageBody": "Füge den Schlüssel im <1>X-Api-Key</1>-Header ein, wenn du API-Anfragen von externen Tools, Skripten oder Apps wie nzb360 stellst.",
     "yourKey": "Dein API-Schlüssel"
   },
+  "archive": {
+    "description": "",
+    "enable": "",
+    "enableHint": "",
+    "footnote": "",
+    "minSeeders": "",
+    "minSeedersHint": "",
+    "mode": "",
+    "modeHints": {
+      "archive": "",
+      "ask": "",
+      "delete": ""
+    },
+    "modes": {
+      "archive": "",
+      "ask": "",
+      "delete": ""
+    },
+    "noArr": "",
+    "recheckDays": "",
+    "recheckDaysHint": "",
+    "title": ""
+  },
   "automation": {
     "diskPressure": {
       "arrVolumes": "",

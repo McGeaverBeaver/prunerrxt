@@ -10,6 +10,8 @@ import logger from '../utils/logger';
 import { logActivity } from '../db/repositories/activity';
 import { upstreamStatus, type FileDeletionProgress } from './arrHttp';
 import type { OverseerrResetResult } from './overseerr';
+import { getArchiveSettings, holdState } from './availabilityVerdict';
+import { kickAvailabilityChecks } from './availabilityKick';
 
 // ============================================================================
 // Types
@@ -259,6 +261,8 @@ export class DeletionService {
       matched_rule_id: ruleId || null,
     } as any);
 
+    kickAvailabilityChecks();
+
     // Get rule name if ruleId provided
     let ruleName: string | undefined;
     if (ruleId && this.dependencies.ruleRepository) {
@@ -382,7 +386,15 @@ export class DeletionService {
    */
   async getPendingDeletions(): Promise<QueueItem[]> {
     const queue = await this.getQueue();
-    return queue.filter((item) => item.daysRemaining === 0);
+    const settings = getArchiveSettings();
+    return queue.filter((item) => item.daysRemaining === 0 && !holdState(item.mediaItem, settings).held);
+  }
+
+  /** Items past their grace period that Archive is holding for a decision. */
+  async getHeldDeletions(): Promise<QueueItem[]> {
+    const queue = await this.getQueue();
+    const settings = getArchiveSettings();
+    return queue.filter((item) => item.daysRemaining === 0 && holdState(item.mediaItem, settings).held);
   }
 
   // ============================================================================

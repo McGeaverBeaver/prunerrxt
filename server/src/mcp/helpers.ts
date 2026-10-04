@@ -8,6 +8,7 @@ import type { z } from 'zod';
 import type { MediaItem } from '../types';
 import { formatBytes } from '../utils/format';
 import { parseWatchState } from '../services/watchState';
+import { describeReasons, holdState, parseAvailability } from '../services/availabilityVerdict';
 import { IMMEDIATE_DELETION_REFUSED, allowsImmediateDeletion } from './config';
 import { isRole, type Role } from '../auth/config';
 import { ROLE_RANK } from '../auth/roles';
@@ -336,9 +337,40 @@ export function describeMediaItem(item: MediaItem, now: Date = new Date()): Reco
             matchedRuleId: itemAny['matched_rule_id'] ?? null,
           }
         : null,
+    archive: describeArchive(item),
     deletedAt: item.deleted_at,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
+  };
+}
+
+/** Archive: the stored re-acquisition verdict, the hold and whether the item is archived. */
+export function describeArchive(item: MediaItem): Record<string, unknown> {
+  const report = parseAvailability(item.availability);
+  const hold = item.status === 'pending_deletion' ? holdState(item) : null;
+  return {
+    archived: Boolean(item.archived_at),
+    archivedAt: item.archived_at ?? null,
+    availability: report
+      ? {
+          verdict: report.verdict,
+          reasons: report.reasons,
+          detail: describeReasons(report),
+          checkedAt: report.checkedAt,
+          releases: report.releases,
+          usenet: report.usenet,
+          torrents: report.torrents,
+          maxSeeders: report.maxSeeders,
+          best: report.best,
+          current: report.current,
+          indexers: report.indexers,
+          seasons: report.seasons ?? null,
+          error: report.error ?? null,
+        }
+      : null,
+    held: hold?.held ?? false,
+    heldReason: hold?.reason ?? null,
+    deleteAnyway: item.availability_decision === 'delete',
   };
 }
 

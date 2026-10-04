@@ -3,6 +3,9 @@ import mediaItemsRepo from '../db/repositories/mediaItems';
 import logger from '../utils/logger';
 import { requestActorName } from '../utils/actor';
 import { enqueueDeleteNow, enqueueReadyItems } from '../services/deletionJobs';
+import { checkItem } from '../services/availability';
+import { describeReasons, holdState, parseAvailability } from '../services/availabilityVerdict';
+import { allowDeletionAnyway, archiveItems } from '../services/mediaActions';
 import {
   getAllQueueItems,
   listQueue,
@@ -146,6 +149,73 @@ router.post('/:id/delete-now', (req: Request, res: Response) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Failed to queue immediate deletion: ${errorMessage}`);
     res.status(500).json({ success: false, error: errorMessage || 'Failed to delete item' });
+  }
+});
+
+// POST /api/queue/:id/availability - Ask Radarr/Sonarr again whether the item
+// could be downloaded again (Archive). Runs the search now; can take a minute.
+router.post('/:id/availability', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params['id'] as string, 10);
+    const item = Number.isNaN(id) ? null : mediaItemsRepo.getById(id);
+    if (!item) {
+      res.status(404).json({ success: false, error: 'Item not found' });
+      return;
+    }
+    const result = await checkItem(item, { force: true, actorName: requestActorName(req) });
+    res.json({
+      success: true,
+      data: { report: result.report, archived: result.archived, hold: holdState(result.item) },
+      message: `"${item.title}": ${result.report.verdict.replace('_', ' ')} (${describeReasons(result.report)})`,
+    });
+  } catch (error) {
+    logger.error('Availability check failed:', error);
+    res.status(500).json({ success: false, error: 'Availability check failed' });
+  }
+});
+
+// POST /api/queue/:id/archive - Keep the item forever: protect it and take it
+// out of the queue (Archive).
+router.post('/:id/archive', (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params['id'] as string, 10);
+    const item = Number.isNaN(id) ? null : mediaItemsRepo.getById(id);
+    if (!item) {
+      res.status(404).json({ success: false, error: 'Item not found' });
+      return;
+    }
+    const report = parseAvailability(item.availability);
+    const reason = typeof req.body?.reason === 'string' && req.body.reason.trim() ? req.body.reason.trim().slice(0, 200) : report ? `Archived: ${describeReasons(report)}` : 'Archived';
+    const result = archiveItems([id], reason, requestActorName(req));
+    if (result.archived.length === 0) {
+      const why = result.skipped[0]?.reason ?? result.failed[0]?.error ?? 'Could not archive';
+      res.status(409).json({ success: false, error: why });
+      return;
+    }
+    res.json({ success: true, data: mediaItemsRepo.getById(id), message: `"${item.title}" archived` });
+  } catch (error) {
+    logger.error('Failed to archive item:', error);
+    res.status(500).json({ success: false, error: 'Failed to archive item' });
+  }
+});
+
+// POST /api/queue/:id/delete-anyway - Lift the Archive hold on an at-risk item.
+router.post('/:id/delete-anyway', (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params['id'] as string, 10);
+    if (Number.isNaN(id)) {
+      res.status(400).json({ success: false, error: 'Invalid ID parameter' });
+      return;
+    }
+    const result = allowDeletionAnyway(id, requestActorName(req));
+    if (!result.ok) {
+      res.status(result.status).json({ success: false, error: result.error });
+      return;
+    }
+    res.json({ success: true, data: result.item, message: `"${result.item.title}" will be deleted when its grace period ends` });
+  } catch (error) {
+    logger.error('Failed to lift the Archive hold:', error);
+    res.status(500).json({ success: false, error: 'Failed to update item' });
   }
 });
 

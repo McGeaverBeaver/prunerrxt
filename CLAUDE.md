@@ -122,6 +122,17 @@ identity is ever different (`git config user.email`), set it before committing.
   unique normalised title and year. The scanner uses it at sync, and
   `deletion.ts` asks the owning app once more before failing an item as
   "not linked", persisting the id it finds.
+- Archive (`services/availabilityVerdict.ts` pure logic and settings,
+  `services/availability.ts` the Radarr/Sonarr release search): every queued
+  movie/show gets a verdict (`media_items.availability` JSON) saying whether
+  it could be downloaded again; `archive_mode` = ask (hold it in the queue:
+  `holdState` is applied in `deletion.ts`, `deletionQueue.ts` and
+  `readyQueueIds`), archive (protect at once) or delete. An archived item is a
+  protected item with `archived_at` set (`mediaActions.archiveItems`). Checks
+  are kicked after queueing through `availabilityKick.ts` (avoids an import
+  cycle), run by the `checkAvailability` task and before the nightly queue
+  run. MCP: `check_availability`, `archive_items`, `unarchive_items`,
+  `clear_availability_hold`. See docs/archive.md.
 - Permission repair (`services/permissions.ts`) relies on the Dockerfile
   granting the Node binary `cap_chown,cap_fowner`; it only ever runs on paths
   resolved inside a folder mapping.

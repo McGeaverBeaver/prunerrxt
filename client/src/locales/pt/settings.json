@@ -67,6 +67,29 @@
     "usageBody": "Inclua a chave no cabeçalho <1>X-Api-Key</1> ao fazer pedidos à API a partir de ferramentas, scripts ou aplicações externas como o nzb360.",
     "yourKey": "A sua chave da API"
   },
+  "archive": {
+    "description": "",
+    "enable": "",
+    "enableHint": "",
+    "footnote": "",
+    "minSeeders": "",
+    "minSeedersHint": "",
+    "mode": "",
+    "modeHints": {
+      "archive": "",
+      "ask": "",
+      "delete": ""
+    },
+    "modes": {
+      "archive": "",
+      "ask": "",
+      "delete": ""
+    },
+    "noArr": "",
+    "recheckDays": "",
+    "recheckDaysHint": "",
+    "title": ""
+  },
   "automation": {
     "diskPressure": {
       "arrVolumes": "",

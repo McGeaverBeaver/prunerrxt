@@ -12,6 +12,7 @@ import {
   syncPlexLibrary,
   monitorDiskPressure,
   captureInsightSnapshot,
+  checkAvailability,
   getTask,
   getAvailableTasks,
   type TaskResult,
@@ -34,12 +35,13 @@ export interface SchedulerConfig {
     syncPlexUsers: string;
     monitorDiskPressure: string;
     captureInsightSnapshot: string;
+    checkAvailability: string;
   };
   timezone: string;
 }
 
 const DEFAULT_CONFIG: SchedulerConfig = {
-  enabledTasks: ['syncPlexLibrary', 'scanLibraries', 'processDeletionQueue', 'sendDeletionReminders', 'captureStorageSnapshot', 'captureUnraidCapacitySnapshot', 'syncPlexUsers', 'monitorDiskPressure', 'captureInsightSnapshot'],
+  enabledTasks: ['syncPlexLibrary', 'scanLibraries', 'processDeletionQueue', 'sendDeletionReminders', 'captureStorageSnapshot', 'captureUnraidCapacitySnapshot', 'syncPlexUsers', 'monitorDiskPressure', 'captureInsightSnapshot', 'checkAvailability'],
   schedules: {
     syncPlexLibrary: '0 2 * * *', // Daily at 2 AM (before scan, so rules see fresh catalog)
     scanLibraries: '0 3 * * *', // Daily at 3 AM
@@ -50,6 +52,7 @@ const DEFAULT_CONFIG: SchedulerConfig = {
     syncPlexUsers: '45 3 * * *', // Daily at 3:45 AM (after scan)
     monitorDiskPressure: '*/20 * * * *', // Every 20 minutes (self-disables via settings)
     captureInsightSnapshot: '50 3 * * *', // Daily at 3:50 AM (after scan and users sync)
+    checkAvailability: '15 */2 * * *', // Every two hours (no-op when every queued item has a fresh verdict)
   },
   timezone: 'UTC',
 };
@@ -214,6 +217,11 @@ export class Scheduler {
     // Daily Insights row (trends on the Insights page and in the MCP connector)
     if (this.config.enabledTasks.includes('captureInsightSnapshot')) {
       this.scheduleJob('captureInsightSnapshot', this.config.schedules.captureInsightSnapshot, captureInsightSnapshot);
+    }
+
+    // Archive: re-acquisition verdicts for queued items
+    if (this.config.enabledTasks.includes('checkAvailability')) {
+      this.scheduleJob('checkAvailability', this.config.schedules.checkAvailability, checkAvailability);
     }
 
     this.isRunning = true;

@@ -7,12 +7,16 @@ import { logActivity } from '../../db/repositories/activity';
 import { getSonarrService } from '../../services/init';
 import {
   DELETION_ACTIONS,
+  allowDeletionAnyway,
+  archiveItems,
   defaultDeletionAction,
   defaultGracePeriodDays,
   markItemsForDeletion,
   protectItems,
   unprotectItems,
 } from '../../services/mediaActions';
+import { checkItem } from '../../services/availability';
+import { describeReasons } from '../../services/availabilityVerdict';
 import {
   EPISODE_DELETION_ACTIONS,
   executeQueuedDeletions,
@@ -20,7 +24,7 @@ import {
   resolveTargets,
 } from '../../services/episodeDeletions';
 import { allowsImmediateDeletion, IMMEDIATE_DELETION_REFUSED } from '../config';
-import { DESTRUCTIVE, MUTATING, defineTool, fail, ok } from '../helpers';
+import { DESTRUCTIVE, EXTERNAL_READ, MUTATING, defineTool, fail, ok } from '../helpers';
 import { resolveSonarrSeriesId } from './library';
 
 const ACTOR = 'MCP assistant';
@@ -87,6 +91,98 @@ export function registerActionTools(server: McpServer): void {
     async ({ ids }) => {
       const result = unprotectItems(ids, ACTOR);
       return ok(result, `${result.unprotected.length} item(s) unprotected, ${result.skipped.length} were not protected, ${result.failed.length} failed.`);
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'check_availability',
+      title: 'Check whether items could be downloaded again',
+      description:
+        'Archive: ask Radarr/Sonarr what the indexers can offer for each movie or show right now, and judge it against the file on disk. Returns replaceable (something as good is out there), at_risk (nothing, a downgrade, or too few seeders) or unknown (not linked, indexers down, search failed), with the numbers behind it. Runs the interactive search now, so allow a minute per item; keep to a handful of ids. The verdict is stored on the item.',
+      group: 'actions',
+      inputSchema: {
+        ids: z.array(z.number().int().positive()).min(1).max(10).describe('Prunerr media item ids.'),
+      },
+      annotations: EXTERNAL_READ,
+    },
+    async ({ ids }) => {
+      const results: Array<Record<string, unknown>> = [];
+      for (const id of ids) {
+        const item = mediaItemsRepo.getById(id);
+        if (!item) {
+          results.push({ id, error: 'not found' });
+          continue;
+        }
+        const { report, archived } = await checkItem(item, { force: true, actorName: ACTOR });
+        results.push({ id, title: item.title, verdict: report.verdict, reasons: report.reasons, detail: describeReasons(report), releases: report.releases, best: report.best, current: report.current, archived });
+      }
+      const atRisk = results.filter((r) => r['verdict'] === 'at_risk').length;
+      return ok(results, `${results.length} checked: ${results.filter((r) => r['verdict'] === 'replaceable').length} replaceable, ${atRisk} at risk, ${results.filter((r) => r['verdict'] === 'unknown').length} unknown.`);
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'archive_items',
+      title: 'Archive items (keep for good)',
+      description:
+        'Archive movies or shows: protect them permanently because they could not be downloaded again (or are not worth the risk), and take them out of the deletion queue. An archived item is a protected item with an archive mark; no rule, scan or deletion touches it until unarchive_items. Use this to resolve an Archive hold on an at-risk queued item.',
+      group: 'actions',
+      inputSchema: {
+        ids: z.array(z.number().int().positive()).min(1).max(500),
+        reason: z.string().max(200).optional().describe('Why, shown in the UI. Defaults to the stored verdict.'),
+      },
+      annotations: MUTATING,
+    },
+    async ({ ids, reason }) => {
+      const result = archiveItems(ids, reason || 'Archived via MCP assistant', ACTOR);
+      return ok(result, `${result.archived.length} item(s) archived, ${result.skipped.length} skipped, ${result.failed.length} failed.`);
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'unarchive_items',
+      title: 'Unarchive items',
+      description: 'Lift the archive mark and its protection so rules may consider the items again. The same as unprotect_items for archived items.',
+      group: 'actions',
+      inputSchema: {
+        ids: z.array(z.number().int().positive()).min(1).max(500),
+      },
+      annotations: MUTATING,
+    },
+    async ({ ids }) => {
+      const result = unprotectItems(ids, ACTOR);
+      return ok(result, `${result.unprotected.length} item(s) unarchived, ${result.skipped.length} were not archived, ${result.failed.length} failed.`);
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'clear_availability_hold',
+      title: 'Delete an at-risk item anyway',
+      description:
+        'Archive is holding a queued item because it may not be downloadable again. This records the decision to delete it anyway, so it goes when its grace period ends. Confirm with the user first; the alternative is archive_items.',
+      group: 'actions',
+      inputSchema: {
+        ids: z.array(z.number().int().positive()).min(1).max(100).describe('Prunerr media item ids of queued items.'),
+      },
+      annotations: MUTATING,
+    },
+    async ({ ids }) => {
+      const cleared: Array<{ id: number; title: string }> = [];
+      const failed: Array<{ id: number; error: string }> = [];
+      for (const id of ids) {
+        const result = allowDeletionAnyway(id, ACTOR);
+        if (result.ok) cleared.push({ id, title: result.item.title });
+        else failed.push({ id, error: result.error });
+      }
+      return ok({ cleared, failed }, `${cleared.length} hold(s) lifted, ${failed.length} failed.`);
     }
   );
 

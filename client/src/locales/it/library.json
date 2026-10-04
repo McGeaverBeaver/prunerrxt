@@ -33,9 +33,14 @@
   "detail": {
     "activityTimeline": "Cronologia attività",
     "added": "Aggiunto",
+    "availability": "",
     "backToLibrary": "Torna alla libreria",
+    "checkAvailability": "",
+    "checkedAt": "",
+    "checking": "",
     "codec": "Codec",
     "completedBy": "",
+    "deleteAnywayChosen": "",
     "detailsHeading": "Dettagli",
     "episodesWatched": "",
     "episodesWatchedValue": "",
@@ -144,11 +149,14 @@
     "tvShow": "Serie TV"
   },
   "menu": {
+    "archive": "",
+    "archiveHint": "",
     "markForDeletion": "Contrassegna per l'eliminazione",
     "openIn": "Apri in",
     "protect": "Proteggi",
     "protectItem": "Proteggi elemento",
-    "removeProtection": "Rimuovi protezione"
+    "removeProtection": "Rimuovi protezione",
+    "unarchive": ""
   },
   "pagination": {
     "showing": "Visualizzazione da <0>{{from}}</0> a <1>{{to}}</1> di <2>{{total}}</2> elementi"
@@ -249,6 +257,7 @@
   },
   "status": {
     "active": "Attivo",
+    "archived": "",
     "deleted": "Eliminato",
     "protected": "Protetto",
     "queued": "In coda",

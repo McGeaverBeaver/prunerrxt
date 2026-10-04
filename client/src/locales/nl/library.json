@@ -30,9 +30,14 @@
   "detail": {
     "activityTimeline": "Activiteitentijdlijn",
     "added": "Toegevoegd",
+    "availability": "",
     "backToLibrary": "Terug naar bibliotheek",
+    "checkAvailability": "",
+    "checkedAt": "",
+    "checking": "",
     "codec": "Codec",
     "completedBy": "",
+    "deleteAnywayChosen": "",
     "detailsHeading": "Details",
     "episodesWatched": "",
     "episodesWatchedValue": "",
@@ -132,11 +137,14 @@
     "tvShow": "Tv-serie"
   },
   "menu": {
+    "archive": "",
+    "archiveHint": "",
     "markForDeletion": "Markeren voor verwijdering",
     "openIn": "Openen in",
     "protect": "Beschermen",
     "protectItem": "Item beschermen",
-    "removeProtection": "Bescherming verwijderen"
+    "removeProtection": "Bescherming verwijderen",
+    "unarchive": ""
   },
   "pagination": {
     "showing": "<0>{{from}}</0> tot <1>{{to}}</1> van <2>{{total}}</2> items worden weergegeven"
@@ -229,6 +237,7 @@
   },
   "status": {
     "active": "Actief",
+    "archived": "",
     "deleted": "Verwijderd",
     "protected": "Beschermd",
     "queued": "In wachtrij",

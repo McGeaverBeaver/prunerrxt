@@ -52,6 +52,13 @@ export interface MediaItem {
   deleted_at: string | null;
   is_protected: boolean;
   protection_reason: string | null;
+  /** Archive: the last re-acquisition check, as JSON (services/availabilityVerdict.ts). */
+  availability?: string | null;
+  availability_checked_at?: string | null;
+  /** 'delete' once a person chose to delete an at-risk item anyway. */
+  availability_decision?: string | null;
+  /** Set while the item is archived: protected because it could not be downloaded again. */
+  archived_at?: string | null;
   // Metadata enrichment (v13)
   genres: string[] | null;
   tags: string[] | null;
@@ -209,6 +216,10 @@ export interface UpdateMediaItemInput {
   deleted_at?: string | null;
   is_protected?: boolean;
   protection_reason?: string;
+  availability?: string | null;
+  availability_checked_at?: string | null;
+  availability_decision?: string | null;
+  archived_at?: string | null;
   deletion_action?: string;
   reset_overseerr?: number;
   matched_rule_id?: number | null;

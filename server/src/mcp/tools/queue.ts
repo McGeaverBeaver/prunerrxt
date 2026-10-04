@@ -4,6 +4,7 @@ import { listQueue, processQueue, removeFromQueue } from '../../services/deletio
 import { enqueueDeleteNow, enqueueReadyItems, listJobs } from '../../services/deletionJobs';
 import { formatBytes } from '../../utils/format';
 import { DESTRUCTIVE, MUTATING, READ_ONLY, clampLimit, defineTool, fail, ok } from '../helpers';
+import { describeReasons } from '../../services/availabilityVerdict';
 
 export function registerQueueTools(server: McpServer): void {
   defineTool(
@@ -12,7 +13,7 @@ export function registerQueueTools(server: McpServer): void {
       name: 'list_queue',
       title: 'List the deletion queue',
       description:
-        'Everything waiting to be deleted — whole movies/shows and individual episodes — soonest first, with days remaining, the rule that queued it (if any), the deletion action and the total space it will free. Queue ids are strings; episode entries are prefixed "ep-".',
+        'Everything waiting to be deleted — whole movies/shows and individual episodes — soonest first, with days remaining, the rule that queued it (if any), the deletion action and the total space it will free. Each movie/show carries its Archive verdict (availability: replaceable, at_risk or unknown, with why) and `held`, true while Archive keeps it back for a decision; resolve a hold with archive_items or clear_availability_hold. Queue ids are strings; episode entries are prefixed "ep-".',
       group: 'queue',
       inputSchema: {
         limit: z.number().int().min(1).max(200).optional().describe('Page size (default 50).'),
@@ -43,6 +44,13 @@ export function registerQueueTools(server: McpServer): void {
         matchedRule: i.matchedRule ?? null,
         ruleId: i.ruleId ? Number(i.ruleId) : null,
         requestedBy: i.requestedBy ?? null,
+        // Archive: can it be downloaded again, and is it being held for a decision?
+        availability: i.availability
+          ? { verdict: i.availability.verdict, reasons: i.availability.reasons, detail: describeReasons(i.availability), checkedAt: i.availability.checkedAt, releases: i.availability.releases, best: i.availability.best }
+          : null,
+        held: i.held,
+        heldReason: i.heldReason ?? null,
+        deleteAnyway: i.deleteAnyway,
       }));
       return ok(
         {
@@ -54,7 +62,7 @@ export function registerQueueTools(server: McpServer): void {
           },
           items: page,
         },
-        `${listing.summary.totalItems} queued item(s), ${formatBytes(listing.summary.totalSize)} reclaimable, ${listing.summary.readyForDeletion} ready for deletion now. Showing ${page.length}.`
+        `${listing.summary.totalItems} queued item(s), ${formatBytes(listing.summary.totalSize)} reclaimable, ${listing.summary.readyForDeletion} ready for deletion now${listing.summary.held > 0 ? `, ${listing.summary.held} held by Archive for a decision (archive_items or clear_availability_hold)` : ''}. Showing ${page.length}.`
       );
     }
   );

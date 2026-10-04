@@ -21,6 +21,8 @@ import { setTaskDependencies } from '../scheduler/tasks';
 import { getScheduler } from '../scheduler';
 import type { MediaItem } from '../types';
 import { MovieMatcher, SeriesMatcher } from './arrMatch';
+// Registers the background availability pass that queueing kicks (Archive).
+import './availability';
 
 // Service instances (singletons)
 let sonarrService: SonarrService | null = null;
