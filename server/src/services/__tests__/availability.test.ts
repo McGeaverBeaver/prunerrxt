@@ -57,8 +57,8 @@ const rel = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-function movie(id: number, over: Record<string, unknown> = {}) {
-  const item = { id, title: `Movie ${id}`, type: 'movie', status: 'pending_deletion', radarr_id: 100 + id, file_size: 9e9, resolution: '1080', availability: null, availability_decision: null, ...over };
+function movie(id: number, over: Record<string, unknown> = {}): Record<string, unknown> {
+  const item: Record<string, unknown> = { id, title: `Movie ${id}`, type: 'movie', status: 'pending_deletion', radarr_id: 100 + id, file_size: 9e9, resolution: '1080', availability: null, availability_decision: null, ...over };
   state.items.set(id, item);
   return item;
 }
