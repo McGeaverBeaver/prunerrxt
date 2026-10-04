@@ -252,19 +252,42 @@ export class TautulliService implements WatchHistoryProvider {
   }
 
   /**
-   * Get recently watched items
+   * Every play in the last `days` days, newest first.
+   *
+   * Tautulli's `after` filter is a calendar date ("YYYY-MM-DD"), not a
+   * timestamp: a Unix number there matches nothing, which is how the
+   * Insights page once reported zero plays against a Tautulli full of
+   * history. Rows are fetched in pages of PAGE_SIZE until the server's
+   * filtered count is reached, ungrouped so each session is its own row
+   * (grouping would merge a play that was stopped and restarted).
    */
   async getRecentlyWatched(days: number = 30): Promise<TautulliHistory[]> {
     try {
-      const afterDate = Math.floor(Date.now() / 1000) - days * 24 * 60 * 60;
+      const after = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const PAGE_SIZE = 1000;
+      const MAX_ROWS = 20000;
+      const items: TautulliHistoryItem[] = [];
+      let start = 0;
+      let total = Infinity;
+      while (start < total && items.length < MAX_ROWS) {
+        const data = await this.request<TautulliHistoryResponse>('get_history', {
+          after,
+          start,
+          length: PAGE_SIZE,
+          grouping: 0,
+          include_activity: 0,
+          order_column: 'date',
+          order_dir: 'desc',
+        });
+        const page = data.data || [];
+        items.push(...page);
+        total = Number.isFinite(Number(data.recordsFiltered)) ? Number(data.recordsFiltered) : items.length;
+        if (page.length === 0) break;
+        start += page.length;
+      }
 
-      const data = await this.request<TautulliHistoryResponse>('get_history', {
-        length: 5000,
-        after: afterDate,
-      });
-
-      const history = this.parseHistoryItems(data.data || []);
-      logger.info(`Retrieved ${history.length} recently watched items from last ${days} days`);
+      const history = this.parseHistoryItems(items);
+      logger.info(`Retrieved ${history.length} Tautulli plays since ${after} (${days} days)`);
       return history;
     } catch (error) {
       const axiosError = error as AxiosError;

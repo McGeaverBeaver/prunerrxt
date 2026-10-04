@@ -196,6 +196,17 @@ async function build(refresh: boolean): Promise<WatchPatternsReport> {
       detail: 'Plays and watched dates cannot be read, so every item looks unwatched. Pick a provider under Settings → Connections → Watch history.',
       href: '/settings?section=connections',
     });
+  } else if (sessions.length === 0 && result.note?.startsWith('Could not read history')) {
+    // The provider is configured but did not answer: a broken read, not an idle household.
+    const name = result.provider === 'tautulli' ? 'Tautulli' : result.provider === 'tracearr' ? 'Tracearr' : 'the media server';
+    items.push({
+      id: 'watch.providerError',
+      severity: 'warning',
+      source: result.provider === 'tautulli' ? 'tautulli' : result.provider === 'tracearr' ? 'tracearr' : 'mediaServer',
+      title: `Could not read play history from ${name}`,
+      detail: `${result.note}. Plays per week, viewers and playback friction are empty until it answers; per-title play counts from the last sync are unaffected.`,
+      href: '/settings?section=connections',
+    });
   } else if (sessions.length === 0 && result.note) {
     items.push({ id: 'watch.noSessions', severity: 'info', source: 'prunerr', title: 'No play sessions in the last 90 days', detail: result.note, href: '/settings?section=connections' });
   } else if (last30.length === 0 && prev30.length > 0) {
