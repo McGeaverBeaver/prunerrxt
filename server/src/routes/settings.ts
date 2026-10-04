@@ -970,7 +970,7 @@ router.post('/test/discord', async (req: Request, res: Response) => {
     const t = getFixedT(settingsRepo.getValue('notifications_language') || 'en');
     const result = await notificationService.sendDiscord(webhookUrl, {
       username: t('common.brand'),
-      avatar_url: 'https://raw.githubusercontent.com/helliott20/prunerr/main/assets/icon.png',
+      avatar_url: 'https://raw.githubusercontent.com/helliott20/prunerr/main/assets/icon.png', // public copy of the icon; see notifications/templates.ts
       embeds: [{
         title: t('test.title'),
         description: t('test.desc'),

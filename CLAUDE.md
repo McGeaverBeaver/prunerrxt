@@ -51,9 +51,6 @@ request to a third party.
 - **Upstream**: https://github.com/helliott20/prunerr (its wiki is still the
   user documentation the README links to)
 
-## Unraid Support
-- **Forum thread**: https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/
-
 ## Database Migrations
 Migrations are in `/server/src/db/schema.ts`. They run automatically on startup. The migration system handles "duplicate column" errors gracefully for idempotency.
 

@@ -10,14 +10,12 @@
   <a href="https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr"><img src="https://img.shields.io/badge/image-ghcr.io%2Fmcgeaverbeaver%2Fprunerr-0db7ed?style=flat-square" alt="Container image"></a>
   <img src="https://img.shields.io/github/license/McGeaverBeaver/prunerr?style=flat-square" alt="License">
   <a href="https://github.com/McGeaverBeaver/prunerr/actions/workflows/docker-publish.yml"><img src="https://img.shields.io/github/actions/workflow/status/McGeaverBeaver/prunerr/docker-publish.yml?style=flat-square&label=image%20build" alt="Image build"></a>
-  <a href="https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/"><img src="https://img.shields.io/badge/Unraid-Community%20App-orange?style=flat-square" alt="Unraid"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/helliott20/prunerr/wiki">Wiki</a> &bull;
   <a href="https://github.com/helliott20/prunerr/wiki/Installation">Install</a> &bull;
   <a href="https://github.com/helliott20/prunerr/wiki/API-Reference">API</a> &bull;
-  <a href="https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/">Unraid Forum</a>
 </p>
 
 ---
@@ -151,8 +149,7 @@ sent anywhere, and nothing asks you whether it may.
 
 ## Support
 
-- **Unraid Forum:** [Support Thread](https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/)
-- **GitHub Issues:** [Report a Bug](https://github.com/McGeaverBeaver/prunerr/issues)
+- **GitHub:** [McGeaverBeaver/prunerr](https://github.com/McGeaverBeaver/prunerr)
 - **Container image:** [ghcr.io/mcgeaverbeaver/prunerr](https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr)
 - **Upstream project:** [helliott20/prunerr](https://github.com/helliott20/prunerr), whose wiki the links above point at
 

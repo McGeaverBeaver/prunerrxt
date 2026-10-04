@@ -894,9 +894,8 @@ export default interface Resources {
       "zeroErrors": "0 errors"
     },
     "links": {
-      "dockerHub": "Docker Hub",
+      "containerImage": "Container image",
       "github": "GitHub",
-      "unraidSupport": "Unraid Support",
       "website": "Website",
       "websiteAria": "Prunerr website"
     },

@@ -470,7 +470,7 @@ export function protectedResourceMetadata(baseUrl: string) {
     bearer_methods_supported: ['header'],
     scopes_supported: [SCOPE],
     resource_name: 'Prunerr',
-    resource_documentation: 'https://github.com/helliott20/prunerr/blob/main/docs/mcp.md',
+    resource_documentation: 'https://github.com/McGeaverBeaver/prunerr/blob/main/docs/mcp.md',
   };
 }
 
@@ -488,6 +488,6 @@ export function authorizationServerMetadata(baseUrl: string) {
     token_endpoint_auth_methods_supported: ['none', 'client_secret_basic', 'client_secret_post'],
     revocation_endpoint_auth_methods_supported: ['none', 'client_secret_basic', 'client_secret_post'],
     code_challenge_methods_supported: ['S256'],
-    service_documentation: 'https://github.com/helliott20/prunerr/blob/main/docs/mcp.md',
+    service_documentation: 'https://github.com/McGeaverBeaver/prunerr/blob/main/docs/mcp.md',
   };
 }

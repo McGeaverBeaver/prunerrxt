@@ -51,9 +51,8 @@
     "zeroErrors": "0 errori"
   },
   "links": {
-    "dockerHub": "Docker Hub",
+    "containerImage": "",
     "github": "GitHub",
-    "unraidSupport": "Supporto Unraid",
     "website": "Sito web",
     "websiteAria": "Sito web di Prunerr"
   },

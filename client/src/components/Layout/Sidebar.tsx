@@ -21,7 +21,6 @@ import {
   SunIcon,
   GlobeIcon,
   GithubIcon,
-  MessageCircleIcon,
   ContainerIcon,
   FoldersIcon,
 } from './NavIcons';
@@ -228,7 +227,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
             <GlobeIcon className="w-4 h-4" />
           </a>
           <a
-            href="https://github.com/helliott20/prunerr"
+            href="https://github.com/McGeaverBeaver/prunerr"
             target="_blank"
             rel="noopener noreferrer"
             className="sidebar-foot-link group p-2.5 rounded-lg text-surface-500 hover:text-accent-text-hover hover:bg-surface-800/60 transition-all"
@@ -237,20 +236,11 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
             <GithubIcon className="w-4 h-4" />
           </a>
           <a
-            href="https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/"
+            href="https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr"
             target="_blank"
             rel="noopener noreferrer"
             className="sidebar-foot-link group p-2.5 rounded-lg text-surface-500 hover:text-accent-text-hover hover:bg-surface-800/60 transition-all"
-            title={t('links.unraidSupport', 'Unraid Support')}
-          >
-            <MessageCircleIcon className="w-4 h-4" />
-          </a>
-          <a
-            href="https://hub.docker.com/r/helliott20/prunerr"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sidebar-foot-link group p-2.5 rounded-lg text-surface-500 hover:text-accent-text-hover hover:bg-surface-800/60 transition-all"
-            title={t('links.dockerHub', 'Docker Hub')}
+            title={t('links.containerImage', 'Container image')}
           >
             <ContainerIcon className="w-4 h-4" />
           </a>

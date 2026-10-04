@@ -16,7 +16,7 @@
     <Network>bridge</Network>
     <Shell>sh</Shell>
     <Privileged>false</Privileged>
-    <Support>https://forums.unraid.net/topic/196929-support-prunerr-media-library-cleanup-tool/</Support>
+    <Support>https://github.com/McGeaverBeaver/prunerr</Support>
     <Project>https://github.com/McGeaverBeaver/prunerr</Project>
     <Overview>Prunerr is a media library cleanup and management tool designed to work with Plex, Jellyfin or Emby, plus Sonarr and Radarr. Automatically reclaim disk space by identifying and removing unwanted media based on customizable rules.&#xD;
 &#xD;
@@ -37,7 +37,8 @@ All service connections are configured through the web UI — no config files ne
     <Category>MediaApp:Other MediaServer:Other</Category>
     <WebUI>http://[IP]:[PORT:3000]/</WebUI>
     <TemplateURL>https://raw.githubusercontent.com/McGeaverBeaver/prunerr/main/my-prunerr.xml</TemplateURL>
-    <Icon>https://raw.githubusercontent.com/McGeaverBeaver/prunerr/main/assets/icon.png</Icon>
+    <!-- Unraid fetches the icon over HTTP; this repository is private, so upstream's public copy of the same icon is used. -->
+    <Icon>https://raw.githubusercontent.com/helliott20/prunerr/main/assets/icon.png</Icon>
 
     <Config Name="Web UI Port" Target="3000" Default="3000" Mode="tcp" Description="Port for the Prunerr web interface" Type="Port" Display="always" Required="true" Mask="false">3000</Config>
 

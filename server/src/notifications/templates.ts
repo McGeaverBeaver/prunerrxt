@@ -148,6 +148,7 @@ const COLORS = {
   DELETION: 0x9b59b6, // Purple
 };
 
+// Discord fetches this itself, so it must be public. This repository is private; upstream's copy of the same icon is the only public one. Cosmetic only.
 const AVATAR_URL = 'https://raw.githubusercontent.com/helliott20/prunerr/main/assets/icon.png';
 
 /**

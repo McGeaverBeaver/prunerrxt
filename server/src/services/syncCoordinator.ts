@@ -1,5 +1,6 @@
 import mediaItemsRepo from '../db/repositories/mediaItems';
 import logger from '../utils/logger';
+import settingsRepo from '../db/repositories/settings';
 import { ScannerService } from './scanner';
 import type { ScanResult, SyncProgressCallback } from './types';
 
@@ -10,9 +11,43 @@ import type { ScanResult, SyncProgressCallback } from './types';
 
 let scannerService: ScannerService | null = null;
 let syncInProgress = false;
+
+// The last sync's outcome lives in the settings table as well as here: a
+// container restart used to make the dashboard and stack health say the
+// library had never been synced. Read back lazily on first use.
+const LAST_SYNC_SETTING = 'sync_last_result';
+interface PersistedSync { completedAt: string | null; finishedAt: string | null; success: boolean | null }
+let restored = false;
 let lastSyncCompletedAt: Date | null = null;
 let lastSyncFinishedAt: Date | null = null;
 let lastSyncSuccess: boolean | null = null;
+
+function restoreLastSync(): void {
+  if (restored) return;
+  restored = true;
+  try {
+    const saved = settingsRepo.getJson<PersistedSync | null>(LAST_SYNC_SETTING, null);
+    if (saved && typeof saved === 'object') {
+      lastSyncCompletedAt = saved.completedAt ? new Date(saved.completedAt) : null;
+      lastSyncFinishedAt = saved.finishedAt ? new Date(saved.finishedAt) : null;
+      lastSyncSuccess = typeof saved.success === 'boolean' ? saved.success : null;
+    }
+  } catch (error) {
+    logger.debug(`Could not restore the last sync result: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+function persistLastSync(): void {
+  try {
+    settingsRepo.setJson<PersistedSync>(LAST_SYNC_SETTING, {
+      completedAt: lastSyncCompletedAt?.toISOString() ?? null,
+      finishedAt: lastSyncFinishedAt?.toISOString() ?? null,
+      success: lastSyncSuccess,
+    });
+  } catch (error) {
+    logger.debug(`Could not persist the last sync result: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
 const syncProgressLog: unknown[] = [];
 type SyncListener = (data: unknown) => void;
@@ -76,14 +111,17 @@ export function isSyncInProgress(): boolean {
 }
 
 export function getLastSyncCompletedAt(): Date | null {
+  restoreLastSync();
   return lastSyncCompletedAt;
 }
 
 export function getLastSyncFinishedAt(): Date | null {
+  restoreLastSync();
   return lastSyncFinishedAt;
 }
 
 export function getLastSyncSuccess(): boolean | null {
+  restoreLastSync();
   return lastSyncSuccess;
 }
 
@@ -132,9 +170,11 @@ export async function runLibrarySync(onProgress?: SyncProgressCallback): Promise
     });
 
     const now = new Date();
+    restoreLastSync();
     lastSyncCompletedAt = now;
     lastSyncFinishedAt = now;
     lastSyncSuccess = true;
+    persistLastSync();
     return { status: 'completed', result };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -144,8 +184,10 @@ export async function runLibrarySync(onProgress?: SyncProgressCallback): Promise
       message: `Sync failed: ${message}`,
       result: { success: false, itemsScanned: 0, itemsAdded: 0, itemsUpdated: 0, errors: 1 },
     });
+    restoreLastSync();
     lastSyncFinishedAt = new Date();
     lastSyncSuccess = false;
+    persistLastSync();
     return { status: 'failed', error: message };
   } finally {
     syncInProgress = false;
