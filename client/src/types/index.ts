@@ -937,6 +937,7 @@ export interface InsightItem {
   detail?: string;
   href?: string;
   external?: boolean;
+  acknowledged?: { at: string };
 }
 
 export interface InsightCounts {
@@ -980,6 +981,7 @@ export interface StackHealthReport {
   items: InsightItem[];
   connections: ServiceHealthStatus[];
   arr: StackServiceReport[];
+  acknowledgedCount: number;
 }
 
 export type ResolutionBucket = '4K' | '1440p' | '1080p' | '720p' | 'SD' | 'Unknown';

@@ -55,16 +55,27 @@
     "overseerr": ""
   },
   "stack": {
+    "ackFailed": "",
+    "acknowledge": "",
+    "acknowledgedTitle": "",
+    "acknowledgeShort": "",
     "allClear": "",
+    "allClearAcked": "",
     "allClearBody": "",
     "checked": "",
+    "hideAcknowledged_one": "",
+    "hideAcknowledged_other": "",
     "loadFailed": "",
     "noServices": "",
     "queueCount_one": "",
     "queueCount_other": "",
     "setUp": "",
+    "showAcknowledged_one": "",
+    "showAcknowledged_other": "",
     "subtitle": "",
-    "title": ""
+    "title": "",
+    "unacknowledge": "",
+    "unacknowledgeShort": ""
   },
   "title": "",
   "trend": {

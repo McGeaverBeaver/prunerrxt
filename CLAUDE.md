@@ -22,6 +22,9 @@ Prunerr is a media library cleanup tool for Plex/Sonarr/Radarr. It helps users r
 **IMPORTANT: Always create a git tag when pushing changes that affect the Docker image.**
 
 The GitHub Actions workflow only triggers on version tags, not on regular pushes to main.
+A manual run of the workflow (Actions → Build and Push Docker Image → Run
+workflow) with no tag given publishes the branch as a moving tag (`:main`)
+plus a pinned `:main-<sha>`; a tag typed into the input is published as is.
 
 ```bash
 # After committing changes:

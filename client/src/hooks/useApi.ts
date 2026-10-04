@@ -611,6 +611,17 @@ export function useStackHealth() {
   });
 }
 
+/** Acknowledge (or un-acknowledge) one stack-health finding; the server answers with the updated report. */
+export function useAcknowledgeStackItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, undo }: { id: string; undo?: boolean }) => (undo ? insightsApi.unacknowledge(id) : insightsApi.acknowledge(id)),
+    onSuccess: (report) => {
+      queryClient.setQueryData(queryKeys.insightsStack, report);
+    },
+  });
+}
+
 export function useLibraryQuality() {
   return useQuery({
     queryKey: queryKeys.insightsLibrary,

@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { EXTERNAL_READ, defineTool, ok } from '../helpers';
+import { EXTERNAL_READ, defineTool, fail, ok } from '../helpers';
+import { acknowledge, unacknowledge } from '../../services/insights/acknowledgements';
 import { getStackHealth } from '../../services/insights/stackHealth';
 import { getLibraryQuality } from '../../services/insights/libraryQuality';
 import { getWatchPatterns } from '../../services/insights/watchPatterns';
@@ -56,6 +57,35 @@ export function registerInsightTools(server: McpServer): void {
   defineTool(
     server,
     {
+      name: 'acknowledge_insight',
+      title: 'Acknowledge a stack-health finding',
+      description:
+        'Hide one stack-health finding (by its id from get_insights) from the counts until it is unacknowledged or escalates to a higher severity. For findings that are true but accepted, such as "Allowed Hosts is not configured" on a LAN-only install. Pass undo=true to bring it back.',
+      group: 'overview',
+      inputSchema: {
+        id: z.string().min(1).describe('The finding id, e.g. sonarr.health.AllowedHostsCheck'),
+        undo: z.boolean().default(false).describe('true to unacknowledge'),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    async ({ id, undo }) => {
+      if (undo) {
+        unacknowledge(id);
+        const stack = await getStackHealth();
+        return ok({ id, acknowledged: false, stack: { overall: stack.overall, counts: stack.counts, acknowledgedCount: stack.acknowledgedCount } }, `Unacknowledged ${id}. ${summariseStack(stack)}`);
+      }
+      const current = await getStackHealth();
+      const item = current.items.find((i) => i.id === id);
+      if (!item) return fail(`No current finding with id ${id}. Call get_insights with section "stack" for the ids.`);
+      acknowledge(item);
+      const stack = await getStackHealth();
+      return ok({ id, acknowledged: true, stack: { overall: stack.overall, counts: stack.counts, acknowledgedCount: stack.acknowledgedCount } }, `Acknowledged "${item.title}". ${summariseStack(stack)}`);
+    }
+  );
+
+  defineTool(
+    server,
+    {
       name: 'get_insight_trends',
       title: 'Insight trends',
       description:
@@ -72,6 +102,7 @@ export function registerInsightTools(server: McpServer): void {
 }
 
 function summariseStack(stack: Awaited<ReturnType<typeof getStackHealth>>): string {
-  if (stack.items.length === 0) return 'Stack: nothing needs attention.';
-  return `Stack: ${stack.counts.critical} critical, ${stack.counts.warning} warning, ${stack.counts.info} info.`;
+  const acked = stack.acknowledgedCount > 0 ? ` ${stack.acknowledgedCount} acknowledged.` : '';
+  if (stack.items.length - stack.acknowledgedCount === 0) return `Stack: nothing needs attention.${acked}`;
+  return `Stack: ${stack.counts.critical} critical, ${stack.counts.warning} warning, ${stack.counts.info} info.${acked}`;
 }

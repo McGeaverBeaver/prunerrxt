@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Docker tag to publish (e.g. v1.0.0). Leave empty to build the current ref as <branch>-<sha>.'
+        description: 'Docker tag to publish (e.g. v1.0.0). Leave empty to publish the branch name (e.g. main) plus <branch>-<sha>.'
         required: false
         default: ''
 
@@ -163,6 +163,11 @@ jobs:
             # like v1.7.0-beta.1 (or any branch build) must never claim it.
             type=raw,value=latest,enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
             type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
+            # A manual run with no tag given publishes the branch as a moving
+            # tag (`main`) plus a pinned `main-<sha>`, so "run the workflow"
+            # always produces something to pull.
+            type=raw,value=${{ github.ref_name }},enable=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag == '' }}
+            type=sha,prefix=${{ github.ref_name }}-,format=short,enable=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag == '' }}
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests

@@ -970,6 +970,16 @@ export const insightsApi = {
     if (!data.data) throw new Error(data.error || 'Failed to load stack health');
     return data.data;
   },
+  acknowledge: async (id: string): Promise<StackHealthReport> => {
+    const { data } = await api.post<ApiResponse<StackHealthReport>>('/insights/stack/acknowledge', { id });
+    if (!data.data) throw new Error(data.error || 'Failed to acknowledge');
+    return data.data;
+  },
+  unacknowledge: async (id: string): Promise<StackHealthReport> => {
+    const { data } = await api.delete<ApiResponse<StackHealthReport>>(`/insights/stack/acknowledge/${encodeURIComponent(id)}`);
+    if (!data.data) throw new Error(data.error || 'Failed to unacknowledge');
+    return data.data;
+  },
   library: async (refresh = false): Promise<LibraryQualityReport> => {
     const { data } = await api.get<ApiResponse<LibraryQualityReport>>(`/insights/library${refresh ? '?refresh=true' : ''}`);
     if (!data.data) throw new Error(data.error || 'Failed to load library quality');

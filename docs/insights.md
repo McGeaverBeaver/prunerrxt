@@ -28,6 +28,15 @@ worst first, each with a next step:
 
 The report is cached for a minute. *Refresh* re-queries the apps.
 
+**Acknowledging.** A finding that is true but accepted (Sonarr's "Allowed
+Hosts is not configured" on a LAN-only install, a recycle bin kept on another
+filesystem on purpose) can be acknowledged with the tick beside it. It then
+leaves the counts and the list; *Show N acknowledged* lists them with an undo.
+An acknowledgement is taken at the finding's current severity, so one that
+later escalates (warning to critical) comes back on its own. Operators and
+admins can acknowledge; the choice is stored on the server and applies to the
+MCP connector's reports too (`acknowledge_insight`, with `undo` to reverse).
+
 ## Library quality
 
 What the library is made of: the resolution mix by titles and by disk space,

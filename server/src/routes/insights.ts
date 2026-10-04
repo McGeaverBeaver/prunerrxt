@@ -10,6 +10,7 @@ import { getLibraryQuality } from '../services/insights/libraryQuality';
 import { getWatchPatterns } from '../services/insights/watchPatterns';
 import { getPlaybackFriction } from '../services/insights/playbackFriction';
 import { getInsightHistory } from '../services/insights/snapshots';
+import { acknowledge, unacknowledge } from '../services/insights/acknowledgements';
 
 const router = Router();
 
@@ -25,6 +26,39 @@ router.get('/stack', async (req: Request, res: Response) => {
     res.json({ success: true, data: await getStackHealth({ refresh: req.query['refresh'] === 'true' }) });
   } catch (error) {
     fail(res, 'build stack health', error);
+  }
+});
+
+// POST /api/insights/stack/acknowledge { id } - hide a finding until it is unacknowledged or gets worse
+router.post('/stack/acknowledge', async (req: Request, res: Response) => {
+  const id = typeof req.body?.id === 'string' ? req.body.id.trim() : '';
+  if (!id) {
+    res.status(400).json({ success: false, error: 'id is required' });
+    return;
+  }
+  try {
+    const current = await getStackHealth();
+    const item = current.items.find((i) => i.id === id);
+    if (!item) {
+      res.status(404).json({ success: false, error: `No current finding with id ${id}` });
+      return;
+    }
+    acknowledge(item);
+    logger.info(`Stack health finding acknowledged: ${id}`);
+    res.json({ success: true, data: await getStackHealth() });
+  } catch (error) {
+    fail(res, 'acknowledge finding', error);
+  }
+});
+
+// DELETE /api/insights/stack/acknowledge/:id - bring a finding back
+router.delete('/stack/acknowledge/:id', async (req: Request, res: Response) => {
+  try {
+    unacknowledge(String(req.params['id']));
+    logger.info(`Stack health finding unacknowledged: ${req.params['id']}`);
+    res.json({ success: true, data: await getStackHealth() });
+  } catch (error) {
+    fail(res, 'unacknowledge finding', error);
   }
 });
 

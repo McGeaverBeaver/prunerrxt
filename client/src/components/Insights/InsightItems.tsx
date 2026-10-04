@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, ChevronRight } from 'lucide-react';
@@ -23,11 +24,12 @@ export function SeverityBadge({ severity, count }: { severity: InsightSeverity; 
  * Internal links stay in the router; external ones (an app's wiki, its own
  * UI) open in a new tab.
  */
-export function InsightRow({ item, mediaServer }: { item: InsightItem; mediaServer: string }) {
+export function InsightRow({ item, mediaServer, action }: { item: InsightItem; mediaServer: string; action?: ReactNode }) {
   const { t } = useTranslation('insights');
   const sourceLabel = useSourceLabel();
   const style = SEVERITY_STYLE[item.severity];
   const Icon = style.Icon;
+  const dimmed = Boolean(item.acknowledged);
 
   const body = (
     <>
@@ -50,24 +52,36 @@ export function InsightRow({ item, mediaServer }: { item: InsightItem; mediaServ
   );
 
   const className = cn(
-    'flex items-start gap-3 rounded-xl border px-3.5 py-3 transition-colors',
+    'flex min-w-0 flex-1 items-start gap-3 rounded-xl border px-3.5 py-3 transition-colors',
     style.ring,
+    dimmed && 'opacity-60',
     item.href && 'hover:border-surface-500/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/40'
   );
 
+  let main: ReactNode;
   if (item.href && item.external) {
-    return (
+    main = (
       <a href={item.href} target="_blank" rel="noopener noreferrer" className={className} title={t('openExternal', 'Opens in a new tab')}>
         {body}
       </a>
     );
-  }
-  if (item.href) {
-    return (
+  } else if (item.href) {
+    main = (
       <Link to={item.href} className={className}>
         {body}
       </Link>
     );
+  } else {
+    main = <div className={className}>{body}</div>;
   }
-  return <div className={className}>{body}</div>;
+
+  // The action sits beside the link, never inside it: a button inside an
+  // anchor is invalid markup and the two would fight over the click.
+  if (!action) return main;
+  return (
+    <div className="flex items-stretch gap-2">
+      {main}
+      <div className="flex shrink-0 items-center">{action}</div>
+    </div>
+  );
 }

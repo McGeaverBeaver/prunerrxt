@@ -38,6 +38,7 @@ import { getPermissionCapabilities } from '../permissions';
 import { formatBytes } from '../../utils/format';
 import { defaultGracePeriodDays } from '../mediaActions';
 import { countBySeverity, worstSeverity, type InsightCounts, type InsightItem, type InsightSeverity, type InsightSource } from './types';
+import { applyAcknowledgements } from './acknowledgements';
 
 export interface StackServiceReport {
   service: 'sonarr' | 'radarr';
@@ -59,6 +60,8 @@ export interface StackHealthReport {
   connections: ServiceHealthStatus[];
   /** Sonarr and Radarr in more depth, when configured. */
   arr: StackServiceReport[];
+  /** Findings hidden by an acknowledgement; they are still in `items`, flagged. */
+  acknowledgedCount: number;
 }
 
 const CACHE_TTL_MS = 60_000;
@@ -562,10 +565,16 @@ async function build(): Promise<StackHealthReport> {
     items,
     connections: health.services,
     arr: [sonarr, radarr].filter((r): r is StackServiceReport => r !== null),
+    acknowledgedCount: 0,
   };
 }
 
+/** The report with acknowledgements applied; the cache holds the raw findings so an ack shows at once. */
 export async function getStackHealth(options: { refresh?: boolean } = {}): Promise<StackHealthReport> {
+  return applyAcknowledgements(await getRawStackHealth(options));
+}
+
+async function getRawStackHealth(options: { refresh?: boolean } = {}): Promise<StackHealthReport> {
   if (!options.refresh && cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.report;
   if (inFlight) return inFlight;
   inFlight = build()

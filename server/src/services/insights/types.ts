@@ -25,6 +25,8 @@ export interface InsightItem {
   href?: string;
   /** True when `href` leaves Prunerr (Sonarr's wiki, the app's own UI). */
   external?: boolean;
+  /** Set when an admin acknowledged this finding; it then stays out of the counts. */
+  acknowledged?: { at: string };
 }
 
 export interface InsightCounts {

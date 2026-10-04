@@ -53,16 +53,27 @@
     "overseerr": "Seerr"
   },
   "stack": {
+    "ackFailed": "Could not update the finding",
+    "acknowledge": "Acknowledge: hide this finding until it gets worse",
+    "acknowledgedTitle": "Acknowledged",
+    "acknowledgeShort": "Acknowledge",
     "allClear": "Nothing needs attention",
+    "allClearAcked": "Every remaining finding has been acknowledged. An acknowledged finding comes back on its own if it gets worse.",
     "allClearBody": "Every configured service answers, the apps report no health problems, and nothing in Prunerr is stale or stuck.",
     "checked": "Checked {{when}}",
+    "hideAcknowledged_one": "Hide {{count}} acknowledged",
+    "hideAcknowledged_other": "Hide {{count}} acknowledged",
     "loadFailed": "Could not check the stack",
     "noServices": "No services configured yet.",
     "queueCount_one": "{{count}} in queue",
     "queueCount_other": "{{count}} in queue",
     "setUp": "Set them up",
+    "showAcknowledged_one": "Show {{count}} acknowledged",
+    "showAcknowledged_other": "Show {{count}} acknowledged",
     "subtitle": "Prunerr, {{mediaServer}}, Sonarr, Radarr and the watch history provider, checked together.",
-    "title": "Stack health"
+    "title": "Stack health",
+    "unacknowledge": "Bring this finding back",
+    "unacknowledgeShort": "Unacknowledge"
   },
   "title": "Insights",
   "trend": {
