@@ -17,6 +17,7 @@ const MediaItemDetail = lazy(() => import('./components/Library/MediaItemDetail'
 const Collections = lazy(() => import('./components/Collections/Collections'));
 const CollectionDetail = lazy(() => import('./components/Collections/CollectionDetail'));
 const Folders = lazy(() => import('./components/Folders/Folders'));
+const Insights = lazy(() => import('./components/Insights/Insights'));
 
 /**
  * AnimatedRoutes fades each page in as you navigate. We key on the first path
@@ -65,6 +66,7 @@ function AnimatedRoutes() {
         <Route path="/queue" element={<Queue />} />
         <Route path="/history" element={<History />} />
         <Route path="/activity" element={<ActivityLog />} />
+        <Route path="/insights" element={<Insights />} />
         {/* Settings hold service credentials; only admins get the page. */}
         <Route path="/settings" element={isAdmin ? <Settings /> : <Navigate to="/" replace />} />
         <Route path="/login" element={<Navigate to="/" replace />} />

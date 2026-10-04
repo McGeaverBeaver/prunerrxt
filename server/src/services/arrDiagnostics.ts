@@ -123,6 +123,41 @@ export async function fetchSystemStatus(client: AxiosInstance): Promise<ArrSyste
   return response.data ?? {};
 }
 
+/** `/queue/status`: how many downloads are waiting, and how many of them are stuck with a problem. */
+export interface ArrQueueStatus {
+  totalCount: number;
+  count: number;
+  unknownCount: number;
+  errors: boolean;
+  warnings: boolean;
+  unknownErrors: boolean;
+  unknownWarnings: boolean;
+}
+
+export async function fetchQueueStatus(client: AxiosInstance): Promise<ArrQueueStatus> {
+  const response = await client.get('/queue/status');
+  const data = (response.data ?? {}) as Partial<ArrQueueStatus>;
+  return {
+    totalCount: Number(data.totalCount ?? 0),
+    count: Number(data.count ?? 0),
+    unknownCount: Number(data.unknownCount ?? 0),
+    errors: data.errors === true,
+    warnings: data.warnings === true,
+    unknownErrors: data.unknownErrors === true,
+    unknownWarnings: data.unknownWarnings === true,
+  };
+}
+
+/**
+ * How many files sit below their quality profile's cutoff: Radarr counts
+ * movies, Sonarr counts episodes. Only the total is read (one record per page).
+ */
+export async function fetchCutoffUnmetCount(client: AxiosInstance): Promise<number> {
+  const response = await client.get('/wanted/cutoff', { params: { page: 1, pageSize: 1, monitored: true } });
+  const total = response.data?.totalRecords;
+  return typeof total === 'number' ? total : 0;
+}
+
 export async function fetchCommands(client: AxiosInstance): Promise<ArrCommand[]> {
   const response = await client.get('/command');
   return Array.isArray(response.data) ? response.data : [];

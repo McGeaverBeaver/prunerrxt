@@ -887,3 +887,231 @@ export interface EpisodeDeletionResult {
   freedBytes: number;
   errors?: Array<{ title: string; error?: string }>;
 }
+
+// ============================================================================
+// Insights
+// ============================================================================
+
+export type InsightSeverity = 'ok' | 'info' | 'warning' | 'critical';
+export type InsightSource = 'prunerr' | 'mediaServer' | 'sonarr' | 'radarr' | 'tautulli' | 'tracearr' | 'overseerr' | 'unraid';
+
+export interface InsightItem {
+  id: string;
+  severity: InsightSeverity;
+  source: InsightSource;
+  title: string;
+  detail?: string;
+  href?: string;
+  external?: boolean;
+}
+
+export interface InsightCounts {
+  critical: number;
+  warning: number;
+  info: number;
+  ok: number;
+}
+
+export interface ArrHealthItem {
+  source: string;
+  type: string;
+  message: string;
+  wikiUrl?: string;
+}
+
+export interface ArrQueueStatus {
+  totalCount: number;
+  count: number;
+  unknownCount: number;
+  errors: boolean;
+  warnings: boolean;
+  unknownErrors: boolean;
+  unknownWarnings: boolean;
+}
+
+export interface StackServiceReport {
+  service: 'sonarr' | 'radarr';
+  label: 'Sonarr' | 'Radarr';
+  reachable: boolean;
+  version: string | null;
+  health: ArrHealthItem[];
+  queue: ArrQueueStatus | null;
+  rootFolders: Array<{ path: string; accessible: boolean; freeSpace: number | null }>;
+}
+
+export interface StackHealthReport {
+  checkedAt: string;
+  overall: InsightSeverity;
+  counts: InsightCounts;
+  items: InsightItem[];
+  connections: ServiceHealthStatus[];
+  arr: StackServiceReport[];
+}
+
+export type ResolutionBucket = '4K' | '1440p' | '1080p' | '720p' | 'SD' | 'Unknown';
+
+export interface ShareBucket {
+  label: string;
+  count: number;
+  bytes: number;
+  countShare: number;
+  bytesShare: number;
+}
+
+export interface LowQualityItem {
+  id: number;
+  title: string;
+  type: 'movie' | 'show';
+  year: number | null;
+  resolution: ResolutionBucket;
+  codec: string | null;
+  sizeBytes: number;
+  playCount: number;
+  lastWatchedAt: string | null;
+  addedAt: string | null;
+}
+
+export interface CutoffReport {
+  service: 'sonarr' | 'radarr';
+  label: 'Sonarr' | 'Radarr';
+  belowCutoff: number | null;
+  unit: 'movies' | 'episodes';
+}
+
+export interface LibraryQualityReport {
+  checkedAt: string;
+  overall: InsightSeverity;
+  counts: InsightCounts;
+  items: InsightItem[];
+  totals: { items: number; movies: number; shows: number; bytes: number };
+  byResolution: ShareBucket[];
+  byCodec: ShareBucket[];
+  hdr: { count: number; share: number; byFormat: Array<{ label: string; count: number }> };
+  bitrateByResolution: Array<{ label: string; avgKbps: number; samples: number }>;
+  cutoff: CutoffReport[];
+  lowQualityUnwatched: LowQualityItem[];
+  lowQualityUnwatchedBytes: number;
+  lowQualityUnwatchedCount: number;
+}
+
+export type SessionProvider = 'tautulli' | 'tracearr' | 'mediaServer' | 'none';
+
+export interface WeekPoint {
+  weekStart: string;
+  plays: number;
+  users: number;
+  movies: number;
+  episodes: number;
+}
+
+export interface ViewerStat {
+  user: string;
+  plays: number;
+  lastSeen: string;
+  share: number;
+}
+
+export interface QuietItem {
+  id: number;
+  title: string;
+  type: 'movie' | 'show';
+  year: number | null;
+  sizeBytes: number;
+  playCount: number;
+  lastWatchedAt: string | null;
+  addedAt: string | null;
+}
+
+export interface WatchPatternsReport {
+  checkedAt: string;
+  overall: InsightSeverity;
+  counts: InsightCounts;
+  items: InsightItem[];
+  provider: SessionProvider;
+  note: string | null;
+  windowDays: number;
+  weekly: WeekPoint[];
+  last30: { plays: number; users: number; movies: number; episodes: number; hoursWatched: number | null };
+  previous30: { plays: number; users: number };
+  knownUsers: number;
+  viewers: ViewerStat[];
+  topShows: Array<{ title: string; plays: number; users: number }>;
+  topMovies: Array<{ title: string; plays: number; users: number }>;
+  library: {
+    items: number;
+    bytes: number;
+    neverPlayed: { count: number; bytes: number };
+    neverPlayedOld: { count: number; bytes: number };
+    playedLast90: { count: number };
+    quietOverYear: { count: number; bytes: number };
+  };
+  quietLargest: QuietItem[];
+}
+
+export interface DecisionShare {
+  directPlay: number;
+  directStream: number;
+  transcode: number;
+  total: number;
+}
+
+export interface ClientFriction {
+  client: string;
+  platform: string;
+  plays: number;
+  transcodes: number;
+  transcodeRate: number;
+  codecs: string[];
+}
+
+export interface TitleFriction {
+  title: string;
+  mediaType: 'movie' | 'episode' | 'other';
+  plays: number;
+  transcodes: number;
+  transcodeRate: number;
+  codec: string | null;
+  resolution: string | null;
+  mediaItemId: number | null;
+}
+
+export interface AbandonedPlay {
+  title: string;
+  user: string;
+  client: string;
+  stoppedAt: string;
+  percentComplete: number;
+  transcode: boolean;
+}
+
+export interface PlaybackFrictionReport {
+  checkedAt: string;
+  overall: InsightSeverity;
+  counts: InsightCounts;
+  items: InsightItem[];
+  provider: SessionProvider;
+  available: boolean;
+  note: string | null;
+  windowDays: number;
+  decisions: DecisionShare;
+  clients: ClientFriction[];
+  titles: TitleFriction[];
+  abandoned: { count: number; rate: number; recent: AbandonedPlay[] };
+  retried: number;
+}
+
+export interface InsightSnapshot {
+  capturedAt: string;
+  stackCritical: number;
+  stackWarning: number;
+  libraryItems: number;
+  libraryBytes: number;
+  sdCount: number;
+  lowQualityUnwatchedBytes: number;
+  neverPlayedCount: number;
+  neverPlayedBytes: number;
+  quietYearBytes: number;
+  plays30: number;
+  viewers30: number;
+  transcodeRate30: number | null;
+}

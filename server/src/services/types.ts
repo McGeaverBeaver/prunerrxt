@@ -153,6 +153,8 @@ export interface TautulliHistory {
   originallyAvailableAt: string;
   guid: string;
   transcode: boolean;
+  /** Tautulli's own word: `direct play`, `copy` (direct stream) or `transcode`. */
+  transcodeDecision: string;
   percentComplete: number;
   watchedStatus: number; // 0 = not watched, 1 = watching, 2 = watched
   groupCount: number;

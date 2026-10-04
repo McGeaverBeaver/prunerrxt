@@ -398,6 +398,7 @@ export class TautulliService implements WatchHistoryProvider {
       originallyAvailableAt: item.originally_available_at,
       guid: item.guid,
       transcode: item.transcode_decision !== 'direct play',
+      transcodeDecision: item.transcode_decision,
       percentComplete: item.percent_complete,
       watchedStatus: item.watched_status,
       groupCount: item.group_count,

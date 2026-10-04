@@ -11,6 +11,7 @@ import {
   syncPlexUsers,
   syncPlexLibrary,
   monitorDiskPressure,
+  captureInsightSnapshot,
   getTask,
   getAvailableTasks,
   type TaskResult,
@@ -32,12 +33,13 @@ export interface SchedulerConfig {
     captureUnraidCapacitySnapshot: string;
     syncPlexUsers: string;
     monitorDiskPressure: string;
+    captureInsightSnapshot: string;
   };
   timezone: string;
 }
 
 const DEFAULT_CONFIG: SchedulerConfig = {
-  enabledTasks: ['syncPlexLibrary', 'scanLibraries', 'processDeletionQueue', 'sendDeletionReminders', 'captureStorageSnapshot', 'captureUnraidCapacitySnapshot', 'syncPlexUsers', 'monitorDiskPressure'],
+  enabledTasks: ['syncPlexLibrary', 'scanLibraries', 'processDeletionQueue', 'sendDeletionReminders', 'captureStorageSnapshot', 'captureUnraidCapacitySnapshot', 'syncPlexUsers', 'monitorDiskPressure', 'captureInsightSnapshot'],
   schedules: {
     syncPlexLibrary: '0 2 * * *', // Daily at 2 AM (before scan, so rules see fresh catalog)
     scanLibraries: '0 3 * * *', // Daily at 3 AM
@@ -47,6 +49,7 @@ const DEFAULT_CONFIG: SchedulerConfig = {
     captureUnraidCapacitySnapshot: '35 3 * * *', // Daily at 3:35 AM (after storage snapshot)
     syncPlexUsers: '45 3 * * *', // Daily at 3:45 AM (after scan)
     monitorDiskPressure: '*/20 * * * *', // Every 20 minutes (self-disables via settings)
+    captureInsightSnapshot: '50 3 * * *', // Daily at 3:50 AM (after scan and users sync)
   },
   timezone: 'UTC',
 };
@@ -206,6 +209,11 @@ export class Scheduler {
 
     if (this.config.enabledTasks.includes('monitorDiskPressure')) {
       this.scheduleJob('monitorDiskPressure', this.config.schedules.monitorDiskPressure, monitorDiskPressure);
+    }
+
+    // Daily Insights row (trends on the Insights page and in the MCP connector)
+    if (this.config.enabledTasks.includes('captureInsightSnapshot')) {
+      this.scheduleJob('captureInsightSnapshot', this.config.schedules.captureInsightSnapshot, captureInsightSnapshot);
     }
 
     this.isRunning = true;

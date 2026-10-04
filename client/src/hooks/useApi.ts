@@ -14,6 +14,7 @@ import {
   authSettingsApi,
   mcpApi,
   foldersApi,
+  insightsApi,
 } from '@/services/api';
 import { mediaServerName } from '@/lib/mediaServer';
 import type {
@@ -52,6 +53,11 @@ export const queryKeys = {
   folders: (includeIgnored: boolean) => ['folders', includeIgnored] as const,
   folderMappings: ['folders', 'mappings'] as const,
   folderMounts: ['folders', 'mounts'] as const,
+  insightsStack: ['insights', 'stack'] as const,
+  insightsLibrary: ['insights', 'library'] as const,
+  insightsWatching: ['insights', 'watching'] as const,
+  insightsPlayback: ['insights', 'playback'] as const,
+  insightsHistory: (days: number) => ['insights', 'history', days] as const,
   folderCandidates: (id: string, term?: string) => ['folders', 'candidates', id, term ?? ''] as const,
   qualityProfiles: (service: string) => ['folders', 'profiles', service] as const,
   folderPermissions: ['folders', 'permissions'] as const,
@@ -587,6 +593,53 @@ export function useOrphanFolders(includeIgnored = false) {
 
 export function useFolderMappings() {
   return useQuery({ queryKey: queryKeys.folderMappings, queryFn: foldersApi.mappings });
+}
+
+// ---------------------------------------------------------------------------
+// Insights
+// ---------------------------------------------------------------------------
+
+/** Stack health: the server caches it for a minute, so polling here is cheap. */
+export function useStackHealth() {
+  return useQuery({
+    queryKey: queryKeys.insightsStack,
+    queryFn: () => insightsApi.stack(),
+    refetchInterval: 120000,
+    refetchIntervalInBackground: false,
+    staleTime: 60000,
+    retry: 1,
+  });
+}
+
+export function useLibraryQuality() {
+  return useQuery({
+    queryKey: queryKeys.insightsLibrary,
+    queryFn: () => insightsApi.library(),
+    staleTime: 5 * 60000,
+    retry: 1,
+  });
+}
+
+export function useWatchPatterns() {
+  return useQuery({
+    queryKey: queryKeys.insightsWatching,
+    queryFn: () => insightsApi.watching(),
+    staleTime: 5 * 60000,
+    retry: 1,
+  });
+}
+
+export function usePlaybackFriction() {
+  return useQuery({
+    queryKey: queryKeys.insightsPlayback,
+    queryFn: () => insightsApi.playback(),
+    staleTime: 5 * 60000,
+    retry: 1,
+  });
+}
+
+export function useInsightHistory(days = 90) {
+  return useQuery({ queryKey: queryKeys.insightsHistory(days), queryFn: () => insightsApi.history(days), staleTime: 10 * 60000, retry: 1 });
 }
 
 /** The volumes mounted into the container; changes only when the container is recreated. */

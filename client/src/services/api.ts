@@ -10,6 +10,11 @@ import type {
   OrphanFolderListing,
   FolderMapping,
   ContainerMountsResult,
+  StackHealthReport,
+  LibraryQualityReport,
+  WatchPatternsReport,
+  PlaybackFrictionReport,
+  InsightSnapshot,
   FolderCandidate,
   QualityProfile,
   PermissionSettings,
@@ -957,3 +962,31 @@ export const mcpApi = {
 };
 
 export default api;
+
+// Insights
+export const insightsApi = {
+  stack: async (refresh = false): Promise<StackHealthReport> => {
+    const { data } = await api.get<ApiResponse<StackHealthReport>>(`/insights/stack${refresh ? '?refresh=true' : ''}`);
+    if (!data.data) throw new Error(data.error || 'Failed to load stack health');
+    return data.data;
+  },
+  library: async (refresh = false): Promise<LibraryQualityReport> => {
+    const { data } = await api.get<ApiResponse<LibraryQualityReport>>(`/insights/library${refresh ? '?refresh=true' : ''}`);
+    if (!data.data) throw new Error(data.error || 'Failed to load library quality');
+    return data.data;
+  },
+  watching: async (refresh = false): Promise<WatchPatternsReport> => {
+    const { data } = await api.get<ApiResponse<WatchPatternsReport>>(`/insights/watching${refresh ? '?refresh=true' : ''}`);
+    if (!data.data) throw new Error(data.error || 'Failed to load watch patterns');
+    return data.data;
+  },
+  playback: async (refresh = false): Promise<PlaybackFrictionReport> => {
+    const { data } = await api.get<ApiResponse<PlaybackFrictionReport>>(`/insights/playback${refresh ? '?refresh=true' : ''}`);
+    if (!data.data) throw new Error(data.error || 'Failed to load playback friction');
+    return data.data;
+  },
+  history: async (days = 90): Promise<InsightSnapshot[]> => {
+    const { data } = await api.get<ApiResponse<{ days: number; rows: InsightSnapshot[] }>>(`/insights/history?days=${days}`);
+    return data.data?.rows ?? [];
+  },
+};

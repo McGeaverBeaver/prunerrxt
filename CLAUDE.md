@@ -115,6 +115,13 @@ identity is ever different (`git config user.email`), set it before committing.
   `/api/folders/jobs/stream` (`hooks/useFolderJobs.ts`). Per-folder work stays
   in `orphanFolders.ts`; the listing cache is patched in place after each job
   rather than rebuilt (a full rebuild walks every folder on disk).
+- The Insights page (`services/insights/`, `routes/insights.ts`, client
+  `components/Insights/`) has four blocks: stack health (Sonarr/Radarr `/health`
+  and queue plus Prunerr's own signals), library quality, watch patterns and
+  playback friction (Tautulli only). Each report is cached in memory for one
+  to five minutes; `captureInsightSnapshot` stores one row a day in
+  `insight_snapshots` for trends. The MCP tools `get_insights` and
+  `get_insight_trends` return the same reports. See docs/insights.md.
 - Permission repair (`services/permissions.ts`) relies on the Dockerfile
   granting the Node binary `cap_chown,cap_fowner`; it only ever runs on paths
   resolved inside a folder mapping.

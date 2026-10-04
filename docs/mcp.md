@@ -125,7 +125,7 @@ server's instructions tell the assistant to start with `get_overview`, to
 preview before changing anything, and to confirm with you before queueing
 more than a handful of items.
 
-**Overview** — `get_overview`, `get_system_health`, `get_storage_history`,
+**Overview** — `get_overview`, `get_system_health`, `get_insights`, `get_insight_trends`, `get_storage_history`,
 `get_recommendations`
 
 **Library** — `search_library` (title, type, status, watched, staleness, size,

@@ -15,6 +15,7 @@ import rulesRepo from '../db/repositories/rules';
 import settingsRepo from '../db/repositories/settings';
 import historyRepo from '../db/repositories/historyRepo';
 import storageSnapshotsRepo from '../db/repositories/storageSnapshots';
+import { captureInsightSnapshot, hasTodayInsightSnapshot } from './insights/snapshots';
 import { getNotificationService } from '../notifications';
 import { setTaskDependencies } from '../scheduler/tasks';
 import { getScheduler } from '../scheduler';
@@ -294,6 +295,21 @@ export async function initializeServices(): Promise<void> {
   } catch (snapshotError) {
     logger.warn('Failed to capture initial storage snapshot:', snapshotError);
   }
+
+  // First Insights row of the day, a minute after startup so the connected
+  // apps are not all queried while the container is still settling.
+  setTimeout(() => {
+    void (async () => {
+      try {
+        if (!hasTodayInsightSnapshot()) {
+          await captureInsightSnapshot();
+          logger.info('Initial insight snapshot captured');
+        }
+      } catch (error) {
+        logger.warn('Failed to capture initial insight snapshot:', error);
+      }
+    })();
+  }, 60_000).unref();
 
   logger.info('Services initialized successfully');
 }

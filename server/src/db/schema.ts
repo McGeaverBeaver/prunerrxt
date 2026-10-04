@@ -660,6 +660,31 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_api_key_usage_used_at ON api_key_usage(used_at);
     `,
   },
+  {
+    version: 28,
+    name: 'insight_snapshots',
+    up: `
+      -- One row a day of the Insights numbers, so the page and the MCP
+      -- connector can show trends. services/insights/snapshots.ts writes it.
+      CREATE TABLE IF NOT EXISTS insight_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        captured_at TEXT NOT NULL,
+        stack_critical INTEGER NOT NULL DEFAULT 0,
+        stack_warning INTEGER NOT NULL DEFAULT 0,
+        library_items INTEGER NOT NULL DEFAULT 0,
+        library_bytes INTEGER NOT NULL DEFAULT 0,
+        sd_count INTEGER NOT NULL DEFAULT 0,
+        low_quality_unwatched_bytes INTEGER NOT NULL DEFAULT 0,
+        never_played_count INTEGER NOT NULL DEFAULT 0,
+        never_played_bytes INTEGER NOT NULL DEFAULT 0,
+        quiet_year_bytes INTEGER NOT NULL DEFAULT 0,
+        plays_30 INTEGER NOT NULL DEFAULT 0,
+        viewers_30 INTEGER NOT NULL DEFAULT 0,
+        transcode_rate_30 REAL
+      );
+      CREATE INDEX IF NOT EXISTS idx_insight_snapshots_captured_at ON insight_snapshots(captured_at);
+    `,
+  },
 ];
 
 // Schema version tracking table

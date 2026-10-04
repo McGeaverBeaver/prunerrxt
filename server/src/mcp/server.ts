@@ -15,6 +15,7 @@ import { registerScanTools } from './tools/scans';
 import { registerHistoryTools } from './tools/history';
 import { registerSystemTools } from './tools/system';
 import { registerFolderTools } from './tools/folders';
+import { registerInsightTools } from './tools/insights';
 import { registerResources } from './resources';
 import { registerPrompts } from './prompts';
 import { allowsImmediateDeletion } from './config';
@@ -59,6 +60,7 @@ export function createMcpServer(): McpServer {
   registerHistoryTools(server);
   registerSystemTools(server);
   registerFolderTools(server);
+  registerInsightTools(server);
   registerResources(server);
   registerPrompts(server);
 

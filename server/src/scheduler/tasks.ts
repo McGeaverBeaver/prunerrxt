@@ -2,6 +2,7 @@ import logger from '../utils/logger';
 import rulesRepo from '../db/repositories/rules';
 import mediaItemsRepo from '../db/repositories/mediaItems';
 import storageSnapshotsRepo from '../db/repositories/storageSnapshots';
+import { captureInsightSnapshot as captureInsightSnapshotRow } from '../services/insights/snapshots';
 import unraidSnapshotsRepo from '../db/repositories/unraidSnapshots';
 import settingsRepo from '../db/repositories/settings';
 import { UnraidService } from '../services/unraid';
@@ -807,6 +808,44 @@ export async function sendDeletionReminders(): Promise<ReminderResult> {
 }
 
 // ============================================================================
+// Insight Snapshot Task
+// ============================================================================
+
+/**
+ * Capture the daily Insights row (stack problems, library quality, watching,
+ * playback), after the nightly scan so it reflects the day's rule run.
+ */
+export async function captureInsightSnapshot(): Promise<TaskResult> {
+  const startedAt = new Date();
+  const taskName = 'captureInsightSnapshot';
+  try {
+    const snapshot = await captureInsightSnapshotRow();
+    const completedAt = new Date();
+    return {
+      success: true,
+      taskName,
+      startedAt,
+      completedAt,
+      durationMs: completedAt.getTime() - startedAt.getTime(),
+      message: 'Insight snapshot captured',
+      data: { stackCritical: snapshot.stackCritical, stackWarning: snapshot.stackWarning, neverPlayedCount: snapshot.neverPlayedCount, plays30: snapshot.plays30 },
+    };
+  } catch (error) {
+    const completedAt = new Date();
+    logger.error('Insight snapshot failed:', error);
+    return {
+      success: false,
+      taskName,
+      startedAt,
+      completedAt,
+      durationMs: completedAt.getTime() - startedAt.getTime(),
+      message: 'Insight snapshot failed',
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+// ============================================================================
 // Storage Snapshot Task
 // ============================================================================
 
@@ -1482,6 +1521,7 @@ export const taskRegistry: Record<string, TaskFunction> = {
   captureUnraidCapacitySnapshot,
   syncPlexUsers,
   monitorDiskPressure,
+  captureInsightSnapshot,
 };
 
 /**

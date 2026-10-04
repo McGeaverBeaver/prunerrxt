@@ -7,6 +7,7 @@ import {
   Moon,
   LogOut,
   UserRound,
+  HeartPulse,
 } from 'lucide-react';
 import {
   DashboardIcon,
@@ -60,6 +61,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
     { id: 'queue', label: t('nav.queue', 'Queue'), href: '/queue', icon: QueueIcon },
     { id: 'history', label: t('nav.history', 'History'), href: '/history', icon: HistoryIcon },
     { id: 'activity', label: t('nav.activity', 'Activity'), href: '/activity', icon: ActivityIcon },
+    { id: 'insights', label: t('nav.insights', 'Insights'), href: '/insights', icon: HeartPulse },
     { id: 'settings', label: t('nav.settings', 'Settings'), href: '/settings', icon: SettingsIcon },
   ];
   // Settings hold service credentials, so only admins see the entry at all.

@@ -48,6 +48,8 @@ You set up rules like "delete movies nobody's watched in 6 months that are over 
 
 - **Dashboard** &mdash; Library stats, storage trends, service health monitoring, upcoming deletions, and recommendations at a glance.
 
+- **Insights** &mdash; One page on how the whole setup is doing: every problem across Prunerr, Sonarr, Radarr and the media server with a next step, the library's resolution and codec mix, what people actually watch, and where playback transcodes or gets abandoned. [More &rarr;](docs/insights.md)
+
 - **Plex, Jellyfin or Emby** &mdash; Pick your media server in Settings, or set `MEDIA_SERVER_TYPE`. Rules, scanning and deletion work the same whichever you use. [More &rarr;](https://github.com/helliott20/prunerr/wiki/Installation)
 
 - **Per-User Watch History** &mdash; Read directly from your media server, or integrate Tautulli or Tracearr (both Plex-only) to track who watched what. Build rules around specific users' watching habits.
@@ -134,6 +136,7 @@ Full docs are in the **[Wiki](https://github.com/helliott20/prunerr/wiki)**:
 - [API Reference](https://github.com/helliott20/prunerr/wiki/API-Reference) &mdash; Endpoints and authentication
 - [Login & access](docs/authentication.md) &mdash; Single sign-on (Authentik/OIDC), roles, local account
 - [AI assistant (MCP)](docs/mcp.md) &mdash; Connect Claude, Cursor and other MCP clients
+- [Insights](docs/insights.md) &mdash; Stack health, library quality, watch patterns, playback friction
 - [Troubleshooting](https://github.com/helliott20/prunerr/wiki/Troubleshooting) &mdash; Common issues
 
 ## Privacy
