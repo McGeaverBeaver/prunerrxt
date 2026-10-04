@@ -51,6 +51,7 @@ describe('judge', () => {
   it('is at risk with no releases, unless every indexer is down', () => {
     expect(judge({ current, releases: [], indexers: healthy, minSeeders: 5 })).toMatchObject({ verdict: 'at_risk', reasons: ['no_releases'] });
     expect(judge({ current, releases: [], indexers: { total: 3, failing: 3 }, minSeeders: 5 })).toMatchObject({ verdict: 'unknown', reasons: ['indexers_down'] });
+    expect(judge({ current, releases: [], indexers: { total: 0, failing: 0 }, minSeeders: 5 })).toMatchObject({ verdict: 'unknown', reasons: ['no_indexers'] });
     expect(judge({ current, releases: [], indexers: null, minSeeders: 5 }).verdict).toBe('at_risk');
   });
 
@@ -138,12 +139,15 @@ describe('holdState', () => {
     expect(holdState({ availability: atRisk, availability_decision: 'delete' })).toMatchObject({ held: false });
   });
 
-  it('holds nothing in archive or delete mode, or when Archive is off', () => {
+  it('holds only unchecked items in archive mode, and nothing in delete mode or when Archive is off', () => {
     settings.values = { archive_mode: 'delete' };
     expect(holdState({ availability: atRisk, availability_decision: null }).held).toBe(false);
+    expect(holdState({ availability: null, availability_decision: null }).held).toBe(false);
     settings.values = { archive_mode: 'archive' };
     expect(holdState({ availability: atRisk, availability_decision: null }).held).toBe(false);
+    expect(holdState({ availability: null, availability_decision: null })).toMatchObject({ held: true, reason: 'unchecked' });
     settings.values = { archive_enabled: 'false' };
+    expect(holdState({ availability: null, availability_decision: null }).held).toBe(false);
     expect(holdState({ availability: null, availability_decision: null }).held).toBe(false);
     settings.values = { archive_mode: 'bogus', archive_minSeeders: '-3' };
     expect(getArchiveSettings()).toMatchObject({ mode: 'ask', minSeeders: 0 });

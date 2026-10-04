@@ -7,12 +7,19 @@
       "unchecked": "",
       "unknown": ""
     },
+    "pause": {
+      "indexersDown": "",
+      "rateLimited": "",
+      "searchFailed": "",
+      "unreachable": ""
+    },
     "reasons": {
       "downgrade": "",
       "indexersDown": "",
       "lowSeeders_one": "",
       "lowSeeders_other": "",
       "missingSeasons": "",
+      "noIndexers": "",
       "noReleases_one": "",
       "noReleases_other": "",
       "noReleasesPlain": "",

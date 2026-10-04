@@ -21,6 +21,13 @@
     "title_many": "",
     "title_other": ""
   },
+  "archivePaused": {
+    "desc_one": "",
+    "desc_many": "",
+    "desc_other": "",
+    "retry": "",
+    "title": ""
+  },
   "arrWarning": {
     "bannerDesc": "A eliminação requer o Sonarr ou o Radarr para remover ficheiros do disco. Os itens podem ser colocados em fila, mas não serão processados até que um serviço seja configurado.",
     "goToSettings": "Ir para as definições",

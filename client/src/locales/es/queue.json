@@ -21,6 +21,13 @@
     "title_many": "",
     "title_other": ""
   },
+  "archivePaused": {
+    "desc_one": "",
+    "desc_many": "",
+    "desc_other": "",
+    "retry": "",
+    "title": ""
+  },
   "arrWarning": {
     "bannerDesc": "La eliminación requiere Sonarr o Radarr para quitar archivos del disco. Los elementos se pueden poner en cola, pero no se procesarán hasta que se configure un servicio.",
     "goToSettings": "Ir a Ajustes",

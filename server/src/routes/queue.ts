@@ -3,7 +3,7 @@ import mediaItemsRepo from '../db/repositories/mediaItems';
 import logger from '../utils/logger';
 import { requestActorName } from '../utils/actor';
 import { enqueueDeleteNow, enqueueReadyItems } from '../services/deletionJobs';
-import { checkItem } from '../services/availability';
+import { AvailabilityPausedError, checkItem, getAvailabilityStatus } from '../services/availability';
 import { describeReasons, holdState, parseAvailability } from '../services/availabilityVerdict';
 import { allowDeletionAnyway, archiveItems } from '../services/mediaActions';
 import {
@@ -152,6 +152,17 @@ router.post('/:id/delete-now', (req: Request, res: Response) => {
   }
 });
 
+// GET /api/queue/archive-status - Is the checker paused (indexers down, rate
+// limited, app unreachable), and how many queued items still lack a verdict?
+router.get('/archive-status', (_req: Request, res: Response) => {
+  try {
+    res.json({ success: true, data: getAvailabilityStatus() });
+  } catch (error) {
+    logger.error('Failed to read the Archive status:', error);
+    res.status(500).json({ success: false, error: 'Failed to read the Archive status' });
+  }
+});
+
 // POST /api/queue/:id/availability - Ask Radarr/Sonarr again whether the item
 // could be downloaded again (Archive). Runs the search now; can take a minute.
 router.post('/:id/availability', async (req: Request, res: Response) => {
@@ -169,6 +180,10 @@ router.post('/:id/availability', async (req: Request, res: Response) => {
       message: `"${item.title}": ${result.report.verdict.replace('_', ' ')} (${describeReasons(result.report)})`,
     });
   } catch (error) {
+    if (error instanceof AvailabilityPausedError) {
+      res.status(503).json({ success: false, error: `Archive checks are paused. ${error.message}` });
+      return;
+    }
     logger.error('Availability check failed:', error);
     res.status(500).json({ success: false, error: 'Availability check failed' });
   }

@@ -19,6 +19,12 @@
     "title_one": "",
     "title_other": ""
   },
+  "archivePaused": {
+    "desc_one": "",
+    "desc_other": "",
+    "retry": "",
+    "title": ""
+  },
   "arrWarning": {
     "bannerDesc": "Zum Löschen wird Sonarr oder Radarr benötigt, um Dateien von der Festplatte zu entfernen. Elemente können in die Warteschlange aufgenommen werden, werden aber erst verarbeitet, wenn ein Dienst eingerichtet ist.",
     "goToSettings": "Zu den Einstellungen",

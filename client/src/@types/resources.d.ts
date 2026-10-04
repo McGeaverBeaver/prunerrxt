@@ -210,12 +210,19 @@ export default interface Resources {
         "unchecked": "Held: availability not checked yet",
         "unknown": "Held: could not check availability"
       },
+      "pause": {
+        "indexersDown": "{{app}}: every enabled indexer is failing ({{detail}})",
+        "rateLimited": "{{app}} is rate-limiting searches ({{detail}})",
+        "searchFailed": "{{app}}'s release search failed ({{detail}})",
+        "unreachable": "{{app}} could not be reached ({{detail}})"
+      },
       "reasons": {
         "downgrade": "Best on offer is {{best}}p, your file is {{current}}p",
         "indexersDown": "Every indexer is failing right now",
         "lowSeeders_one": "Torrents only, best has {{count}} seeders",
         "lowSeeders_other": "Torrents only, best has {{count}} seeders",
         "missingSeasons": "{{missing}} of {{checked}} seasons checked have no pack",
+        "noIndexers": "No enabled indexer in Radarr/Sonarr",
         "noReleasesPlain": "No release on any indexer",
         "noReleases_one": "No release on any of {{count}} indexers",
         "noReleases_other": "No release on any of {{count}} indexers",
@@ -1264,6 +1271,12 @@ export default interface Resources {
       "desc": "These may not be downloadable again, so automatic processing leaves them alone. Archive one to keep it for good, or choose Delete anyway.",
       "title_one": "{{count}} item(s) held by Archive",
       "title_other": "{{count}} item(s) held by Archive"
+    },
+    "archivePaused": {
+      "desc_one": "Queued items without a verdict stay held, so nothing is deleted on a guess. Checks resume on their own once the indexers answer again.",
+      "desc_other": "Queued items without a verdict stay held, so nothing is deleted on a guess. Checks resume on their own once the indexers answer again.",
+      "retry": "retrying {{time}}",
+      "title": "Archive checks paused"
     },
     "arrWarning": {
       "bannerDesc": "Deletion requires Sonarr or Radarr to remove files from disk. Items can be queued but won't be processed until a service is set up.",

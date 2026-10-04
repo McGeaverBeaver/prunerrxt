@@ -19,6 +19,12 @@
     "title_one": "",
     "title_other": ""
   },
+  "archivePaused": {
+    "desc_one": "",
+    "desc_other": "",
+    "retry": "",
+    "title": ""
+  },
   "arrWarning": {
     "bannerDesc": "Voor verwijdering is Sonarr of Radarr nodig om bestanden van de schijf te verwijderen. Items kunnen in de wachtrij worden geplaatst, maar worden pas verwerkt zodra een service is ingesteld.",
     "goToSettings": "Naar Instellingen",

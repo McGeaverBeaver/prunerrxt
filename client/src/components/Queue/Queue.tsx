@@ -18,13 +18,14 @@ import {
   Archive,
   ShieldAlert,
   RotateCw,
+  PauseCircle,
 } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { MaybeLink } from '@/components/common/MaybeLink';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Modal } from '@/components/common/Modal';
-import { useArchiveQueueItem, useCheckQueueAvailability, useDeleteAnyway, useDeletionQueue, useRemoveFromQueue, useProcessQueue, useProtectItem, useSettings } from '@/hooks/useApi';
+import { useArchiveQueueItem, useArchiveStatus, useCheckQueueAvailability, useDeleteAnyway, useDeletionQueue, useRemoveFromQueue, useProcessQueue, useProtectItem, useSettings } from '@/hooks/useApi';
 import { AvailabilityBadge } from '@/components/common/AvailabilityBadge';
 import { useAvailabilityText } from '@/lib/availabilityText';
 import { useToast } from '@/components/common/Toast';
@@ -60,6 +61,8 @@ export default function Queue() {
   };
 
   const { data: queue, isLoading, isError, error, refetch } = useDeletionQueue();
+  const { data: archiveStatus } = useArchiveStatus();
+  const { pauseLine } = useAvailabilityText();
   const jobs = useDeletionJobs();
   const removeFromQueueMutation = useRemoveFromQueue();
   const processQueueMutation = useProcessQueue();
@@ -339,6 +342,26 @@ export default function Queue() {
           <Button variant="secondary" size="sm" onClick={() => navigate('/settings')}>
             {t('arrWarning.goToSettings', 'Go to Settings')}
           </Button>
+        </div>
+      )}
+
+      {/* Archive paused: indexers down, rate limited, app unreachable */}
+      {archiveStatus && archiveStatus.paused.length > 0 && (
+        <div className="flex items-start gap-3 p-4 bg-surface-800/60 rounded-xl border border-surface-700/70">
+          <PauseCircle className="w-5 h-5 text-surface-300 flex-shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-surface-50">{t('archivePaused.title', 'Archive checks paused')}</p>
+            <ul className="text-xs text-surface-400 mt-1 space-y-0.5">
+              {archiveStatus.paused.map((pause) => (
+                <li key={pause.service}>
+                  {pauseLine(pause)} · {t('archivePaused.retry', 'retrying {{time}}', { time: formatRelativeTime(pause.until) })}
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-surface-500 mt-1">
+              {t('archivePaused.desc', 'Queued items without a verdict stay held, so nothing is deleted on a guess. Checks resume on their own once the indexers answer again.', { count: archiveStatus.unchecked })}
+            </p>
+          </div>
         </div>
       )}
 

@@ -15,7 +15,7 @@ import {
   protectItems,
   unprotectItems,
 } from '../../services/mediaActions';
-import { checkItem } from '../../services/availability';
+import { AvailabilityPausedError, checkItem } from '../../services/availability';
 import { describeReasons } from '../../services/availabilityVerdict';
 import {
   EPISODE_DELETION_ACTIONS,
@@ -115,8 +115,15 @@ export function registerActionTools(server: McpServer): void {
           results.push({ id, error: 'not found' });
           continue;
         }
-        const { report, archived } = await checkItem(item, { force: true, actorName: ACTOR });
-        results.push({ id, title: item.title, verdict: report.verdict, reasons: report.reasons, detail: describeReasons(report), releases: report.releases, best: report.best, current: report.current, archived });
+        try {
+          const { report, archived } = await checkItem(item, { force: true, actorName: ACTOR });
+          results.push({ id, title: item.title, verdict: report.verdict, reasons: report.reasons, detail: describeReasons(report), releases: report.releases, best: report.best, current: report.current, archived });
+        } catch (error) {
+          if (!(error instanceof AvailabilityPausedError)) throw error;
+          // The app or its indexers are down: no verdict, and the rest of the ids would hit the same wall.
+          results.push({ id, title: item.title, verdict: null, paused: error.pause, detail: error.message });
+          break;
+        }
       }
       const atRisk = results.filter((r) => r['verdict'] === 'at_risk').length;
       return ok(results, `${results.length} checked: ${results.filter((r) => r['verdict'] === 'replaceable').length} replaceable, ${atRisk} at risk, ${results.filter((r) => r['verdict'] === 'unknown').length} unknown.`);

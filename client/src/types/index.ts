@@ -187,9 +187,27 @@ export type AvailabilityReason =
   | 'missing_seasons'
   | 'not_linked'
   | 'indexers_down'
+  | 'no_indexers'
   | 'no_service'
   | 'search_failed';
 export type HoldReason = 'at_risk' | 'unknown' | 'unchecked';
+
+/** Archive's checker is paused for one app: indexers down, rate limited, unreachable or failing. */
+export interface ArchivePause {
+  service: 'radarr' | 'sonarr';
+  reason: 'indexers_down' | 'rate_limited' | 'search_failed' | 'unreachable';
+  detail: string;
+  since: string;
+  until: string;
+  failures: number;
+}
+
+export interface ArchiveStatus {
+  enabled: boolean;
+  paused: ArchivePause[];
+  unchecked: number;
+  lastPassAt: string | null;
+}
 
 export interface AvailabilityReport {
   verdict: AvailabilityVerdict;

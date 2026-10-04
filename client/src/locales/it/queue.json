@@ -21,6 +21,13 @@
     "title_many": "",
     "title_other": ""
   },
+  "archivePaused": {
+    "desc_one": "",
+    "desc_many": "",
+    "desc_other": "",
+    "retry": "",
+    "title": ""
+  },
   "arrWarning": {
     "bannerDesc": "L'eliminazione richiede Sonarr o Radarr per rimuovere i file dal disco. Gli elementi possono essere accodati ma non verranno elaborati finché non viene configurato un servizio.",
     "goToSettings": "Vai alle impostazioni",

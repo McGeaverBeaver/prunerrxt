@@ -25,7 +25,7 @@ import {
   getSyncProgressLog,
 } from '../services/syncCoordinator';
 import logger from '../utils/logger';
-import { checkItem } from '../services/availability';
+import { AvailabilityPausedError, checkItem } from '../services/availability';
 import { archiveItems } from '../services/mediaActions';
 import { requestActorName } from '../utils/actor';
 import { describeReasons, holdState, parseAvailability } from '../services/availabilityVerdict';
@@ -1291,6 +1291,10 @@ router.post('/:id/availability', async (req: Request, res: Response) => {
       message: `${result.report.verdict.replace('_', ' ')}: ${describeReasons(result.report)}`,
     });
   } catch (error) {
+    if (error instanceof AvailabilityPausedError) {
+      res.status(503).json({ success: false, error: `Archive checks are paused. ${error.message}` });
+      return;
+    }
     logger.error('Availability check failed:', error);
     res.status(500).json({ success: false, error: 'Availability check failed' });
   }

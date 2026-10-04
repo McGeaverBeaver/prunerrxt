@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import type {
+  ArchiveStatus,
   AvailabilityCheckResult,
   MediaItem,
   LibraryFilters,
@@ -532,6 +533,12 @@ export const queueApi = {
   checkAvailability: async (id: string): Promise<AvailabilityCheckResult & { message?: string }> => {
     const { data } = await api.post<ApiResponse<AvailabilityCheckResult>>(`/queue/${id}/availability`, undefined, { timeout: 180_000 });
     return { ...data.data!, message: data.message };
+  },
+
+  /** Archive: is the checker paused, and how many queued items still lack a verdict? */
+  archiveStatus: async (): Promise<ArchiveStatus> => {
+    const { data } = await api.get<ApiResponse<ArchiveStatus>>('/queue/archive-status');
+    return data.data ?? { enabled: true, paused: [], unchecked: 0, lastPassAt: null };
   },
 
   /** Archive: keep the item for good (protect it, leave the queue). */

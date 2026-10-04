@@ -361,6 +361,15 @@ function useArchiveMutation<TArgs, TResult>(fn: (args: TArgs) => Promise<TResult
   });
 }
 
+/** Polled while the Queue page is open so a pause shows up and clears on its own. */
+export function useArchiveStatus() {
+  return useQuery({
+    queryKey: ['queue', 'archive-status'] as const,
+    queryFn: queueApi.archiveStatus,
+    refetchInterval: 60_000,
+  });
+}
+
 export function useCheckQueueAvailability() {
   return useArchiveMutation((id: string) => queueApi.checkAvailability(id));
 }

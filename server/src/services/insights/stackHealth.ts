@@ -37,6 +37,7 @@ import { listContainerMounts } from '../containerMounts';
 import { getPermissionCapabilities } from '../permissions';
 import { formatBytes } from '../../utils/format';
 import { defaultGracePeriodDays } from '../mediaActions';
+import { describePause, getAvailabilityStatus } from '../availability';
 import { countBySeverity, worstSeverity, type InsightCounts, type InsightItem, type InsightSeverity, type InsightSource } from './types';
 import { applyAcknowledgements } from './acknowledgements';
 
@@ -309,6 +310,20 @@ function checkSyncAndScans(health: Awaited<ReturnType<typeof getSystemHealth>>, 
   }
 }
 
+function checkArchive(items: InsightItem[]): void {
+  const status = getAvailabilityStatus();
+  for (const pause of status.paused) {
+    items.push({
+      id: `prunerr.archive.paused.${pause.service}`,
+      severity: 'warning',
+      source: 'prunerr',
+      title: `Archive checks paused for ${pause.service === 'radarr' ? 'Radarr' : 'Sonarr'}`,
+      detail: `${describePause(pause)}. Queued items without a verdict stay held, so nothing is deleted on a guess; checks resume on their own once the indexers answer again.`,
+      href: '/queue',
+    });
+  }
+}
+
 function checkDeletionJobs(items: InsightItem[]): void {
   const active = deletionJobsRepo.listActive();
   const stuck = active.filter((job) => job.status !== 'pending' && job.step_started_at && Date.now() - new Date(job.step_started_at).getTime() > STUCK_STEP_MS);
@@ -553,6 +568,7 @@ async function build(): Promise<StackHealthReport> {
   await safe('disk', () => checkDisk(items));
   await safe('watchHistory', () => checkWatchHistory(items));
   await safe('access', () => checkAccess(items));
+  await safe('archive', () => checkArchive(items));
   await safe('safety', () => checkDeletionSafety(items));
 
   const rank: Record<InsightSeverity, number> = { critical: 0, warning: 1, info: 2, ok: 3 };

@@ -7,12 +7,19 @@
       "unchecked": "Held: availability not checked yet",
       "unknown": "Held: could not check availability"
     },
+    "pause": {
+      "indexersDown": "{{app}}: every enabled indexer is failing ({{detail}})",
+      "rateLimited": "{{app}} is rate-limiting searches ({{detail}})",
+      "searchFailed": "{{app}}'s release search failed ({{detail}})",
+      "unreachable": "{{app}} could not be reached ({{detail}})"
+    },
     "reasons": {
       "downgrade": "Best on offer is {{best}}p, your file is {{current}}p",
       "indexersDown": "Every indexer is failing right now",
       "lowSeeders_one": "Torrents only, best has {{count}} seeders",
       "lowSeeders_other": "Torrents only, best has {{count}} seeders",
       "missingSeasons": "{{missing}} of {{checked}} seasons checked have no pack",
+      "noIndexers": "No enabled indexer in Radarr/Sonarr",
       "noReleases_one": "No release on any of {{count}} indexers",
       "noReleases_other": "No release on any of {{count}} indexers",
       "noReleasesPlain": "No release on any indexer",

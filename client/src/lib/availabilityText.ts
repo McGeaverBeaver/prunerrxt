@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import { formatBytes } from '@/lib/utils';
-import type { AvailabilityReport, HoldReason } from '@/types';
+import type { ArchivePause, AvailabilityReport, HoldReason } from '@/types';
 
 /**
  * Archive's re-acquisition verdict for a title, as a badge plus the reason
@@ -63,6 +63,9 @@ export function useAvailabilityText() {
         case 'indexers_down':
           parts.push(t('availability.reasons.indexersDown', 'Every indexer is failing right now'));
           break;
+        case 'no_indexers':
+          parts.push(t('availability.reasons.noIndexers', 'No enabled indexer in Radarr/Sonarr'));
+          break;
         case 'no_service':
           parts.push(t('availability.reasons.noService', 'Radarr or Sonarr is not configured'));
           break;
@@ -96,5 +99,19 @@ export function useAvailabilityText() {
     }
   };
 
-  return { verdictLabel, reasonLine, holdLabel };
+  const pauseLine = (pause: ArchivePause): string => {
+    const app = pause.service === 'radarr' ? 'Radarr' : 'Sonarr';
+    switch (pause.reason) {
+      case 'indexers_down':
+        return t('availability.pause.indexersDown', '{{app}}: every enabled indexer is failing ({{detail}})', { app, detail: pause.detail });
+      case 'rate_limited':
+        return t('availability.pause.rateLimited', '{{app}} is rate-limiting searches ({{detail}})', { app, detail: pause.detail });
+      case 'unreachable':
+        return t('availability.pause.unreachable', '{{app}} could not be reached ({{detail}})', { app, detail: pause.detail });
+      default:
+        return t('availability.pause.searchFailed', "{{app}}'s release search failed ({{detail}})", { app, detail: pause.detail });
+    }
+  };
+
+  return { verdictLabel, reasonLine, holdLabel, pauseLine };
 }

@@ -19,6 +19,12 @@
     "title_one": "{{count}} item(s) held by Archive",
     "title_other": "{{count}} item(s) held by Archive"
   },
+  "archivePaused": {
+    "desc_one": "Queued items without a verdict stay held, so nothing is deleted on a guess. Checks resume on their own once the indexers answer again.",
+    "desc_other": "Queued items without a verdict stay held, so nothing is deleted on a guess. Checks resume on their own once the indexers answer again.",
+    "retry": "retrying {{time}}",
+    "title": "Archive checks paused"
+  },
   "arrWarning": {
     "bannerDesc": "Deletion requires Sonarr or Radarr to remove files from disk. Items can be queued but won't be processed until a service is set up.",
     "goToSettings": "Go to Settings",

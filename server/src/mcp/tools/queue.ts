@@ -5,6 +5,7 @@ import { enqueueDeleteNow, enqueueReadyItems, listJobs } from '../../services/de
 import { formatBytes } from '../../utils/format';
 import { DESTRUCTIVE, MUTATING, READ_ONLY, clampLimit, defineTool, fail, ok } from '../helpers';
 import { describeReasons } from '../../services/availabilityVerdict';
+import { getAvailabilityStatus } from '../../services/availability';
 
 export function registerQueueTools(server: McpServer): void {
   defineTool(
@@ -59,6 +60,7 @@ export function registerQueueTools(server: McpServer): void {
           summary: {
             ...listing.summary,
             totalSizeFormatted: formatBytes(listing.summary.totalSize),
+            archive: getAvailabilityStatus(),
           },
           items: page,
         },

@@ -7,6 +7,7 @@ import {
   ARR_REQUEST_TIMEOUT_MS,
   ARR_SEARCH_TIMEOUT_MS,
   summariseIndexerHealth,
+  type IndexerHealth,
   isNotFound,
   isTimeout,
   resolveArrTiming,
@@ -131,7 +132,7 @@ export class RadarrService {
   }
 
   /** Enabled indexers, and which of them Radarr is currently backing off from. */
-  async getIndexerHealth(): Promise<{ total: number; failing: number }> {
+  async getIndexerHealth(): Promise<IndexerHealth> {
     const [indexers, statuses] = await Promise.all([
       this.client.get<ArrIndexer[]>('/indexer'),
       this.client.get<ArrIndexerStatus[]>('/indexerstatus'),

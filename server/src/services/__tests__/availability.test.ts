@@ -42,7 +42,14 @@ vi.mock('../mediaActions', () => ({
   },
 }));
 
-import { checkItem, checkQueue, itemsNeedingCheck, pickSeasons, resetAvailabilityState } from '../availability';
+import { AvailabilityPausedError, checkItem, checkQueue, getAvailabilityStatus, getPause, itemsNeedingCheck, pickSeasons, probeService, resetAvailabilityState } from '../availability';
+
+function httpError(status: number | null, headers: Record<string, string> = {}): Error {
+  const error = new Error(status ? `Request failed with status code ${status}` : 'connect ECONNREFUSED') as Error & { isAxiosError: boolean; response?: unknown };
+  error.isAxiosError = true;
+  if (status) error.response = { status, headers };
+  return error;
+}
 
 const rel = (over: Record<string, unknown> = {}) => ({
   guid: 'g',
@@ -70,7 +77,7 @@ beforeEach(() => {
   state.activity = [];
   state.radarr = {
     findMovieById: async () => ({ movieFile: { size: 9e9, quality: { quality: { name: 'Bluray-1080p', resolution: 1080 } } } }),
-    getIndexerHealth: async () => ({ total: 2, failing: 0 }),
+    getIndexerHealth: async () => ({ total: 2, failing: 0, retryAt: null }),
     getReleases: async () => [rel()],
   };
   state.sonarr = null;
@@ -109,14 +116,60 @@ describe('checkItem', () => {
     expect(item['status']).toBe('protected');
   });
 
-  it('answers unknown, not at risk, when the search fails or the item is not linked', async () => {
+  it('answers unknown, not at risk, when the item is not linked, has no indexers, or has no app', async () => {
+    expect((await checkItem(movie(5, { radarr_id: null }) as never)).report).toMatchObject({ verdict: 'unknown', reasons: ['not_linked'] });
+    state.radarr!['getIndexerHealth'] = async () => ({ total: 0, failing: 0, retryAt: null });
+    expect((await checkItem(movie(7) as never)).report).toMatchObject({ verdict: 'unknown', reasons: ['no_indexers'] });
+    state.radarr = null;
+    expect((await checkItem(movie(6) as never)).report).toMatchObject({ verdict: 'unknown', reasons: ['no_service'] });
+  });
+
+  it('pauses Radarr instead of storing a verdict when the search fails, and backs off', async () => {
     state.radarr!['getReleases'] = async () => {
       throw new Error('timeout of 120000ms exceeded');
     };
-    expect((await checkItem(movie(4) as never)).report).toMatchObject({ verdict: 'unknown', reasons: ['search_failed'] });
-    expect((await checkItem(movie(5, { radarr_id: null }) as never)).report).toMatchObject({ verdict: 'unknown', reasons: ['not_linked'] });
-    state.radarr = null;
-    expect((await checkItem(movie(6) as never)).report).toMatchObject({ verdict: 'unknown', reasons: ['no_service'] });
+    const item = movie(4);
+    await expect(checkItem(item as never)).rejects.toBeInstanceOf(AvailabilityPausedError);
+    expect(item['availability']).toBeNull();
+    const pause = getPause('radarr');
+    expect(pause).toMatchObject({ service: 'radarr', reason: 'search_failed', failures: 1 });
+    expect(new Date(pause!.until).getTime() - Date.now()).toBeGreaterThan(4 * 60_000);
+    // While paused, an unforced check does not even try; a forced one does.
+    const searches = vi.fn(async () => {
+      throw new Error('still down');
+    });
+    state.radarr!['getReleases'] = searches;
+    await expect(checkItem(movie(8) as never)).rejects.toBeInstanceOf(AvailabilityPausedError);
+    expect(searches).not.toHaveBeenCalled();
+    await expect(checkItem(movie(8) as never, { force: true })).rejects.toBeInstanceOf(AvailabilityPausedError);
+    expect(searches).toHaveBeenCalledTimes(1);
+    expect(getPause('radarr')?.failures).toBe(2);
+    expect(getAvailabilityStatus().paused.map((p) => p.service)).toEqual(['radarr']);
+  });
+
+  it('respects a rate limit and resumes once a search answers again', async () => {
+    state.radarr!['getReleases'] = async () => {
+      throw httpError(429, { 'retry-after': '1200' });
+    };
+    await expect(checkItem(movie(4) as never)).rejects.toBeInstanceOf(AvailabilityPausedError);
+    const pause = getPause('radarr')!;
+    expect(pause.reason).toBe('rate_limited');
+    expect(new Date(pause.until).getTime() - Date.now()).toBeGreaterThan(19 * 60_000);
+
+    state.radarr!['getReleases'] = async () => [rel()];
+    const result = await checkItem(movie(9) as never, { force: true });
+    expect(result.report.verdict).toBe('replaceable');
+    expect(getPause('radarr')).toBeNull();
+  });
+
+  it('pauses when every enabled indexer is backed off, until the earliest one may retry', async () => {
+    const retryAt = new Date(Date.now() + 4 * 60_000).toISOString();
+    state.radarr!['getIndexerHealth'] = async () => ({ total: 3, failing: 3, retryAt });
+    const searches = vi.fn(async () => [rel()]);
+    state.radarr!['getReleases'] = searches;
+    await expect(checkItem(movie(4) as never)).rejects.toBeInstanceOf(AvailabilityPausedError);
+    expect(searches).not.toHaveBeenCalled();
+    expect(getPause('radarr')).toMatchObject({ reason: 'indexers_down', until: retryAt });
   });
 
   it('reuses a fresh verdict unless forced, and a forced re-check clears "delete anyway"', async () => {
@@ -137,7 +190,7 @@ describe('checkItem', () => {
       findSeriesById: async () => ({
         seasons: [0, 1, 2, 3, 4, 5].map((n) => ({ seasonNumber: n, monitored: true, statistics: { episodeFileCount: n === 4 ? 0 : 3 } })),
       }),
-      getIndexerHealth: async () => ({ total: 1, failing: 0 }),
+      getIndexerHealth: async () => ({ total: 1, failing: 0, retryAt: null }),
       getSeasonReleases: async (_id: number, season: number) => (season === 5 ? [] : [rel({ fullSeason: true })]),
     };
     const show = { id: 20, title: 'Show', type: 'show', status: 'pending_deletion', sonarr_id: 9, resolution: '1080', availability: null, availability_decision: null };
@@ -157,6 +210,21 @@ describe('pickSeasons', () => {
   });
 });
 
+describe('probeService', () => {
+  it('pauses an unreachable app and resumes it when the indexers answer', async () => {
+    state.radarr!['getIndexerHealth'] = async () => {
+      throw httpError(null);
+    };
+    expect(await probeService('radarr')).toBe(false);
+    expect(getPause('radarr')?.reason).toBe('unreachable');
+    state.radarr!['getIndexerHealth'] = async () => ({ total: 2, failing: 1, retryAt: null });
+    expect(await probeService('radarr')).toBe(true);
+    expect(getPause('radarr')).toBeNull();
+    state.radarr = null;
+    expect(await probeService('radarr')).toBe(false);
+  });
+});
+
 describe('checkQueue', () => {
   it('checks every queued item without a fresh verdict and tallies the outcome', async () => {
     movie(1);
@@ -165,6 +233,40 @@ describe('checkQueue', () => {
     expect(itemsNeedingCheck().map((i) => i.id)).toEqual([1]);
     const result = await checkQueue();
     expect(result).toMatchObject({ checked: 1, replaceable: 1, atRisk: 0, unknown: 0, archived: 0, skipped: 0 });
+  });
+
+  it('skips a paused service, probes it on the next pass, and carries on when it is back', async () => {
+    movie(1);
+    movie(2);
+    const show = { id: 20, title: 'Show', type: 'show', status: 'pending_deletion', sonarr_id: 9, resolution: '1080', availability: null, availability_decision: null };
+    state.items.set(20, show);
+    state.sonarr = {
+      findSeriesById: async () => ({ seasons: [{ seasonNumber: 1, monitored: true, statistics: { episodeFileCount: 3 } }] }),
+      getIndexerHealth: async () => ({ total: 1, failing: 0, retryAt: null }),
+      getSeasonReleases: async () => [rel({ fullSeason: true })],
+    };
+    const radarrSearches = vi.fn(async () => {
+      throw httpError(503);
+    });
+    state.radarr!['getReleases'] = radarrSearches;
+
+    // Radarr fails on its first item: the second movie waits, the show still gets its verdict.
+    let result = await checkQueue();
+    expect(result).toMatchObject({ checked: 1, paused: 2 });
+    expect(result.pauses.map((p) => p.service)).toEqual(['radarr']);
+    expect(radarrSearches).toHaveBeenCalledTimes(1);
+
+    // Next pass while still paused: Radarr is not touched at all.
+    result = await checkQueue();
+    expect(result).toMatchObject({ checked: 0, paused: 2 });
+    expect(radarrSearches).toHaveBeenCalledTimes(1);
+
+    // Time is up and Radarr is healthy again: probe passes, both movies get verdicts.
+    resetAvailabilityState({ searchGapMs: 0 });
+    state.radarr!['getReleases'] = async () => [rel()];
+    result = await checkQueue();
+    expect(result).toMatchObject({ checked: 2, replaceable: 2, paused: 0 });
+    expect(getAvailabilityStatus()).toMatchObject({ paused: [], unchecked: 0 });
   });
 
   it('does nothing while Archive is off', async () => {

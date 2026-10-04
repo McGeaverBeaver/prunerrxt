@@ -18,6 +18,15 @@ export const ARR_REQUEST_TIMEOUT_MS = 30_000;
  */
 export const ARR_SEARCH_TIMEOUT_MS = 120_000;
 
+export interface IndexerHealth {
+  /** Enabled indexers. */
+  total: number;
+  /** Of those, the ones the app has backed off from right now. */
+  failing: number;
+  /** The earliest moment one of the failing indexers may be tried again. */
+  retryAt: string | null;
+}
+
 /**
  * Count enabled indexers and how many the app has backed off from right now
  * (a `disabledTill` in the future). Shared by Sonarr and Radarr.
@@ -26,13 +35,14 @@ export function summariseIndexerHealth(
   indexers: Array<{ id: number; enable: boolean }>,
   statuses: Array<{ indexerId: number; disabledTill?: string | null }>,
   now: Date = new Date()
-): { total: number; failing: number } {
+): IndexerHealth {
   const enabled = Array.isArray(indexers) ? indexers.filter((i) => i.enable !== false) : [];
   const enabledIds = new Set(enabled.map((i) => i.id));
   const failing = (Array.isArray(statuses) ? statuses : []).filter(
     (s) => enabledIds.has(s.indexerId) && s.disabledTill && new Date(s.disabledTill).getTime() > now.getTime()
-  ).length;
-  return { total: enabled.length, failing };
+  );
+  const retryAt = failing.length > 0 ? failing.map((s) => new Date(s.disabledTill as string).getTime()).sort((a, b) => a - b)[0]! : null;
+  return { total: enabled.length, failing: failing.length, retryAt: retryAt ? new Date(retryAt).toISOString() : null };
 }
 
 /** Progress callback payload for multi-file deletions. */

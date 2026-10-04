@@ -40,6 +40,8 @@ export type AvailabilityReason =
   | 'not_linked'
   /** Every enabled indexer is currently failing, so an empty answer means nothing. */
   | 'indexers_down'
+  /** The app has no enabled indexer at all, so it can never find anything. */
+  | 'no_indexers'
   /** Radarr/Sonarr is not configured. */
   | 'no_service'
   /** The search itself failed; see `error`. */
@@ -210,7 +212,10 @@ export function judge(input: JudgeInput, now: Date = new Date()): Omit<Availabil
   };
 
   if (releases.length === 0) {
-    if (indexers && indexers.total > 0 && indexers.failing >= indexers.total) {
+    if (indexers && indexers.total === 0) {
+      return { ...base, verdict: 'unknown', reasons: ['no_indexers'] };
+    }
+    if (indexers && indexers.failing >= indexers.total) {
       return { ...base, verdict: 'unknown', reasons: ['indexers_down'] };
     }
     return { ...base, verdict: 'at_risk', reasons: ['no_releases'] };
@@ -291,17 +296,21 @@ export interface HoldState {
 }
 
 /**
- * Whether automatic processing must leave this queued item alone. Only the
- * `ask` mode holds anything, and only until a person chooses "delete anyway"
- * (`availability_decision = 'delete'`). An item that has not been checked
- * yet is held too: the checker runs before the queue does, so this is only
- * ever the case when the check could not run at all.
+ * Whether automatic processing must leave this queued item alone.
+ *
+ * In `ask` mode an at-risk or unknown verdict holds the item until a person
+ * chooses "delete anyway" (`availability_decision = 'delete'`). An item with
+ * no verdict yet is held in both `ask` and `archive` mode: the checker runs
+ * before the queue does, so this only happens while Radarr/Sonarr or their
+ * indexers are down, and deleting on no answer is exactly what Archive is
+ * there to prevent. `delete` mode holds nothing.
  */
 export function holdState(item: Pick<MediaItem, 'availability' | 'availability_decision'>, settings: ArchiveSettings = getArchiveSettings()): HoldState {
   const report = parseAvailability(item.availability);
-  if (!settings.enabled || settings.mode !== 'ask') return { held: false, reason: null, report };
+  if (!settings.enabled || settings.mode === 'delete') return { held: false, reason: null, report };
   if (item.availability_decision === 'delete') return { held: false, reason: null, report };
   if (!report) return { held: true, reason: 'unchecked', report };
+  if (settings.mode === 'archive') return { held: false, reason: null, report };
   if (report.verdict === 'replaceable') return { held: false, reason: null, report };
   return { held: true, reason: report.verdict, report };
 }
@@ -331,6 +340,9 @@ export function describeReasons(report: AvailabilityReport): string {
         break;
       case 'indexers_down':
         parts.push('every indexer is currently failing');
+        break;
+      case 'no_indexers':
+        parts.push('no enabled indexer in Radarr/Sonarr');
         break;
       case 'no_service':
         parts.push('Radarr or Sonarr is not configured');

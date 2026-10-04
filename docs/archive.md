@@ -54,7 +54,9 @@ the live search can tell which is which.
 - **Delete anyway.** The verdict is recorded and shown, nothing is held.
 
 Unknown verdicts are held too in *Hold and ask* mode: an item that could not
-be checked is treated as at risk until someone looks.
+be checked is treated as at risk until someone looks. In both *Hold and ask*
+and *Archive automatically* an item that has no verdict yet is held as well,
+so an outage never turns into a deletion on a guess.
 
 ## Archived titles
 
@@ -71,7 +73,8 @@ it is hard to find again.
 
 - A few seconds after items are queued, by a rule or by hand, in the
   background.
-- Every two hours, for queued items that still have no verdict.
+- Every 15 minutes, for queued items that still have no verdict (and to probe
+  a paused app).
 - Right before the nightly queue run, so a hold is in place before anything
   would be deleted.
 - A verdict older than the re-check window (default 7 days) is asked again
@@ -81,6 +84,30 @@ it is hard to find again.
 Searches run one at a time with a short pause between them, and one background
 pass covers at most forty items, so a rule that queues a whole library does not
 hammer your indexers. Each interactive search can take up to a minute or two.
+
+## When the indexers are down
+
+An outage pauses the checks; it never produces a verdict. Before a pass
+touches Radarr or Sonarr it reads that app's indexer status (the same list the
+app shows under *System → Status*). When every enabled indexer is backed off,
+or the app cannot be reached, or a search fails or comes back rate-limited
+(HTTP 429), that app is **paused**:
+
+- its queued items are left without a verdict, which the queue treats as held;
+- the pass carries on with the other app, if it has items;
+- the pause lasts until the earliest indexer may retry, the `Retry-After` the
+  app sent, or a back-off of 5, 15, 30 then 60 minutes for repeated failures.
+
+Every 15 minutes the scheduled check probes a paused app's indexer status
+again and resumes the moment it answers. The Queue page shows a *Archive
+checks paused* banner with the reason and the retry time, stack health on the
+Insights page carries a warning, and `list_queue` reports it under
+`summary.archive`. *Re-check* and *Check now* on a single item still try even
+while paused, so you can test whether things are back.
+
+A verdict is only ever stored when a search actually answered. The one
+exception is an app with no enabled indexer at all, which is recorded as
+*unknown* (`no_indexers`) since nothing will change until one is added.
 
 ## Settings
 
