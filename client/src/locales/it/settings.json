@@ -389,13 +389,19 @@
   },
   "mediaFolders": {
     "add": "",
+    "childCount_one": "",
+    "childCount_many": "",
+    "childCount_other": "",
+    "collapse": "",
     "customPath": "",
     "description": "",
+    "expand_one": "",
+    "expand_many": "",
+    "expand_other": "",
     "help": "",
     "localPlaceholder": "",
     "mappedTo": "",
     "mapThis": "",
-    "mountReadOnly": "",
     "mounts": {
       "none": "",
       "readOnly": "",
@@ -426,7 +432,8 @@
     "saved": "",
     "saveFailed": "",
     "saving": "",
-    "title": ""
+    "title": "",
+    "truncated": ""
   },
   "mediaServer": {
     "description": "Il server da cui Prunerr legge la tua libreria",

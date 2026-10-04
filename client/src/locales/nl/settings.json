@@ -384,13 +384,17 @@
   },
   "mediaFolders": {
     "add": "",
+    "childCount_one": "",
+    "childCount_other": "",
+    "collapse": "",
     "customPath": "",
     "description": "",
+    "expand_one": "",
+    "expand_other": "",
     "help": "",
     "localPlaceholder": "",
     "mappedTo": "",
     "mapThis": "",
-    "mountReadOnly": "",
     "mounts": {
       "none": "",
       "readOnly": "",
@@ -421,7 +425,8 @@
     "saved": "",
     "saveFailed": "",
     "saving": "",
-    "title": ""
+    "title": "",
+    "truncated": ""
   },
   "mediaServer": {
     "description": "De server waarvan Prunerr je bibliotheek leest",

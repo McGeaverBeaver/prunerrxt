@@ -8,9 +8,7 @@ import { useToast } from '@/components/common/Toast';
 import { useContainerMounts, useFolderMappings, useFolderPermissions, useOrphanFolders, useSaveFolderMappings, useSavePermissionSettings } from '@/hooks/useApi';
 import { Toggle } from '../../components/Toggle';
 import type { ContainerMount, FolderMapping } from '@/types';
-
-/** The `<select>` value that reveals the free-text field. */
-const CUSTOM_PATH = '__custom__';
+import { LocalPathPicker } from './LocalPathPicker';
 
 function basename(p: string): string {
   const trimmed = p.replace(/[\\/]+$/, '');
@@ -37,83 +35,6 @@ function suggestLocalPath(remotePath: string, mounts: ContainerMount[]): string 
   if (!wanted) return '';
   const matches = paths.filter((p) => basename(p) === wanted);
   return matches.length === 1 ? matches[0]! : '';
-}
-
-/** The mount a path lives on, by longest mount point prefix. */
-function mountFor(path: string, mounts: ContainerMount[]): ContainerMount | undefined {
-  let best: ContainerMount | undefined;
-  for (const m of mounts) {
-    if (path === m.mountPoint || path.startsWith(`${m.mountPoint}/`)) {
-      if (!best || m.mountPoint.length > best.mountPoint.length) best = m;
-    }
-  }
-  return best;
-}
-
-/**
- * The Prunerr side of a mapping. With the container's mounts detected it is a
- * pick list of those volumes and the folders inside them, with "Type a path…"
- * for anything deeper; without them (not Linux, or nothing mounted) it is the
- * plain text field it always was.
- */
-function LocalPathPicker({ value, onChange, mounts }: { value: string; onChange: (path: string) => void; mounts: ContainerMount[] }) {
-  const { t } = useTranslation('settings');
-  const paths = useMemo(() => pickerPaths(mounts), [mounts]);
-  const known = paths.includes(value);
-  // Stays in free-text mode once chosen, even while the typed value happens to match an option.
-  const [custom, setCustom] = useState(() => value !== '' && !known);
-  const placeholder = t('mediaFolders.localPlaceholder', 'Path as Prunerr sees it, e.g. /media/movies');
-
-  if (mounts.length === 0) {
-    return <Input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} className="font-mono text-sm" aria-label={placeholder} />;
-  }
-
-  const showCustom = custom || (value !== '' && !known);
-  const onMount = mountFor(value, mounts);
-
-  return (
-    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-      <select
-        value={showCustom ? CUSTOM_PATH : value}
-        aria-label={placeholder}
-        onChange={(e) => {
-          if (e.target.value === CUSTOM_PATH) {
-            setCustom(true);
-            return;
-          }
-          setCustom(false);
-          onChange(e.target.value);
-        }}
-        className="w-full rounded-xl border border-surface-600/50 bg-surface-800/60 px-3 py-2.5 font-mono text-sm text-surface-50 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500/50"
-      >
-        <option value="" disabled>
-          {t('mediaFolders.pickPath', 'Choose a mounted folder…')}
-        </option>
-        {mounts.map((m) => (
-          <optgroup
-            key={m.mountPoint}
-            label={m.readOnly ? t('mediaFolders.mountReadOnly', '{{path}} (read-only)', { path: m.mountPoint }) : m.mountPoint}
-          >
-            <option value={m.mountPoint}>{m.mountPoint}</option>
-            {m.subfolders.map((sub) => (
-              <option key={sub} value={sub}>
-                {sub}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-        <option value={CUSTOM_PATH}>{t('mediaFolders.customPath', 'Type a path…')}</option>
-      </select>
-      {showCustom && (
-        <Input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} className="font-mono text-sm" aria-label={placeholder} autoFocus />
-      )}
-      {onMount?.readOnly && (
-        <p className="text-xs text-accent-text">
-          {t('mediaFolders.readOnlyHint', 'This volume is mounted read-only: folders under it can be measured but not deleted. Mount it read-write to enable deletion.')}
-        </p>
-      )}
-    </div>
-  );
 }
 
 import { PanelSection } from '../../components/PanelSection';

@@ -384,13 +384,17 @@
   },
   "mediaFolders": {
     "add": "Add mapping",
+    "childCount_one": "{{count}} folders",
+    "childCount_other": "{{count}} folders",
+    "collapse": "Hide subfolders of {{path}}",
     "customPath": "Type a path…",
     "description": "Lets Prunerr measure and delete unmanaged folders. Pair each root folder as Sonarr/Radarr see it with the path where this container sees the same files.",
+    "expand_one": "Show {{count}} subfolders of {{path}}",
+    "expand_other": "Show {{count}} subfolders of {{path}}",
     "help": "Mount the media share into the Prunerr container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, Prunerr sees /media/movies.",
     "localPlaceholder": "Path as Prunerr sees it, e.g. /media/movies",
     "mappedTo": "mapped to {{path}}",
     "mapThis": "map this",
-    "mountReadOnly": "{{path}} (read-only)",
     "mounts": {
       "none": "None found. Add a volume (a Path in the Unraid template, or a bind mount in docker-compose) for the media share and recreate the container; it will show up here.",
       "readOnly": "read-only",
@@ -421,7 +425,8 @@
     "saved": "Folder mappings saved",
     "saveFailed": "Could not save mappings",
     "saving": "Saving…",
-    "title": "Media folders"
+    "title": "Media folders",
+    "truncated": "Only the first folders are listed; type a deeper path if yours is missing."
   },
   "mediaServer": {
     "description": "The server Prunerr reads your library from",
