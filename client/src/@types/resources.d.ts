@@ -397,6 +397,19 @@ export default interface Resources {
       "queuedTitle": "Queued for deletion"
     },
     "viewAll": "View all",
+    "volumes": {
+      "alsoAs": "also {{paths}}",
+      "configure": "Disk pressure settings",
+      "critical": "Critical",
+      "free": "{{free}} free",
+      "low": "Low",
+      "ok": "OK",
+      "sourcePath": "Monitored path",
+      "subtitle": "Free space on the volumes Sonarr, Radarr and your monitored paths report",
+      "subtitleEnabled": "What disk pressure watches, with its targets",
+      "target": "target {{target}} free",
+      "title": "Storage volumes"
+    },
     "welcome": {
       "configureService": "Configure {{name}}",
       "configureServices": "Configure Services",
@@ -906,6 +919,8 @@ export default interface Resources {
   },
   "library": {
     "card": {
+      "inProgress": "In progress",
+      "inProgressBy": "In progress: {{users}}",
       "individuallyProtected": "Individually protected",
       "neverWatched": "Never watched",
       "plays_one": "{{count}} play",
@@ -936,8 +951,12 @@ export default interface Resources {
       "added": "Added",
       "backToLibrary": "Back to Library",
       "codec": "Codec",
+      "completedBy": "Finished by",
       "detailsHeading": "Details",
+      "episodesWatched": "Episodes watched",
+      "episodesWatchedValue": "{{watched}} of {{total}}",
       "fileSize": "File Size",
+      "inProgressBy": "In progress",
       "lastWatched": "Last Watched",
       "loadFailedDesc": "An error occurred while loading this item.",
       "loadFailedTitle": "Failed to load item",
@@ -1008,6 +1027,7 @@ export default interface Resources {
       "all": "All",
       "allStatus": "All Status",
       "deleted": "Deleted",
+      "inProgress": "In progress",
       "movies": "Movies",
       "queued": "Queued",
       "resultCount_one": "{{count}} result",
@@ -1699,6 +1719,8 @@ export default interface Resources {
     },
     "automation": {
       "diskPressure": {
+        "arrVolumes": "Watch the volumes Sonarr and Radarr report",
+        "arrVolumesHint": "Both apps report free and total space for their root folders, so nothing has to be mounted or typed here. Turn off to watch only the paths below.",
         "description": "Reclaim the lowest-value content only when space runs low",
         "enable": "Disk pressure cleanup",
         "freeSummary": "{{percent}}% free · {{size}}",

@@ -1,4 +1,5 @@
 import logger from '../utils/logger';
+import { computeWatchState, inProgressWindowDays } from './watchState';
 import { decodeHtmlEntities } from '../utils/text';
 import config from '../config';
 import settingsRepo from '../db/repositories/settings';
@@ -576,6 +577,7 @@ export class ScannerService {
           playCount: watchData.playCount,
           lastWatched: watchData.lastWatched,
           watchedBy: watchData.watchedBy,
+          plays: watchData.plays,
         };
       } catch {
         // Continue without watch history data
@@ -1025,6 +1027,12 @@ export class ScannerService {
     }
     const ratingRt: number | undefined = radarrMovie?.ratings?.rottenTomatoes?.value;
 
+    // Per-viewer state from the provider's plays; left untouched on re-sync
+    // when no provider answered, so a provider outage does not blank it.
+    const watchState = tautulliData?.plays
+      ? computeWatchState(tautulliData.plays, { isShow: type === 'show', episodeCount, inProgressDays: inProgressWindowDays() })
+      : undefined;
+
     return {
       type,
       title: decodeHtmlEntities(plexItem.title),
@@ -1073,6 +1081,9 @@ export class ScannerService {
       // Only overwrite requested_by when Overseerr was actually queried for
       // this item; otherwise leave any existing value untouched on re-sync.
       requested_by: overseerrData ? overseerrData.requestedBy : undefined,
+      watch_state: watchState,
+      in_progress: watchState ? watchState.inProgressUsers.length > 0 : undefined,
+      watch_completion: watchState ? watchState.completion : undefined,
     };
   }
 

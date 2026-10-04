@@ -7,7 +7,8 @@ import mediaItemsRepo from '../db/repositories/mediaItems';
 import collectionsRepo from '../db/repositories/collections';
 import rulesRepo from '../db/repositories/rules';
 import settingsRepo from '../db/repositories/settings';
-import { getUsageForPaths, resolveTargetBytes, type FsUsage, type TargetMode } from './diskSpace';
+import { resolveTargetBytes, type FsUsage, type TargetMode } from './diskSpace';
+import { getMonitoredUsage } from './monitoredVolumes';
 
 export type DiskSeverity = 'ok' | 'soft' | 'critical';
 
@@ -54,13 +55,12 @@ export async function computeDiskPressureStats(): Promise<DiskPressureStats> {
   } catch {
     /* ignore malformed paths */
   }
-  if (paths.length === 0) return empty;
-
   const mode = (settingsRepo.getValue('diskPressure_targetMode') as TargetMode) || 'percent';
   const targetValue = settingsRepo.getNumber('diskPressure_targetValue', 10);
   const criticalValue = settingsRepo.getNumber('diskPressure_criticalValue', 5);
 
-  const usages = await getUsageForPaths(paths);
+  // Typed paths via statfs, plus the volumes Sonarr and Radarr report.
+  const usages = await getMonitoredUsage(paths);
   if (usages.length === 0) return empty;
 
   const disks = usages.map((fs) => {

@@ -121,6 +121,6 @@ describe('TautulliService watched status', () => {
     const service = new TautulliService('http://tautulli.local:8181', 'key');
     vi.spyOn(service as unknown as { request: () => Promise<unknown> }, 'request').mockResolvedValue({ data: [] });
     const status = await service.getShowWatchedStatus('1');
-    expect(status).toEqual({ playCount: 0, lastWatched: null, watchedBy: [] });
+    expect(status).toEqual({ playCount: 0, lastWatched: null, watchedBy: [], plays: [] });
   });
 });

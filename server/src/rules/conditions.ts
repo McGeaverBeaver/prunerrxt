@@ -7,6 +7,7 @@ import type {
   ConditionType,
 } from './types';
 import logger from '../utils/logger';
+import { parseWatchState } from '../services/watchState';
 
 // ============================================================================
 // Evaluation Context (for JOIN-requiring evaluators)
@@ -112,6 +113,20 @@ export function resolveFieldValue(item: MediaItem, field: string): FieldValue {
       return parseResolution(item.resolution) ?? 0;
     case 'never_watched':
       return item.play_count === 0;
+    case 'in_progress':
+      return Boolean(item.in_progress);
+    case 'fully_watched': {
+      // Every viewer who started it finished it, and (for a show) every
+      // episode the library holds has been seen. Unknown state is never
+      // "fully watched", so a provider outage cannot make a rule fire.
+      const state = parseWatchState(item.watch_state);
+      if (!state || state.startedBy.length === 0) return false;
+      if (state.inProgressUsers.length > 0) return false;
+      if (state.completedBy.length < state.startedBy.length) return false;
+      return state.completion !== null && state.completion >= 1;
+    }
+    case 'watch_completion':
+      return item.watch_completion === null || item.watch_completion === undefined ? null : Math.round(item.watch_completion * 100);
     case 'watched_by_count': {
       try {
         const wb = item.watched_by;
@@ -177,6 +192,13 @@ function evalOperator(
   fieldValue: unknown,
   conditionValue: unknown
 ): boolean {
+  // Boolean fields (in_progress, fully_watched, never_watched) arrive from the
+  // editor as the strings "true"/"false"; compare them as booleans.
+  if (typeof fieldValue === 'boolean' && typeof conditionValue === 'string') {
+    const lower = conditionValue.trim().toLowerCase();
+    if (lower === 'true' || lower === 'false') conditionValue = lower === 'true';
+  }
+
   switch (operator) {
     // Equality / comparison
     case 'equals':
@@ -394,6 +416,19 @@ function evaluateWatchedBy(
     .map(normalizeUsername)
     .filter((u): u is string => u !== null);
 
+  return matchUserList(usernames, operator, value);
+}
+
+/** The watched_by operators against a stored list of names (in_progress_by, completed_by). */
+function evaluateUserList(names: readonly string[], operator: string, value: unknown): boolean {
+  const usernames = names.map(normalizeUsername).filter((u): u is string => u !== null);
+  if (operator === 'is_null' || operator === 'is_empty') return usernames.length === 0;
+  if (operator === 'is_not_null' || operator === 'is_not_empty') return usernames.length > 0;
+  if (usernames.length === 0) return false;
+  return matchUserList(usernames, operator, value);
+}
+
+function matchUserList(usernames: string[], operator: string, value: unknown): boolean {
   switch (operator) {
     case 'equals': {
       const needle = normalizeUsername(value);
@@ -540,6 +575,11 @@ function evaluateLeaf(
   }
   if (leaf.field === 'watched_by') {
     return evaluateWatchedBy(item, leaf.operator, leaf.value, ctx);
+  }
+  if (leaf.field === 'in_progress_by' || leaf.field === 'completed_by') {
+    const state = parseWatchState(item.watch_state);
+    const names = state ? (leaf.field === 'in_progress_by' ? state.inProgressUsers : state.completedBy) : [];
+    return evaluateUserList(names, leaf.operator, leaf.value);
   }
 
   const fieldValue = resolveFieldValue(item, leaf.field);

@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import logger from '../utils/logger';
+import type { PlayRecord } from './watchState';
 import type {
   TautulliHistory,
   TautulliWatchedStatus,
@@ -87,6 +88,21 @@ interface TautulliLibraryStatsItem {
  * `stopped` is when the session ended; `date` (session start) and `started`
  * are fallbacks for rows Tautulli is still writing.
  */
+/**
+ * Plays in the provider-neutral shape. Tautulli's watched_status is 1 once a
+ * play passed its watched threshold (85 % by default), 0.5 for a partial.
+ */
+export function toPlayRecords(history: TautulliHistory[]): PlayRecord[] {
+  return history
+    .filter((h) => !h.live)
+    .map((h) => ({
+      user: h.friendlyName || h.user || 'unknown',
+      ratingKey: h.ratingKey || null,
+      watched: h.watchedStatus >= 1,
+      stoppedAt: new Date((h.stopped || h.date || h.started || 0) * 1000),
+    }));
+}
+
 export function latestPlay(history: Array<Pick<TautulliHistory, 'stopped' | 'date' | 'started'>>): Date | null {
   let latest = 0;
   for (const row of history) {
@@ -220,6 +236,7 @@ export class TautulliService implements WatchHistoryProvider {
         lastWatched,
         playCount,
         watchedBy,
+        plays: toPlayRecords(history),
       };
     } catch (error) {
       logger.error(`Failed to get watched status for item ${ratingKey}`, {
@@ -336,6 +353,7 @@ export class TautulliService implements WatchHistoryProvider {
         lastWatched,
         playCount,
         watchedBy,
+        plays: toPlayRecords(history),
       };
     } catch (error) {
       logger.error(`Failed to get watched status for show ${showRatingKey}`, {

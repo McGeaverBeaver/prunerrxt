@@ -5,10 +5,14 @@
  * so the scanner can work with any provider.
  */
 
+import type { PlayRecord } from './watchState';
+
 export interface WatchedStatus {
   playCount: number;
   lastWatched: Date | null;
   watchedBy: string[];
+  /** Every play the provider knows for the title, for computeWatchState. */
+  plays?: PlayRecord[];
 }
 
 export interface WatchHistoryProvider {

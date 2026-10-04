@@ -105,6 +105,19 @@
     "queuedTitle": "En cola para eliminación"
   },
   "viewAll": "Ver todo",
+  "volumes": {
+    "alsoAs": "",
+    "configure": "",
+    "critical": "",
+    "free": "",
+    "low": "",
+    "ok": "",
+    "sourcePath": "",
+    "subtitle": "",
+    "subtitleEnabled": "",
+    "target": "",
+    "title": ""
+  },
   "welcome": {
     "configureService": "",
     "configureServices": "Configurar servicios",

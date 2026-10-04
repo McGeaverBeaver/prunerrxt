@@ -105,6 +105,19 @@
     "queuedTitle": "Mis en file de suppression"
   },
   "viewAll": "Tout voir",
+  "volumes": {
+    "alsoAs": "",
+    "configure": "",
+    "critical": "",
+    "free": "",
+    "low": "",
+    "ok": "",
+    "sourcePath": "",
+    "subtitle": "",
+    "subtitleEnabled": "",
+    "target": "",
+    "title": ""
+  },
   "welcome": {
     "configureService": "",
     "configureServices": "Configurer les services",

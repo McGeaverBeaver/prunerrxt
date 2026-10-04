@@ -31,6 +31,23 @@ export interface MediaItem {
   watchedBy?: string[];
   resolution?: string;
   codec?: string;
+  /** Someone started it, has not finished, and played it within the in-progress window. */
+  inProgress?: boolean;
+  /** 0..1 share watched; null when unknown. */
+  watchCompletion?: number | null;
+  watchState?: WatchState | null;
+}
+
+/** Per-viewer watch state computed at sync; see docs/watch-state.md. */
+export interface WatchState {
+  startedBy: string[];
+  completedBy: string[];
+  inProgressUsers: string[];
+  lastPlayedByUser: Record<string, string>;
+  episodesWatched: number;
+  episodesTotal: number | null;
+  completion: number | null;
+  computedAt: string;
 }
 
 // Library
@@ -39,7 +56,7 @@ export interface LibraryFilters {
   page: number;
   limit: number;
   type?: MediaType;
-  status?: 'watched' | 'unwatched' | 'queued' | 'deleted';
+  status?: 'watched' | 'unwatched' | 'queued' | 'deleted' | 'in_progress';
   sortBy: string;
   sortOrder: 'asc' | 'desc';
 }
@@ -409,7 +426,22 @@ export interface HistoryResponse {
 }
 
 // Stats
+/** One volume disk pressure watches: a typed path read in this container, or a volume Sonarr/Radarr reported. */
+export interface MonitoredVolume {
+  path: string;
+  totalBytes: number;
+  freeBytes: number;
+  usedBytes: number;
+  key: string;
+  source?: 'statfs' | 'sonarr' | 'radarr';
+  reportedBy?: string[];
+  targetBytes: number;
+  criticalBytes: number;
+  severity: 'ok' | 'soft' | 'critical';
+}
+
 export interface DashboardStats {
+  disks?: MonitoredVolume[];
   totalStorage: number;
   usedStorage: number;
   reclaimableSpace: number;
@@ -592,6 +624,8 @@ export interface DiskPressureSettings {
   enabled?: boolean;
   observeOnly?: boolean;
   paths?: string[];
+  /** Also watch the volumes Sonarr and Radarr report (default on). */
+  includeArrVolumes?: boolean;
   targetMode?: 'percent' | 'absolute';
   targetValue?: number;
   criticalValue?: number;

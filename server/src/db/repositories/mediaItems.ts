@@ -58,6 +58,9 @@ interface MediaItemRow {
   content_rating: string | null;
   original_language: string | null;
   requested_by: string | null;
+  watch_state: string | null;
+  in_progress: number;
+  watch_completion: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -78,6 +81,7 @@ function rowToMediaItem(row: MediaItemRow): MediaItem {
     type: row.type as MediaType,
     status: row.status as MediaStatus,
     is_protected: Boolean(row.is_protected),
+    in_progress: Boolean(row.in_progress),
     genres: parseJsonArray(row.genres),
     tags: parseJsonArray(row.tags),
   };
@@ -130,6 +134,10 @@ export function getAllMediaItems(filters?: MediaItemFilters): PaginatedResponse<
     } else {
       whereClause += ' AND (play_count IS NULL OR play_count = 0)';
     }
+  }
+
+  if (filters?.inProgress !== undefined) {
+    whereClause += filters.inProgress ? ' AND in_progress = 1' : ' AND in_progress = 0';
   }
 
   // Unwatched for X days filter
@@ -259,9 +267,9 @@ export function createMediaItem(input: CreateMediaItemInput): MediaItem {
       genres, tags, studio, audio_codec, video_codec, hdr, bitrate,
       runtime_minutes, season_count, episode_count, series_status,
       rating_imdb, rating_tmdb, rating_rt, content_rating, original_language,
-      requested_by,
+      requested_by, watch_state, in_progress, watch_completion,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const result = stmt.run(
@@ -302,6 +310,9 @@ export function createMediaItem(input: CreateMediaItemInput): MediaItem {
     input.content_rating ?? null,
     input.original_language ?? null,
     input.requested_by ?? null,
+    input.watch_state ? JSON.stringify(input.watch_state) : null,
+    input.in_progress ? 1 : 0,
+    input.watch_completion ?? null,
     now,
     now
   );
@@ -506,6 +517,18 @@ export function updateMediaItem(id: number, input: UpdateMediaItemInput): MediaI
   if (input.requested_by !== undefined) {
     updates.push('requested_by = ?');
     params.push(input.requested_by);
+  }
+  if (input.watch_state !== undefined) {
+    updates.push('watch_state = ?');
+    params.push(input.watch_state ? JSON.stringify(input.watch_state) : null);
+  }
+  if (input.in_progress !== undefined) {
+    updates.push('in_progress = ?');
+    params.push(input.in_progress ? 1 : 0);
+  }
+  if (input.watch_completion !== undefined) {
+    updates.push('watch_completion = ?');
+    params.push(input.watch_completion);
   }
 
   if (updates.length === 0) {

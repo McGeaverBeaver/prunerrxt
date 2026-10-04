@@ -18,6 +18,7 @@
 import fs from 'fs/promises';
 import settingsRepo from '../../db/repositories/settings';
 import deletionJobsRepo from '../../db/repositories/deletionJobs';
+import * as rulesRepo from '../../db/repositories/rules';
 import scanHistoryRepo from '../../db/repositories/scanHistoryRepo';
 import watchHistoryCacheRepo from '../../db/repositories/watchHistoryCache';
 import { getDatabase } from '../../db';
@@ -28,7 +29,7 @@ import { getApiKeyUsageSummary } from '../apiKeyUsage';
 import { computeDiskPressureStats } from '../dashboardStats';
 import { getSystemHealth, type ServiceHealthStatus } from '../systemHealth';
 import { getRadarrService, getSonarrService } from '../init';
-import { getMediaServerLabel } from '../mediaServer';
+import { getConfiguredServerType, getMediaServerLabel } from '../mediaServer';
 import { fetchHealth, fetchQueueStatus, fetchRootFolders, fetchSystemStatus, type ArrHealthItem, type ArrQueueStatus } from '../arrDiagnostics';
 import { getDeletionSetup, type DiagnosticsService } from '../serviceDiagnostics';
 import { getFolderMappings } from '../orphanFolders';
@@ -436,6 +437,25 @@ function checkWatchHistory(items: InsightItem[]): void {
     });
     return;
   }
+  // Plex's own history only records plays that reached the watched threshold,
+  // so under the direct provider a half-watched movie never shows as in
+  // progress. Only worth saying when a rule actually relies on the field.
+  const direct = provider === 'plex' || provider === 'mediaServer' || (!provider && !externalConfigured('tautulli') && !externalConfigured('tracearr'));
+  if (direct && getConfiguredServerType() === 'plex') {
+    const fields = ['in_progress', 'fully_watched', 'watch_completion', 'in_progress_by', 'completed_by'];
+    const relying = rulesRepo.getEnabledRules().filter((rule) => fields.some((f) => (typeof rule.conditions === 'string' ? rule.conditions : JSON.stringify(rule.conditions ?? '')).includes(`"${f}"`)));
+    if (relying.length > 0) {
+      items.push({
+        id: 'prunerr.watchHistory.noPartialPlays',
+        severity: 'info',
+        source: 'prunerr',
+        title: `${relying.length} rule${relying.length === 1 ? '' : 's'} use watch state, but Plex direct history cannot see partial plays`,
+        detail: `${relying.map((r) => `"${r.name}"`).join(', ')}. Plex only records a play once it reaches the watched threshold, so a movie someone stopped halfway is never "in progress" here (shows still are, while episodes remain). Tautulli records partial plays; select it as the watch history provider for the full picture.`,
+        href: SETTINGS_CONNECTIONS,
+      });
+    }
+  }
+
   const latest = watchHistoryCacheRepo.getLatestTimestamp();
   if (latest && Date.now() - new Date(latest).getTime() > QUIET_HISTORY_MS) {
     items.push({

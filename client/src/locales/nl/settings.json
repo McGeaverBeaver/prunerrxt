@@ -66,6 +66,8 @@
   },
   "automation": {
     "diskPressure": {
+      "arrVolumes": "",
+      "arrVolumesHint": "",
       "description": "Ruim alleen de minst waardevolle content op wanneer de ruimte krap wordt",
       "enable": "Opruimen bij schijfdruk",
       "freeSummary": "{{percent}}% vrij · {{size}}",

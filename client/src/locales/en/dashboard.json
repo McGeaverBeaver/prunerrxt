@@ -99,6 +99,19 @@
     "queuedTitle": "Queued for deletion"
   },
   "viewAll": "View all",
+  "volumes": {
+    "alsoAs": "also {{paths}}",
+    "configure": "Disk pressure settings",
+    "critical": "Critical",
+    "free": "{{free}} free",
+    "low": "Low",
+    "ok": "OK",
+    "sourcePath": "Monitored path",
+    "subtitle": "Free space on the volumes Sonarr, Radarr and your monitored paths report",
+    "subtitleEnabled": "What disk pressure watches, with its targets",
+    "target": "target {{target}} free",
+    "title": "Storage volumes"
+  },
   "welcome": {
     "configureService": "Configure {{name}}",
     "configureServices": "Configure Services",

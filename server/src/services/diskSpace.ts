@@ -13,6 +13,10 @@ export interface FsUsage {
   usedBytes: number;
   /** Coarse filesystem identity used to dedupe multiple paths on one mount */
   key: string;
+  /** How it was measured: statfs inside this container, or reported by an app. */
+  source?: 'statfs' | 'sonarr' | 'radarr';
+  /** `app:path` pairs that reported the same volume (arr-reported volumes only). */
+  reportedBy?: string[];
 }
 
 export type TargetMode = 'percent' | 'absolute';

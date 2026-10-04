@@ -65,6 +65,32 @@ if (neverWatched.length > 0) {
   });
 }
 
+// 1b. Finished shows: everyone who started them finished, nothing played in 30+ days
+const finishedShows = items.filter((item) => {
+  if (item.type !== 'show' || item.in_progress) return false;
+  if (item.watch_completion === null || item.watch_completion < 1) return false;
+  if (!item.last_watched_at) return false;
+  const days = Math.floor((now.getTime() - new Date(item.last_watched_at).getTime()) / (1000 * 60 * 60 * 24));
+  return days >= 30;
+});
+if (finishedShows.length > 0) {
+  const size = finishedShows.reduce((sum, i) => sum + (i.file_size || 0), 0);
+  suggestions.push({
+    id: 'finished-shows',
+    name: 'Finished Shows',
+    description: 'Every episode watched, nobody in progress, quiet for 30+ days',
+    icon: 'check',
+    matchCount: finishedShows.length,
+    totalSize: size,
+    totalSizeFormatted: formatBytes(size),
+    conditions: [
+      { field: 'fully_watched', operator: 'equals', value: true },
+      { field: 'days_since_watched', operator: 'greater_than', value: 30 },
+    ],
+    mediaType: 'show',
+  });
+}
+
 // 2. Watched once (watched exactly once, 60+ days ago)
 const watchedOnce = items.filter((item) => {
   if (item.play_count !== 1) return false;

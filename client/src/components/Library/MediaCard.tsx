@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { Film, Tv, Eye, EyeOff, Trash2, MoreVertical, Shield, Clock, ExternalLink, Check, Info, BarChart3 } from 'lucide-react';
+import {
+  PlayCircle, Film, Tv, Eye, EyeOff, Trash2, MoreVertical, Shield, Clock, ExternalLink, Check, Info, BarChart3 } from 'lucide-react';
 import { cn, formatBytes, formatRelativeTime } from '@/lib/utils';
 import { useMarkForDeletion, useProtectItem, useUnprotectItem, useSettings } from '@/hooks/useApi';
 import { DeletionOptionsModal, type DeletionOptions } from './DeletionOptionsModal';
@@ -196,7 +197,15 @@ export default React.memo(function MediaCard({ item, onRefetch, index: _index = 
           hasStatusStrip ? "top-9" : "top-3",
           isMenuOpen ? "opacity-0" : "opacity-100 group-hover:opacity-0"
         )}>
-          {item.watched ? (
+          {item.inProgress ? (
+            <div
+              className="flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/20 px-1.5 py-1 backdrop-blur-sm"
+              title={t('card.inProgressBy', 'In progress: {{users}}', { users: (item.watchState?.inProgressUsers ?? []).join(', ') })}
+            >
+              <PlayCircle className="w-3.5 h-3.5 text-sky-300" />
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-sky-200">{t('card.inProgress', 'In progress')}</span>
+            </div>
+          ) : item.watched ? (
             <div className="p-1.5 rounded-lg bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30">
               {/* On the artwork rather than a theme surface, so it stays
                   light-on-dark in both themes. */}

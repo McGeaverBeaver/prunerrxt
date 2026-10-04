@@ -685,6 +685,19 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_insight_snapshots_captured_at ON insight_snapshots(captured_at);
     `,
   },
+  {
+    version: 29,
+    name: 'media_items_watch_state',
+    up: `
+      -- Per-viewer watch state computed at sync (services/watchState.ts):
+      -- who is in progress, who finished, episodes watched. in_progress and
+      -- watch_completion are denormalised for the rules engine and filters.
+      ALTER TABLE media_items ADD COLUMN watch_state TEXT;
+      ALTER TABLE media_items ADD COLUMN in_progress INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE media_items ADD COLUMN watch_completion REAL;
+      CREATE INDEX IF NOT EXISTS idx_media_items_in_progress ON media_items(in_progress);
+    `,
+  },
 ];
 
 // Schema version tracking table

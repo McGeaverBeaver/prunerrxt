@@ -66,6 +66,8 @@
   },
   "automation": {
     "diskPressure": {
+      "arrVolumes": "",
+      "arrVolumesHint": "",
       "description": "Gibt die am wenigsten wertvollen Inhalte nur frei, wenn der Speicherplatz knapp wird",
       "enable": "Bereinigung bei Speicherdruck",
       "freeSummary": "{{percent}} % frei · {{size}}",

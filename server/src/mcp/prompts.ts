@@ -21,7 +21,7 @@ export function registerPrompts(server: McpServer): void {
         [
           'Review my Prunerr deletion queue.',
           '1. Call list_queue and get_overview.',
-          '2. For anything surprising (recently added, high rating, requested by someone, watched recently, part of a collection), call get_media_item and explain why it might be a mistake.',
+          '2. For anything surprising (recently added, high rating, requested by someone, watched recently, inProgress true, part of a collection), call get_media_item and explain why it might be a mistake.',
           '3. Summarise: how many items, how much space, how many are ready for deletion now, and which ones you recommend removing from the queue with remove_from_queue (ask me before removing).',
           'Do not call delete_now or process_queue with dryRun=false.',
         ].join('\n')
@@ -44,7 +44,7 @@ export function registerPrompts(server: McpServer): void {
           `I want to free about ${targetGB} GB on my media server${mediaType && mediaType !== 'all' ? ` from ${mediaType} content` : ''}.`,
           '1. Call get_overview, then get_recommendations with a generous limit, and search_library sorted by size for large unwatched items.',
           '2. Skip anything protected, anything requested by someone else unless it is very stale, and anything already queued.',
-          '3. Propose a list that reaches the target, with title, size, last watched and why. Ask me to confirm.',
+          '3. Skip anything with inProgress true (someone is watching it) and prefer fully watched or never played titles. Propose a list that reaches the target, with title, size, last watched and why. Ask me to confirm.',
           '4. Only after I confirm, call queue_for_deletion with the ids (use the default grace period so I can still change my mind). Never call delete_now.',
         ].join('\n')
       )

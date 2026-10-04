@@ -69,6 +69,8 @@
   },
   "automation": {
     "diskPressure": {
+      "arrVolumes": "",
+      "arrVolumesHint": "",
       "description": "Récupère le contenu le moins utile uniquement quand l'espace vient à manquer",
       "enable": "Nettoyage sur pression disque",
       "freeSummary": "{{percent}} % libre · {{size}}",

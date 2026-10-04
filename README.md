@@ -54,6 +54,8 @@ You set up rules like "delete movies nobody's watched in 6 months that are over 
 
 - **Per-User Watch History** &mdash; Read directly from your media server, or integrate Tautulli or Tracearr (both Plex-only) to track who watched what. Build rules around specific users' watching habits.
 
+- **Watch State** &mdash; Every sync works out who is in progress on a title, who finished it, and how much of a show has been seen, so rules can delete finished shows and never touch one someone is watching (`in_progress`, `fully_watched`, `watch_completion`). [More &rarr;](docs/watch-state.md)
+
 - **API** &mdash; Full REST API with key authentication for scripts, automation, and mobile apps like nzb360. [More &rarr;](https://github.com/helliott20/prunerr/wiki/API-Reference)
 
 - **AI assistant (MCP)** &mdash; A built-in [Model Context Protocol](https://modelcontextprotocol.io) server at `/mcp`. Let Claude, Cursor or any MCP client search the library, review the queue, preview and build rules, and queue cleanups with you &mdash; through the same grace-period queue, with protected items off limits and immediate deletion opt-in. [More &rarr;](docs/mcp.md)
@@ -137,6 +139,7 @@ Full docs are in the **[Wiki](https://github.com/helliott20/prunerr/wiki)**:
 - [Login & access](docs/authentication.md) &mdash; Single sign-on (Authentik/OIDC), roles, local account
 - [AI assistant (MCP)](docs/mcp.md) &mdash; Connect Claude, Cursor and other MCP clients
 - [Insights](docs/insights.md) &mdash; Stack health, library quality, watch patterns, playback friction
+- [Watch state](docs/watch-state.md) &mdash; In-progress and finished detection per viewer, and the rule fields built on it
 - [Troubleshooting](https://github.com/helliott20/prunerr/wiki/Troubleshooting) &mdash; Common issues
 
 ## Privacy

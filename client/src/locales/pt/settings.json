@@ -69,6 +69,8 @@
   },
   "automation": {
     "diskPressure": {
+      "arrVolumes": "",
+      "arrVolumesHint": "",
       "description": "Recupera o conteúdo de menor valor apenas quando o espaço estiver a acabar",
       "enable": "Limpeza por pressão de disco",
       "freeSummary": "{{percent}}% livre · {{size}}",

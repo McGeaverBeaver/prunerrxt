@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import logger from '../utils/logger';
+import { cacheEntriesToPlays } from './watchState';
 import settingsRepo from '../db/repositories/settings';
 import watchHistoryCache from '../db/repositories/watchHistoryCache';
 import type { WatchHistoryProvider, WatchedStatus } from './watchHistory';
@@ -261,6 +262,7 @@ export class TracearrService implements WatchHistoryProvider {
         playCount,
         lastWatched: lastEntry ? new Date(lastEntry.stopped_at) : null,
         watchedBy,
+        plays: cacheEntriesToPlays(entries),
       };
     } catch (error) {
       logger.error(`Failed to get Tracearr watched status for item ${ratingKey}`, {
@@ -309,6 +311,7 @@ export class TracearrService implements WatchHistoryProvider {
         playCount,
         lastWatched: lastEntry ? new Date(lastEntry.stopped_at) : null,
         watchedBy,
+        plays: cacheEntriesToPlays(entries),
       };
     } catch (error) {
       logger.error(`Failed to get Tracearr watched status for show ${showRatingKey}`, {

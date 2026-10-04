@@ -18,6 +18,8 @@ import {
   Monitor,
   FileVideo,
   History,
+  PlayCircle,
+  Check,
 } from 'lucide-react';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
@@ -38,7 +40,7 @@ import {
   useSonarrDetail,
 } from '@/hooks/useApi';
 import { cn, formatBytes, formatRelativeTime, formatDate } from '@/lib/utils';
-import type { Settings } from '@/types';
+import type { Settings, WatchState } from '@/types';
 
 /**
  * Spreads the poster backdrop across the whole page as a soft ellipse rather
@@ -68,6 +70,9 @@ interface RawMediaItem {
   play_count?: number;
   watched_by?: string;
   last_watched_at?: string;
+  watch_state?: string | null;
+  in_progress?: number | boolean;
+  watch_completion?: number | null;
   added_at?: string;
   created_at?: string;
   status: string;
@@ -105,6 +110,8 @@ function normalizeItem(raw: RawMediaItem) {
       } catch { return String(raw.watched_by); }
     })(),
     lastWatched: raw.last_watched_at,
+    inProgress: Boolean(raw.in_progress),
+    watchState: parseWatchStateJson(raw.watch_state),
     addedAt: raw.added_at || raw.created_at,
     status: raw.status === 'pending_deletion' ? 'queued' : raw.status === 'monitored' ? 'active' : raw.status,
     isProtected: Boolean(raw.is_protected),
@@ -118,6 +125,18 @@ function normalizeItem(raw: RawMediaItem) {
     filePath: raw.file_path,
     createdAt: raw.created_at,
   };
+}
+
+
+/** The watch_state column is JSON; a row synced before watch state existed has none. */
+function parseWatchStateJson(raw: string | null | undefined): WatchState | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? (parsed as WatchState) : null;
+  } catch {
+    return null;
+  }
 }
 
 export default function MediaItemDetail() {
@@ -478,6 +497,27 @@ export default function MediaItemDetail() {
                     label={t('detail.watchedBy', 'Watched By')}
                     value={item.watchedBy}
                     className="sm:col-span-2"
+                  />
+                )}
+                {item.watchState && item.watchState.inProgressUsers.length > 0 && (
+                  <DetailField
+                    icon={<PlayCircle className="w-4 h-4" />}
+                    label={t('detail.inProgressBy', 'In progress')}
+                    value={item.watchState.inProgressUsers.join(', ')}
+                  />
+                )}
+                {item.watchState && item.watchState.completedBy.length > 0 && (
+                  <DetailField
+                    icon={<Check className="w-4 h-4" />}
+                    label={t('detail.completedBy', 'Finished by')}
+                    value={item.watchState.completedBy.join(', ')}
+                  />
+                )}
+                {item.watchState && item.watchState.episodesTotal !== null && (
+                  <DetailField
+                    icon={<BarChart3 className="w-4 h-4" />}
+                    label={t('detail.episodesWatched', 'Episodes watched')}
+                    value={t('detail.episodesWatchedValue', '{{watched}} of {{total}}', { watched: item.watchState.episodesWatched, total: item.watchState.episodesTotal })}
                   />
                 )}
                 {item.isProtected && item.protectionReason && (

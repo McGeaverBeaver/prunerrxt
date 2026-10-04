@@ -167,6 +167,7 @@ export interface TautulliWatchedStatus {
   lastWatched: Date | null;
   playCount: number;
   watchedBy: string[];
+  plays?: import('./watchState').PlayRecord[];
 }
 
 export interface TautulliLibraryStats {

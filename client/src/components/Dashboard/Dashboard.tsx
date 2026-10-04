@@ -29,7 +29,7 @@ import { useStats, useRecentActivity, useUpcomingDeletions, useRecommendations, 
 import { SystemHealthCard } from '@/components/Health/SystemHealthCard';
 import { ScheduleCadenceCard } from '@/components/Health/ScheduleCadenceCard';
 import { WelcomeCard } from './WelcomeCard';
-import type { ActivityLogEntry, Recommendation, UnraidDisk, StorageSnapshot } from '@/types';
+import type { ActivityLogEntry, Recommendation, UnraidDisk, StorageSnapshot, MonitoredVolume } from '@/types';
 import { formatBytes, formatRelativeTime, cn } from '@/lib/utils';
 import { activityTargetPath, libraryItemPath } from '@/lib/links';
 import { formatActivity } from '@/lib/activityFormatter';
@@ -458,6 +458,11 @@ export default function Dashboard() {
       {/* Storage Trends Chart */}
       {!hasCriticalError && storageHistory && storageHistory.length > 0 && (
         <StorageTrendsChart data={storageHistory} loading={storageHistoryLoading} />
+      )}
+
+      {/* Volumes - the paths and Sonarr/Radarr volumes disk pressure watches, for installs without Unraid */}
+      {!hasCriticalError && !unraidLoading && !unraidStats?.configured && (stats?.disks?.length ?? 0) > 0 && (
+        <VolumesCard volumes={stats!.disks!} diskPressureEnabled={Boolean(stats?.diskPressureEnabled)} />
       )}
 
       {/* Storage Overview - Only show if Unraid is configured */}
@@ -895,6 +900,72 @@ function RecommendationCard({ item, onMarkForDeletion, isLoading }: Recommendati
         <Trash2 className="w-3.5 h-3.5" />
         {t('recCard.queueForDeletion', 'Queue for Deletion')}
       </button>
+    </div>
+  );
+}
+
+/**
+ * Free space per volume for installs without Unraid: typed disk-pressure
+ * paths read inside the container, and the volumes Sonarr and Radarr
+ * report for their root folders, which need no mount here.
+ */
+function VolumesCard({ volumes, diskPressureEnabled }: { volumes: MonitoredVolume[]; diskPressureEnabled: boolean }) {
+  const { t } = useTranslation('dashboard');
+  const sourceLabel = (v: MonitoredVolume) =>
+    v.source === 'sonarr' ? 'Sonarr' : v.source === 'radarr' ? 'Radarr' : t('volumes.sourcePath', 'Monitored path');
+  const barColor = (v: MonitoredVolume) => (v.severity === 'critical' ? 'bg-ruby-500' : v.severity === 'soft' ? 'bg-amber-500' : 'bg-accent-500');
+  return (
+    <div className="card p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent-500/10">
+            <HardDrive className="w-5 h-5 text-accent-text" />
+          </div>
+          <div>
+            <h2 className="text-lg font-display font-semibold text-surface-50">{t('volumes.title', 'Storage volumes')}</h2>
+            <p className="text-sm text-surface-500">
+              {diskPressureEnabled
+                ? t('volumes.subtitleEnabled', 'What disk pressure watches, with its targets')
+                : t('volumes.subtitle', 'Free space on the volumes Sonarr, Radarr and your monitored paths report')}
+            </p>
+          </div>
+        </div>
+        <Link to="/settings?section=automation" className="text-xs text-accent-text hover:underline">
+          {t('volumes.configure', 'Disk pressure settings')}
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {volumes.map((v) => {
+          const pct = v.totalBytes > 0 ? Math.min(100, (v.usedBytes / v.totalBytes) * 100) : 0;
+          const others = (v.reportedBy ?? []).filter((r) => !r.endsWith(`:${v.path}`));
+          return (
+            <div key={v.key} className="rounded-xl border border-surface-700/60 bg-surface-800/30 p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate font-mono text-sm text-surface-50" title={v.path}>{v.path}</p>
+                  <p className="text-[11px] text-surface-500">
+                    {sourceLabel(v)}
+                    {others.length > 0 && ` · ${t('volumes.alsoAs', 'also {{paths}}', { paths: others.join(', ') })}`}
+                  </p>
+                </div>
+                <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide', v.severity === 'critical' ? 'bg-ruby-500/15 text-ruby-text' : v.severity === 'soft' ? 'bg-amber-500/15 text-accent-text' : 'bg-emerald-500/15 text-emerald-text')}>
+                  {v.severity === 'critical' ? t('volumes.critical', 'Critical') : v.severity === 'soft' ? t('volumes.low', 'Low') : t('volumes.ok', 'OK')}
+                </span>
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-800/80">
+                <div className={cn('h-full rounded-full', barColor(v))} style={{ width: `${pct}%` }} />
+              </div>
+              <div className="mt-2 flex items-baseline justify-between text-xs">
+                <span className="text-surface-300">{t('volumes.free', '{{free}} free', { free: formatBytes(v.freeBytes) })}</span>
+                <span className="text-surface-500">{t('storage.ofTotal', 'of {{total}}', { total: formatBytes(v.totalBytes) })}</span>
+              </div>
+              {diskPressureEnabled && (
+                <p className="mt-1 text-[11px] text-surface-500">{t('volumes.target', 'target {{target}} free', { target: formatBytes(v.targetBytes) })}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

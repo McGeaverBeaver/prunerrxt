@@ -99,6 +99,19 @@
     "queuedTitle": "In wachtrij voor verwijdering"
   },
   "viewAll": "Alles bekijken",
+  "volumes": {
+    "alsoAs": "",
+    "configure": "",
+    "critical": "",
+    "free": "",
+    "low": "",
+    "ok": "",
+    "sourcePath": "",
+    "subtitle": "",
+    "subtitleEnabled": "",
+    "target": "",
+    "title": ""
+  },
   "welcome": {
     "configureService": "",
     "configureServices": "Services configureren",

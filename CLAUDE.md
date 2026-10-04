@@ -122,6 +122,17 @@ identity is ever different (`git config user.email`), set it before committing.
   to five minutes; `captureInsightSnapshot` stores one row a day in
   `insight_snapshots` for trends. The MCP tools `get_insights` and
   `get_insight_trends` return the same reports. See docs/insights.md.
+- Watch state (`services/watchState.ts`): every provider's `WatchedStatus` now
+  carries its raw `plays`; the scanner turns them into `media_items.watch_state`
+  (JSON), `in_progress` and `watch_completion` at sync. Rule fields
+  `in_progress`, `fully_watched`, `watch_completion`, `in_progress_by` and
+  `completed_by` read those columns (`rules/conditions.ts`); MCP shapes carry
+  `inProgress` / `watchCompletion` / `watchState`. See docs/watch-state.md.
+- Disk pressure watches the typed paths (statfs) plus the volumes Sonarr and
+  Radarr report from `/diskspace` (`services/arrDiskSpace.ts`, merged in
+  `services/monitoredVolumes.ts`, switch `diskPressure_includeArrVolumes`).
+  `computeDiskPressureStats`, the `monitorDiskPressure` task, the dashboard's
+  volumes card and `get_overview` all read that merged list.
 - Permission repair (`services/permissions.ts`) relies on the Dockerfile
   granting the Node binary `cap_chown,cap_fowner`; it only ever runs on paths
   resolved inside a folder mapping.

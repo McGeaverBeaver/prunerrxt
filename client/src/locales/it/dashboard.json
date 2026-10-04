@@ -105,6 +105,19 @@
     "queuedTitle": "In coda per l'eliminazione"
   },
   "viewAll": "Visualizza tutto",
+  "volumes": {
+    "alsoAs": "",
+    "configure": "",
+    "critical": "",
+    "free": "",
+    "low": "",
+    "ok": "",
+    "sourcePath": "",
+    "subtitle": "",
+    "subtitleEnabled": "",
+    "target": "",
+    "title": ""
+  },
   "welcome": {
     "configureService": "",
     "configureServices": "Configura i servizi",

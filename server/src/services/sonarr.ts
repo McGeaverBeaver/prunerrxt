@@ -717,6 +717,21 @@ export class SonarrService {
   // ==========================================================================
 
   /** The underlying HTTP client, for the shared diagnostics helpers. */
+  /** Free and total space of every filesystem holding a root folder, as Sonarr sees it. */
+  async getDiskSpace(): Promise<Array<{ path: string; freeSpace: number; totalSpace: number }>> {
+    try {
+      const response = await this.client.get('/diskspace');
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      logger.error('Failed to get disk space from Sonarr', {
+        status: axiosError.response?.status,
+        message: axiosError.message,
+      });
+      throw error;
+    }
+  }
+
   get httpClient(): AxiosInstance {
     return this.client;
   }

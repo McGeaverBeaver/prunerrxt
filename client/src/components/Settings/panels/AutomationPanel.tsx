@@ -462,6 +462,21 @@ export default function AutomationPanel({
 
           {dpEnabled && (
             <>
+              <RowHeader
+                title={t('automation.diskPressure.arrVolumes', 'Watch the volumes Sonarr and Radarr report')}
+                description={t(
+                  'automation.diskPressure.arrVolumesHint',
+                  'Both apps report free and total space for their root folders, so nothing has to be mounted or typed here. Turn off to watch only the paths below.'
+                )}
+                control={
+                  <Toggle
+                    checked={dp.includeArrVolumes ?? true}
+                    onChange={(checked) => patchDisk({ includeArrVolumes: checked })}
+                    label={t('automation.diskPressure.arrVolumes', 'Watch the volumes Sonarr and Radarr report')}
+                  />
+                }
+              />
+
               {/* monitored paths */}
               <div className="flex flex-col gap-2">
                 <p className="text-xs font-medium text-surface-200">

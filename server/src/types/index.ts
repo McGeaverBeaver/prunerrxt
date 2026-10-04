@@ -1,3 +1,4 @@
+import type { WatchState } from '../services/watchState';
 import { z } from 'zod';
 
 // ============================================================================
@@ -68,6 +69,12 @@ export interface MediaItem {
   rating_rt: number | null;
   content_rating: string | null;
   original_language: string | null;
+  /** JSON WatchState (services/watchState.ts); null until a sync with a watch history provider. */
+  watch_state: string | null;
+  /** Someone has started it, not finished, and played it within the in-progress window. */
+  in_progress: boolean;
+  /** 0..1 share watched (a movie is 0 or 1; a show is episodes watched / held); null when unknown. */
+  watch_completion: number | null;
   // Who requested this content (from Overseerr / Jellyseerr)
   requested_by: string | null;
   created_at: string;
@@ -173,6 +180,9 @@ export interface CreateMediaItemInput {
   content_rating?: string;
   original_language?: string;
   requested_by?: string | null;
+  watch_state?: WatchState | null;
+  in_progress?: boolean;
+  watch_completion?: number | null;
 }
 
 export interface UpdateMediaItemInput {
@@ -221,6 +231,9 @@ export interface UpdateMediaItemInput {
   content_rating?: string;
   original_language?: string;
   requested_by?: string | null;
+  watch_state?: WatchState | null;
+  in_progress?: boolean;
+  watch_completion?: number | null;
 }
 
 /**
@@ -277,6 +290,8 @@ export interface MediaItemFilters {
   maxSize?: number;
   watched?: boolean; // true = watched (play_count > 0), false = unwatched (play_count = 0)
   unwatchedDays?: number; // Items not watched in X days
+  /** true = someone is in progress on it (watch state), false = nobody is */
+  inProgress?: boolean;
   isProtected?: boolean;
   /**
    * When true, exclude soft-deleted tombstone rows (status='deleted') from the

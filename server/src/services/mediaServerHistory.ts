@@ -1,4 +1,5 @@
 import logger from '../utils/logger';
+import { cacheEntriesToPlays } from './watchState';
 import settingsRepo from '../db/repositories/settings';
 import plexUsersRepo from '../db/repositories/plexUsers';
 import watchHistoryCache from '../db/repositories/watchHistoryCache';
@@ -163,6 +164,7 @@ export class MediaServerHistoryService implements WatchHistoryProvider {
         playCount: entries.length,
         lastWatched: lastEntry ? new Date(lastEntry.stopped_at) : null,
         watchedBy,
+        plays: cacheEntriesToPlays(entries),
       };
     } catch (error) {
       logger.error(`Failed to get ${this.label} watched status for item ${ratingKey}`, {
@@ -198,6 +200,7 @@ export class MediaServerHistoryService implements WatchHistoryProvider {
         playCount: entries.length,
         lastWatched: lastEntry ? new Date(lastEntry.stopped_at) : null,
         watchedBy,
+        plays: cacheEntriesToPlays(entries),
       };
     } catch (error) {
       logger.error(`Failed to get ${this.label} watched status for show ${showRatingKey}`, {

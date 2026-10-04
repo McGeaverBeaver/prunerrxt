@@ -25,6 +25,7 @@ import {
   getSyncProgressLog,
 } from '../services/syncCoordinator';
 import logger from '../utils/logger';
+import { parseWatchState } from '../services/watchState';
 import { formatBytes } from '../utils/format';
 import { toThumbnailUrl } from '../utils/posterUrl';
 import { openSseStream } from '../utils/sse';
@@ -34,7 +35,7 @@ const router = Router();
 // Query parameter schema for library filtering
 const LibraryFiltersSchema = z.object({
   type: z.enum(['movie', 'show', 'episode']).optional(),
-  status: z.enum(['monitored', 'flagged', 'pending_deletion', 'protected', 'deleted', 'watched', 'unwatched', 'queued']).optional(),
+  status: z.enum(['monitored', 'flagged', 'pending_deletion', 'protected', 'deleted', 'watched', 'unwatched', 'queued', 'in_progress']).optional(),
   search: z.string().optional(),
   page: z
     .string()
@@ -90,9 +91,12 @@ router.get('/', (req: Request, res: Response) => {
     // Map client status values to server status values
     let serverStatus: 'monitored' | 'flagged' | 'pending_deletion' | 'protected' | 'deleted' | undefined;
     let watchedFilter: boolean | undefined;
+    let inProgressFilter: boolean | undefined;
 
     if (filters.status === 'queued') {
       serverStatus = 'pending_deletion';
+    } else if (filters.status === 'in_progress') {
+      inProgressFilter = true;
     } else if (filters.status === 'watched') {
       watchedFilter = true;
     } else if (filters.status === 'unwatched') {
@@ -111,6 +115,7 @@ router.get('/', (req: Request, res: Response) => {
       minSize: filters.minSize,
       maxSize: filters.maxSize,
       watched: watchedFilter,
+      inProgress: inProgressFilter,
       unwatchedDays: filters.unwatchedDays,
       isProtected: filters.protected,
       // Deleted items are tombstones; hide them from every view except the
@@ -167,6 +172,9 @@ router.get('/', (req: Request, res: Response) => {
         watchedBy: item.watched_by,
         resolution: item.resolution,
         codec: item.codec,
+        inProgress: Boolean(item.in_progress),
+        watchCompletion: item.watch_completion,
+        watchState: parseWatchState(item.watch_state),
       };
     });
 

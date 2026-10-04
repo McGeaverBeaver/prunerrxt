@@ -99,6 +99,19 @@
     "queuedTitle": "Zur Löschung eingereiht"
   },
   "viewAll": "Alle anzeigen",
+  "volumes": {
+    "alsoAs": "",
+    "configure": "",
+    "critical": "",
+    "free": "",
+    "low": "",
+    "ok": "",
+    "sourcePath": "",
+    "subtitle": "",
+    "subtitleEnabled": "",
+    "target": "",
+    "title": ""
+  },
   "welcome": {
     "configureService": "",
     "configureServices": "Dienste konfigurieren",

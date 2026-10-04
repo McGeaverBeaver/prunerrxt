@@ -66,6 +66,8 @@
   },
   "automation": {
     "diskPressure": {
+      "arrVolumes": "Watch the volumes Sonarr and Radarr report",
+      "arrVolumesHint": "Both apps report free and total space for their root folders, so nothing has to be mounted or typed here. Turn off to watch only the paths below.",
       "description": "Reclaim the lowest-value content only when space runs low",
       "enable": "Disk pressure cleanup",
       "freeSummary": "{{percent}}% free · {{size}}",

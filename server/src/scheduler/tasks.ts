@@ -16,7 +16,8 @@ import { evaluateRuleConditions } from '../rules/engine';
 import { ruleScopeMatches } from '../rules/scope';
 import { buildEvaluationContext } from '../rules/context';
 import { getNotificationService } from '../notifications';
-import { getUsageForPaths, resolveTargetBytes, GiB, type FsUsage, type TargetMode } from '../services/diskSpace';
+import { resolveTargetBytes, GiB, type FsUsage, type TargetMode } from '../services/diskSpace';
+import { getMonitoredUsage, pathPrefixesFor } from '../services/monitoredVolumes';
 import { DeletionAction } from '../rules/types';
 import type { DiskPressureData } from '../notifications/templates';
 import type { EvaluationContext } from '../rules/conditions';
@@ -1332,7 +1333,7 @@ function loadDiskPressureConfig(): DiskPressureConfig {
  * items and anything matching the user's exclusion patterns. When a breached
  * path is given, items on that filesystem are preferred.
  */
-function selectDiskPressureCandidates(unwatchedDays: number, breachedPath: string): MediaItem[] {
+function selectDiskPressureCandidates(unwatchedDays: number, breachedPaths: string[]): MediaItem[] {
   const exclusionPatterns = loadExclusionPatterns();
   const candidates = mediaItemsRepo
     .getUnwatched(unwatchedDays)
@@ -1341,8 +1342,9 @@ function selectDiskPressureCandidates(unwatchedDays: number, breachedPath: strin
 
   return candidates.sort((a, b) => {
     // Prefer items physically under the breached path (so we free the right FS)
-    const aOnPath = a.file_path?.startsWith(breachedPath) ? 0 : 1;
-    const bOnPath = b.file_path?.startsWith(breachedPath) ? 0 : 1;
+    const onPath = (item: MediaItem) => (item.file_path && breachedPaths.some((p) => item.file_path!.startsWith(p)) ? 0 : 1);
+    const aOnPath = onPath(a);
+    const bOnPath = onPath(b);
     if (aOnPath !== bOnPath) return aOnPath - bOnPath;
     // Oldest watched first
     const aDate = a.last_watched_at ? new Date(a.last_watched_at).getTime() : 0;
@@ -1376,15 +1378,11 @@ export async function monitorDiskPressure(): Promise<TaskResult> {
     return done('Scan or sync in progress, skipping disk-pressure check');
   }
 
-  const paths = loadDiskPressurePaths();
-  if (paths.length === 0) {
-    return done('No media paths configured for disk-pressure monitoring');
-  }
-
   const cfg = loadDiskPressureConfig();
-  const usages = await getUsageForPaths(paths);
+  // Typed paths read with statfs, plus the volumes Sonarr and Radarr report.
+  const usages = await getMonitoredUsage(loadDiskPressurePaths());
   if (usages.length === 0) {
-    return done('Could not read any configured paths', undefined, true);
+    return done('No volumes to monitor: add a path under Disk pressure, or connect Sonarr or Radarr', undefined, true);
   }
 
   // Find the most-breached filesystem (largest deficit vs its soft target).
@@ -1413,7 +1411,7 @@ export async function monitorDiskPressure(): Promise<TaskResult> {
   const maxBytes = cfg.maxGbPerRun * GiB;
 
   // Pick items until we've projected enough reclaim or hit a safety cap.
-  const ranked = selectDiskPressureCandidates(cfg.unwatchedDays, fs.path);
+  const ranked = selectDiskPressureCandidates(cfg.unwatchedDays, pathPrefixesFor(fs));
   const chosen: MediaItem[] = [];
   let projected = 0;
   for (const item of ranked) {

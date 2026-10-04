@@ -7,6 +7,7 @@ import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/sdk/
 import type { z } from 'zod';
 import type { MediaItem } from '../types';
 import { formatBytes } from '../utils/format';
+import { parseWatchState } from '../services/watchState';
 import { IMMEDIATE_DELETION_REFUSED, allowsImmediateDeletion } from './config';
 import { isRole, type Role } from '../auth/config';
 import { ROLE_RANK } from '../auth/roles';
@@ -233,6 +234,10 @@ export interface MediaSummary {
   requestedBy: string | null;
   resolution: string | null;
   rating: number | null;
+  /** Someone started it, has not finished, and played it within the in-progress window. */
+  inProgress: boolean;
+  /** 0-100 share watched; null when unknown. */
+  watchCompletion: number | null;
   queuedForDeletionAt?: string | null;
   deleteAfter?: string | null;
 }
@@ -257,6 +262,8 @@ export function summarizeMediaItem(item: MediaItem, now: Date = new Date()): Med
     requestedBy: item.requested_by,
     resolution: item.resolution,
     rating: item.rating_imdb ?? item.rating_tmdb ?? null,
+    inProgress: Boolean(item.in_progress),
+    watchCompletion: item.watch_completion === null || item.watch_completion === undefined ? null : Math.round(item.watch_completion * 100),
   };
   if (item.status === 'pending_deletion') {
     base.queuedForDeletionAt = item.marked_at;
@@ -275,12 +282,29 @@ function parseWatchedBy(raw: string | null): string[] {
   }
 }
 
+/** Per-viewer watch state for `get_media_item`, or null until a sync with a watch history provider. */
+function describeWatchState(item: MediaItem): Record<string, unknown> | null {
+  const state = parseWatchState(item.watch_state);
+  if (!state) return null;
+  return {
+    inProgressBy: state.inProgressUsers,
+    completedBy: state.completedBy,
+    startedBy: state.startedBy,
+    lastPlayedByUser: state.lastPlayedByUser,
+    episodesWatched: state.episodesWatched,
+    episodesTotal: state.episodesTotal,
+    completionPercent: state.completion === null ? null : Math.round(state.completion * 100),
+    computedAt: state.computedAt,
+  };
+}
+
 /** The full shape `get_media_item` returns. */
 export function describeMediaItem(item: MediaItem, now: Date = new Date()): Record<string, unknown> {
   const itemAny = item as unknown as Record<string, unknown>;
   return {
     ...summarizeMediaItem(item, now),
     watchedBy: parseWatchedBy(item.watched_by),
+    watchState: describeWatchState(item),
     genres: item.genres ?? [],
     tags: item.tags ?? [],
     studio: item.studio,
