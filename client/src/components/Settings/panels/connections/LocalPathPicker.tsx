@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import type { ContainerMount } from '@/types';
 
 /** The mount a path lives on, by longest mount point prefix. */
-export function mountFor(path: string, mounts: ContainerMount[]): ContainerMount | undefined {
+function mountFor(path: string, mounts: ContainerMount[]): ContainerMount | undefined {
   let best: ContainerMount | undefined;
   for (const m of mounts) {
     if (path === m.mountPoint || path.startsWith(`${m.mountPoint}/`)) {
