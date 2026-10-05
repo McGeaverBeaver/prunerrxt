@@ -14,12 +14,15 @@ interface DiskStatsModalProps {
   onClose: () => void;
 }
 
+// `fill` is spelled out rather than derived from `ring` by string replacement:
+// Tailwind only emits a utility it can see written in the source, so a
+// computed "bg-accent-text" never existed and the 75-90% tier drew no bar.
 function pctColor(pct: number) {
   if (pct > 90)
-    return { ring: 'text-ruby-text', text: 'text-ruby-text', soft: 'bg-ruby-500/15' };
+    return { ring: 'text-ruby-text', text: 'text-ruby-text', fill: 'bg-ruby-500', soft: 'bg-ruby-500/15' };
   if (pct > 75)
-    return { ring: 'text-accent-text', text: 'text-accent-text', soft: 'bg-amber-500/15' };
-  return { ring: 'text-accent-500', text: 'text-accent-text', soft: 'bg-accent-500/10' };
+    return { ring: 'text-accent-text', text: 'text-accent-text', fill: 'bg-amber-400', soft: 'bg-amber-500/15' };
+  return { ring: 'text-accent-500', text: 'text-accent-text', fill: 'bg-accent-500', soft: 'bg-accent-500/10' };
 }
 function tempClass(temp?: number) {
   if (temp == null) return 'text-surface-500';
@@ -283,7 +286,7 @@ function CompositionBar({ stats }: { stats: UnraidStats }) {
         />
       </div>
       <div className="flex gap-4 mt-2 text-[11px] text-surface-400 flex-wrap">
-        <LegendDot className={color.ring.replace('text-', 'bg-')} label={`${t('diskStats.legendArray', 'Array')} · ${formatBytes(arrayUsed)}`} />
+        <LegendDot className={color.fill} label={`${t('diskStats.legendArray', 'Array')} · ${formatBytes(arrayUsed)}`} />
         {cacheUsed > 0 && (
           <LegendDot className="bg-violet-500" label={`${t('diskStats.legendCache', 'Cache')} · ${formatBytes(cacheUsed)}`} />
         )}
@@ -366,7 +369,7 @@ function DriveColumn({ disk }: { disk: UnraidDisk }) {
   const isParity = disk.type === 'parity';
   const c = pctColor(disk.usedPercent);
   const fillH = `${Math.max(2, disk.usedPercent)}%`;
-  const fillClass = isParity ? 'bg-amber-400' : c.ring.replace('text-', 'bg-');
+  const fillClass = isParity ? 'bg-amber-400' : c.fill;
   return (
     <div className="flex flex-col items-center gap-1.5 min-w-0">
       <div className={cn('text-[9.5px] font-semibold font-mono inline-flex items-center gap-0.5', tempClass(disk.temp))}>
@@ -471,7 +474,7 @@ function DiskRow({ disk }: { disk: UnraidDisk }) {
         <div className="h-1.5 rounded-full bg-surface-700/60 overflow-hidden relative">
           <div
             className={cn('absolute inset-y-0 left-0 rounded-full transition-[width] duration-700 ease-out',
-              c.ring.replace('text-', 'bg-'))}
+              c.fill)}
             style={{
               width: `${disk.usedPercent}%`,
               boxShadow: '0 0 8px currentColor',
