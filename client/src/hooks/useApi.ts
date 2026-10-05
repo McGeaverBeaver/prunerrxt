@@ -90,6 +90,14 @@ export function useUpcomingDeletions() {
   });
 }
 
+export function useStorageTrend(days = 30) {
+  return useQuery({
+    queryKey: ['stats', 'storage-trend', days] as const,
+    queryFn: () => dashboardApi.getStorageTrend(days),
+    staleTime: 60_000,
+  });
+}
+
 export function useStorageHistory(days = 30) {
   return useQuery({
     queryKey: queryKeys.storageHistory(days),

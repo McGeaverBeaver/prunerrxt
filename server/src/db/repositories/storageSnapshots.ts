@@ -76,10 +76,12 @@ export function getHistory(days: number = 30): StorageSnapshot[] {
   const since = new Date();
   since.setDate(since.getDate() - days);
 
+  // captured_at is SQLite's datetime('now') ("YYYY-MM-DD HH:MM:SS", UTC), so
+  // the cutoff is compared in that shape, not as an ISO string with a 'T'.
   const stmt = db.prepare<[string], StorageSnapshot>(
     'SELECT * FROM storage_snapshots WHERE captured_at >= ? ORDER BY captured_at ASC'
   );
-  return stmt.all(since.toISOString());
+  return stmt.all(since.toISOString().slice(0, 19).replace('T', ' '));
 }
 
 /**
@@ -87,13 +89,10 @@ export function getHistory(days: number = 30): StorageSnapshot[] {
  */
 export function hasTodaySnapshot(): boolean {
   const db = getDatabase();
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  const stmt = db.prepare<[string], { count: number }>(
-    'SELECT COUNT(*) as count FROM storage_snapshots WHERE captured_at >= ?'
-  );
-  const result = stmt.get(todayStart.toISOString());
+  // Same calendar day in UTC as captured_at itself; comparing against a local
+  // ISO timestamp missed every time, so every start-up added a snapshot.
+  const stmt = db.prepare<[], { count: number }>("SELECT COUNT(*) as count FROM storage_snapshots WHERE date(captured_at) = date('now')");
+  const result = stmt.get();
   return (result?.count ?? 0) > 0;
 }
 

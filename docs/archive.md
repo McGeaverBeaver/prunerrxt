@@ -56,8 +56,9 @@ unknown titles. Over the MCP connector the same action is
 - **Hold and ask** (default). The item stays in the queue but automatic
   processing, Process Queue and Delete All all skip it. The Queue page shows
   it as *Held* with the reason, and two choices: **Archive** or **Delete
-  anyway**. Delete Now on a single item still works; that is an explicit
-  decision.
+  anyway**. Delete Now is locked on a held item too, in the UI, the API and
+  the assistant's `delete_now`: a hold means nobody deletes it until one of
+  those two choices is made.
 - **Archive automatically.** The moment the check comes back at risk, the item
   is archived: protected for good and taken out of the queue. The hands-off
   setting for an install nobody reviews.

@@ -654,6 +654,41 @@ export interface Collection {
 }
 
 // Storage Snapshots
+export interface StorageTrendTotals {
+  totalBytes: number;
+  movieBytes: number;
+  showBytes: number;
+  itemCount: number;
+  movieCount: number;
+  showCount: number;
+}
+
+export interface StorageTrendPoint extends StorageTrendTotals {
+  date: string;
+  reclaimedBytes: number;
+  reclaimedTitles: number;
+  live: boolean;
+}
+
+export interface StorageTrend {
+  days: number;
+  points: StorageTrendPoint[];
+  now: StorageTrendTotals;
+  summary: {
+    firstDate: string | null;
+    lastDate: string | null;
+    startBytes: number;
+    endBytes: number;
+    deltaBytes: number;
+    deltaPct: number | null;
+    reclaimedBytes: number;
+    reclaimedTitles: number;
+    addedBytes: number;
+    movies: { startBytes: number; endBytes: number; deltaBytes: number };
+    shows: { startBytes: number; endBytes: number; deltaBytes: number };
+  };
+}
+
 export interface StorageSnapshot {
   totalSize: number;
   movieSize: number;

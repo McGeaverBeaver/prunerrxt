@@ -180,6 +180,7 @@
     "deleteAnywayChosen": "",
     "deleteNow": "Supprimer maintenant",
     "deleteNowDisabled": "Configurez Sonarr/Radarr dans les paramètres pour activer la suppression",
+    "deleteNowHeld": "",
     "deletesOn": "Supprimé le {{date}}",
     "episode": "",
     "held": "",

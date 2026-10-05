@@ -56,11 +56,14 @@ import {
   type DeletionJobView,
 } from '../deletionJobs';
 
+// Archive's verdict: without one an item is held, and Delete Now refuses it.
+const REPLACEABLE = JSON.stringify({ verdict: 'replaceable', reasons: [], checkedAt: new Date().toISOString(), service: 'radarr', releases: 3, best: null, current: null });
+
 function movie(id: number, title: string, extra: Record<string, unknown> = {}) {
-  return { id, title, type: 'movie', file_size: 1_000, radarr_id: id * 10, sonarr_id: null, deletion_action: 'unmonitor_and_delete', reset_overseerr: 0, ...extra };
+  return { id, title, type: 'movie', file_size: 1_000, radarr_id: id * 10, sonarr_id: null, deletion_action: 'unmonitor_and_delete', reset_overseerr: 0, availability: REPLACEABLE, ...extra };
 }
 function show(id: number, title: string) {
-  return { id, title, type: 'show', file_size: 2_000, radarr_id: null, sonarr_id: id * 10, deletion_action: 'unmonitor_and_delete', reset_overseerr: 0 };
+  return { id, title, type: 'show', file_size: 2_000, radarr_id: null, sonarr_id: id * 10, deletion_action: 'unmonitor_and_delete', reset_overseerr: 0, availability: REPLACEABLE };
 }
 
 /** A fake deleteQueueItemNow that reports progress, then succeeds after `delayMs`. */
@@ -125,6 +128,19 @@ describe('deletion jobs', () => {
     expect(activeJobMediaItemIds()).toEqual(new Set([1]));
 
     expect(enqueueDeleteNow('999', { actorName: 'tester' })).toMatchObject({ ok: false, status: 404 });
+  });
+
+  it('refuses Delete Now while Archive holds the item, until a decision lifts the hold', () => {
+    queue.set('7', movie(7, 'Unchecked', { availability: null }));
+    const held = enqueueDeleteNow('7', { actorName: 'tester' });
+    expect(held).toMatchObject({ ok: false, status: 409 });
+    expect((held as { error: string }).error).toContain('held by Archive');
+
+    queue.set('8', movie(8, 'At risk', { availability: JSON.stringify({ verdict: 'at_risk', reasons: ['no_releases'], checkedAt: new Date().toISOString(), service: 'radarr', releases: 0, best: null, current: null }) }));
+    expect(enqueueDeleteNow('8', { actorName: 'tester' })).toMatchObject({ ok: false, status: 409 });
+
+    queue.set('9', movie(9, 'Delete anyway', { availability: null, availability_decision: 'delete' }));
+    expect(enqueueDeleteNow('9', { actorName: 'tester' })).toMatchObject({ ok: true });
   });
 
   it('runs jobs in the background, streaming step changes, and records the outcome', async () => {

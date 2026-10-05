@@ -8,11 +8,28 @@
     "title": "Recente activiteit"
   },
   "chart": {
-    "librarySizeOver_one": "Bibliotheekgrootte over {{count}} dag",
-    "librarySizeOver_other": "Bibliotheekgrootte over {{count}} dagen",
+    "legendReclaimed": "",
+    "legendSize": "",
+    "noChange": "",
+    "now": "",
+    "rangeDays_one": "",
+    "rangeDays_other": "",
+    "rangeLabel": "",
+    "subtitle_one": "",
+    "subtitle_other": "",
+    "tileAdded": "",
+    "tileAddedSub": "",
+    "tileNow": "",
+    "tileNowSub": "",
+    "tileReclaimed": "",
+    "tileReclaimedSub_one": "",
+    "tileReclaimedSub_other": "",
+    "tipReclaimed": "",
+    "tipTitles": "",
     "title": "Opslagtrends",
+    "today": "",
     "total": "Totaal",
-    "totalLibrarySize": "Totale bibliotheekgrootte"
+    "trendTitle": ""
   },
   "deletions": {
     "archivePaused": "",

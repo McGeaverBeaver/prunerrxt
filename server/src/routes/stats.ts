@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import mediaItemsRepo from '../db/repositories/mediaItems';
 import storageSnapshotsRepo from '../db/repositories/storageSnapshots';
+import { getStorageTrend } from '../services/storageTrend';
 import { getDashboardStats } from '../services/dashboardStats';
 import logger from '../utils/logger';
 
@@ -47,6 +48,19 @@ router.get('/storage-history', (req: Request, res: Response) => {
       success: false,
       error: 'Failed to retrieve storage history',
     });
+  }
+});
+
+// GET /api/stats/storage-trend - One point per day plus a live point for now,
+// and a summary that splits the change into what PrunerrXT reclaimed and
+// what arrived (services/storageTrend.ts).
+router.get('/storage-trend', (req: Request, res: Response) => {
+  try {
+    const days = parseInt(req.query['days'] as string, 10) || 30;
+    res.json({ success: true, data: getStorageTrend(days) });
+  } catch (error) {
+    logger.error('Failed to get storage trend:', error);
+    res.status(500).json({ success: false, error: 'Failed to retrieve storage trend' });
   }
 });
 

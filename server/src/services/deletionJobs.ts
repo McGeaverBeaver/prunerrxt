@@ -21,6 +21,7 @@ import deletionJobsRepo, {
   type NewDeletionJob,
 } from '../db/repositories/deletionJobs';
 import logger from '../utils/logger';
+import { holdState } from './availabilityVerdict';
 import type { DeletionProgress } from './deletion';
 import { getServiceLogs } from './serviceDiagnostics';
 import {
@@ -82,7 +83,7 @@ export interface EnqueueResult {
 
 export interface EnqueueFailure {
   ok: false;
-  status: 400 | 404;
+  status: 400 | 404 | 409;
   error: string;
 }
 
@@ -247,6 +248,18 @@ export function enqueueDeleteNow(rawId: string, options: EnqueueOptions): Enqueu
     };
   } else {
     const { item } = inspected;
+    // Archive's hold is a hold: an at-risk or unchecked title is not deleted
+    // by hand either, until someone archives it or chooses Delete anyway.
+    const hold = holdState(item);
+    if (hold.held) {
+      const why =
+        hold.reason === 'unchecked'
+          ? 'its re-acquisition check has not run yet'
+          : hold.reason === 'unknown'
+            ? 'its re-acquisition check could not decide'
+            : 'it may not be downloadable again';
+      return { ok: false, status: 409, error: `"${item.title}" is held by Archive because ${why}. Archive it, or choose Delete anyway, before deleting it.` };
+    }
     const itemAny = item as unknown as Record<string, unknown>;
     input = {
       ...base,

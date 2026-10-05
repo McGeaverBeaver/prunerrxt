@@ -752,11 +752,13 @@ export function getUnwatchedMediaItems(days: number): MediaItem[] {
 export function getMediaStats(): { total: number; byType: Record<string, number>; byStatus: Record<string, number>; totalSize: number; totalEpisodes: number } {
   const db = getDatabase();
 
-  const totalStmt = db.prepare<[], { count: number }>('SELECT COUNT(*) as count FROM media_items');
+  // Deleted items stay in the table as tombstones for history; they are not
+  // in the library, so they count for nothing here except byStatus.
+  const totalStmt = db.prepare<[], { count: number }>("SELECT COUNT(*) as count FROM media_items WHERE status != 'deleted'");
   const total = totalStmt.get()?.count ?? 0;
 
   const byTypeStmt = db.prepare<[], { type: string; count: number }>(
-    'SELECT type, COUNT(*) as count FROM media_items GROUP BY type'
+    "SELECT type, COUNT(*) as count FROM media_items WHERE status != 'deleted' GROUP BY type"
   );
   const byTypeRows = byTypeStmt.all();
   const byType: Record<string, number> = {};
@@ -774,12 +776,12 @@ export function getMediaStats(): { total: number; byType: Record<string, number>
   }
 
   const sizeStmt = db.prepare<[], { total_size: number | null }>(
-    'SELECT SUM(file_size) as total_size FROM media_items'
+    "SELECT SUM(file_size) as total_size FROM media_items WHERE status != 'deleted'"
   );
   const totalSize = sizeStmt.get()?.total_size ?? 0;
 
   const episodeStmt = db.prepare<[], { total_episodes: number | null }>(
-    "SELECT SUM(episode_count) as total_episodes FROM media_items WHERE type = 'show'"
+    "SELECT SUM(episode_count) as total_episodes FROM media_items WHERE type = 'show' AND status != 'deleted'"
   );
   const totalEpisodes = episodeStmt.get()?.total_episodes ?? 0;
 

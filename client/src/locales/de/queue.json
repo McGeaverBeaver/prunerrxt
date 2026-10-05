@@ -167,6 +167,7 @@
     "deleteAnywayChosen": "",
     "deleteNow": "Jetzt löschen",
     "deleteNowDisabled": "Konfiguriere Sonarr/Radarr in den Einstellungen, um das Löschen zu aktivieren",
+    "deleteNowHeld": "",
     "deletesOn": "Löschung am {{date}}",
     "episode": "",
     "held": "",

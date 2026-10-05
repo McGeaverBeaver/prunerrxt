@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import mediaItemsRepo from '../../db/repositories/mediaItems';
 import storageSnapshotsRepo from '../../db/repositories/storageSnapshots';
+import { getStorageTrend } from '../../services/storageTrend';
 import rulesRepo from '../../db/repositories/rules';
 import { getDashboardStats } from '../../services/dashboardStats';
 import { getSystemHealth } from '../../services/systemHealth';
@@ -116,7 +117,7 @@ export function registerOverviewTools(server: McpServer): void {
     {
       name: 'get_storage_history',
       title: 'Storage history',
-      description: 'Daily snapshots of library size, item counts and space reclaimed, oldest first. Use to describe trends.',
+      description: 'Library size over time: one point per day plus a live point for now, and a summary splitting the change into space PrunerrXT reclaimed and space that arrived. Oldest first.',
       group: 'overview',
       inputSchema: {
         days: z.number().int().min(1).max(365).optional().describe('How many days back to include (default 30).'),
@@ -135,13 +136,13 @@ export function registerOverviewTools(server: McpServer): void {
         showCount: s.show_count,
         spaceReclaimedBytes: s.space_reclaimed,
       }));
-      const first = snapshots[0];
-      const last = snapshots[snapshots.length - 1];
+      const trend = getStorageTrend(days ?? 30);
+      const s = trend.summary;
       const summary =
-        first && last
-          ? `${snapshots.length} snapshot(s). Library went from ${first.totalSize} to ${last.totalSize}.`
+        snapshots.length > 0
+          ? `Library is ${formatBytes(s.endBytes)} now (${trend.now.movieCount} movies, ${trend.now.showCount} shows), ${s.deltaBytes >= 0 ? 'up' : 'down'} ${formatBytes(Math.abs(s.deltaBytes))}${s.deltaPct === null ? '' : ` (${s.deltaPct > 0 ? '+' : ''}${s.deltaPct}%)`} over ${trend.days} days: ${formatBytes(s.reclaimedBytes)} reclaimed by PrunerrXT (${s.reclaimedTitles} title(s)), ${formatBytes(s.addedBytes)} added.`
           : 'No storage snapshots yet.';
-      return ok({ days: days ?? 30, snapshots }, summary);
+      return ok({ days: days ?? 30, now: trend.now, summary: s, points: trend.points, snapshots }, summary);
     }
   );
 

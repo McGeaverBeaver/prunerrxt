@@ -8,11 +8,28 @@
     "title": "Recent Activity"
   },
   "chart": {
-    "librarySizeOver_one": "Library size over {{count}} day",
-    "librarySizeOver_other": "Library size over {{count}} days",
+    "legendReclaimed": "Reclaimed that day",
+    "legendSize": "Library size",
+    "noChange": "no change",
+    "now": "Now",
+    "rangeDays_one": "{{count}}d",
+    "rangeDays_other": "{{count}}d",
+    "rangeLabel": "Time range",
+    "subtitle_one": "Library size over the last {{count}} days, and why it moved",
+    "subtitle_other": "Library size over the last {{count}} days, and why it moved",
+    "tileAdded": "Added",
+    "tileAddedSub": "New titles, or files replaced by larger ones",
+    "tileNow": "Library now",
+    "tileNowSub": "{{movies}} movies · {{shows}} shows",
+    "tileReclaimed": "Reclaimed by PrunerrXT",
+    "tileReclaimedSub_one": "{{count}} titles deleted in {{days}} days",
+    "tileReclaimedSub_other": "{{count}} titles deleted in {{days}} days",
+    "tipReclaimed": "Reclaimed that day",
+    "tipTitles": "Titles",
     "title": "Storage Trends",
+    "today": "Today",
     "total": "Total",
-    "totalLibrarySize": "Total library size"
+    "trendTitle": "Change in library size over the window"
   },
   "deletions": {
     "archivePaused": "Archive checks paused ({{apps}}): unchecked items stay held until the indexers answer again.",

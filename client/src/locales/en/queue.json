@@ -167,6 +167,7 @@
     "deleteAnywayChosen": "Delete anyway chosen",
     "deleteNow": "Delete now",
     "deleteNowDisabled": "Configure Sonarr/Radarr in Settings to enable deletion",
+    "deleteNowHeld": "Held by Archive: archive it or choose Delete anyway first",
     "deletesOn": "Deletes {{date}}",
     "episode": "episode",
     "held": "Held",

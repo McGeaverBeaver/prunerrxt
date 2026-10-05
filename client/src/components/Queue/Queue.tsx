@@ -1020,7 +1020,7 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
                   <ExternalLink className="w-4 h-4 text-violet-text" />
                 </a>
               )}
-              <Button variant="danger" size="sm" onClick={onDeleteNow} disabled={!hasArrService || jobActive} title={t('row.deleteNow', 'Delete now')}>
+              <Button variant="danger" size="sm" onClick={onDeleteNow} disabled={!hasArrService || jobActive || isHeld} title={isHeld ? t('row.deleteNowHeld', 'Held by Archive: archive it or choose Delete anyway first') : t('row.deleteNow', 'Delete now')}>
                 <Trash2 className="w-4 h-4" />
               </Button>
               {!isEpisode && (
@@ -1048,7 +1048,7 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
               <ExternalLink className="w-4 h-4 text-violet-text" />
             </a>
           )}
-          <Button variant="danger" size="sm" onClick={onDeleteNow} disabled={!hasArrService || jobActive} title={hasArrService ? t('row.deleteNow', 'Delete now') : t('row.deleteNowDisabled', 'Configure Sonarr/Radarr in Settings to enable deletion')}>
+          <Button variant="danger" size="sm" onClick={onDeleteNow} disabled={!hasArrService || jobActive || isHeld} title={isHeld ? t('row.deleteNowHeld', 'Held by Archive: archive it or choose Delete anyway first') : hasArrService ? t('row.deleteNow', 'Delete now') : t('row.deleteNowDisabled', 'Configure Sonarr/Radarr in Settings to enable deletion')}>
             <Trash2 className="w-4 h-4" />
           </Button>
           {!isEpisode && (

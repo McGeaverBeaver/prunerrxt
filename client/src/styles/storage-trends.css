@@ -201,3 +201,126 @@
 .st-tip-row.total .v {
   color: var(--sc-tip-num, var(--sc-accent, #38bdf8));
 }
+
+/* ---- range toggle (30d / 90d) ---- */
+.st-range {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--sc-border-strong, rgba(148, 163, 184, 0.45));
+  background: transparent;
+}
+.st-range button {
+  font-family: var(--sc-ui, system-ui, sans-serif);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: var(--sc-text-dim, #64748b);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.st-range button:hover {
+  color: var(--sc-text, #e2e8f0);
+}
+.st-range button.on {
+  color: var(--sc-text-strong, #e2e8f0);
+  background: rgba(148, 163, 184, 0.16);
+}
+.st-trend.flat {
+  color: var(--sc-text-dim, #64748b);
+  background: rgba(148, 163, 184, 0.12);
+}
+.st-trend-pct {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+/* ---- the three tiles: now / reclaimed / added ---- */
+.st-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.st-tile {
+  padding: 9px 12px 9px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--sc-border, rgba(148, 163, 184, 0.14));
+  border-left-width: 3px;
+  background: rgba(148, 163, 184, 0.05);
+  min-width: 0;
+}
+.st-tile.acc { border-left-color: var(--sc-cyan, #06b6d4); }
+.st-tile.eme { border-left-color: var(--sc-emerald, #10b981); }
+.st-tile.vio { border-left-color: #a78bfa; }
+.st-tile-k {
+  font-family: var(--sc-ui, system-ui, sans-serif);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sc-text-dim, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.st-tile-v {
+  font-family: var(--sc-display, system-ui, sans-serif);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 2px;
+  color: var(--sc-text-strong, #e2e8f0);
+  font-variant-numeric: tabular-nums;
+}
+.st-tile-s {
+  font-family: var(--sc-ui, system-ui, sans-serif);
+  font-size: 11px;
+  color: var(--sc-text-faint, #94a3b8);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- reclaimed bars, axis labels, legend ---- */
+.st-bar {
+  fill: var(--sc-amber-500, #f59e0b);
+  opacity: 0.55;
+}
+.st-ylabel {
+  font-variant-numeric: tabular-nums;
+}
+.st-sw.amb,
+.st-foot-dot.amb {
+  background: var(--sc-amber-500, #f59e0b);
+}
+.st-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+  font-family: var(--sc-ui, system-ui, sans-serif);
+  font-size: 11px;
+  color: var(--sc-text-dim, #64748b);
+}
+.st-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.st-tip-wide {
+  width: 212px;
+}
+
+/* ---- footer deltas ---- */
+.st-delta {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.st-delta.down { color: #34d399; }
+.st-delta.up { color: #fbbf24; }
+.st-delta.flat { color: var(--sc-text-faint, #94a3b8); font-weight: 500; }

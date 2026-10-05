@@ -1,4 +1,3 @@
-import { useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   HardDrive,
@@ -26,11 +25,11 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useStats, useRecentActivity, useUpcomingDeletions, useRecommendations, useMarkForDeletion, useUnraidStats, useHealthStatus, useStorageHistory, useSettings, useArchiveStatus } from '@/hooks/useApi';
+import { useStats, useRecentActivity, useUpcomingDeletions, useRecommendations, useMarkForDeletion, useUnraidStats, useHealthStatus, useSettings, useArchiveStatus } from '@/hooks/useApi';
 import { SystemHealthCard } from '@/components/Health/SystemHealthCard';
 import { ScheduleCadenceCard } from '@/components/Health/ScheduleCadenceCard';
 import { WelcomeCard } from './WelcomeCard';
-import type { ActivityLogEntry, Recommendation, UnraidDisk, StorageSnapshot, MonitoredVolume } from '@/types';
+import type { ActivityLogEntry, Recommendation, UnraidDisk, MonitoredVolume } from '@/types';
 import { formatBytes, formatRelativeTime, cn } from '@/lib/utils';
 import { activityTargetPath, libraryItemPath } from '@/lib/links';
 import { formatActivity } from '@/lib/activityFormatter';
@@ -41,7 +40,7 @@ import { MaybeLink } from '@/components/common/MaybeLink';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorState } from '@/components/common/ErrorState';
 import { useToast } from '@/components/common/Toast';
-import '@/styles/storage-trends.css';
+import { StorageTrendsChart } from './StorageTrendsChart';
 
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading, isError: statsError, error: statsErrorData, refetch: refetchStats } = useStats();
@@ -51,7 +50,6 @@ export default function Dashboard() {
   const heldCount = upcomingDeletions?.filter((item) => item.held).length ?? 0;
   const { data: recommendations, isLoading: recommendationsLoading, isError: recommendationsError, error: recommendationsErrorData, refetch: refetchRecommendations } = useRecommendations(6, 90);
   const { data: unraidStats, isLoading: unraidLoading, isError: unraidError, error: unraidErrorData, refetch: refetchUnraid } = useUnraidStats();
-  const { data: storageHistory, isLoading: storageHistoryLoading } = useStorageHistory(30);
   const { data: healthStatus, isLoading: healthLoading, isFetching: healthFetching } = useHealthStatus();
   const markForDeletion = useMarkForDeletion();
   const { addToast } = useToast();
@@ -476,9 +474,7 @@ export default function Dashboard() {
       )}
 
       {/* Storage Trends Chart */}
-      {!hasCriticalError && storageHistory && storageHistory.length > 0 && (
-        <StorageTrendsChart data={storageHistory} loading={storageHistoryLoading} />
-      )}
+      {!hasCriticalError && <StorageTrendsChart />}
 
       {/* Volumes - the paths and Sonarr/Radarr volumes disk pressure watches, for installs without Unraid */}
       {!hasCriticalError && !unraidLoading && !unraidStats?.configured && (stats?.disks?.length ?? 0) > 0 && (
@@ -1074,266 +1070,6 @@ function StorageSummaryCard({ title, value, subtitle, icon: Icon, color, percent
             </div>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-interface StorageTrendsChartProps {
-  data: StorageSnapshot[];
-  loading: boolean;
-}
-
-interface StorageHoverState {
-  idx: number;
-  leftPx: number;
-}
-
-function StorageTrendsChart({ data, loading }: StorageTrendsChartProps) {
-  const { t } = useTranslation('dashboard');
-  // The chart fills its container: the viewBox width tracks the measured wrap
-  // width so 1 viewBox unit = 1 CSS px (crisp text, no aspect stretch) — same
-  // approach as the Schedule cadence card.
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [W, setW] = useState(560);
-  const [hover, setHover] = useState<StorageHoverState | null>(null);
-
-  useLayoutEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const measure = () => setW(Math.max(320, el.clientWidth));
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  if (loading || data.length === 0) return null;
-
-  // ---- geometry (viewBox units = CSS px) ----
-  const H = 172;
-  const padT = 16;
-  const padB = 28;
-  const padL = 6;
-  const padR = 6;
-  const baseY = H - padB;
-  const plotH = baseY - padT;
-  const innerW = W - padL - padR;
-  const n = data.length;
-
-  const values = data.map((s) => s.totalSize);
-  const lo = Math.min(...values);
-  const hi = Math.max(...values);
-  // Pad the value range a little (and add headroom when the line is flat) so the
-  // trace never hugs the top/bottom edges.
-  const pad = hi === lo ? (hi || 1) * 0.04 : (hi - lo) * 0.14;
-  const minVal = lo - pad;
-  const maxVal = hi + pad;
-  const range = maxVal - minVal || 1;
-
-  const x = (i: number) => (n === 1 ? padL + innerW / 2 : padL + (i / (n - 1)) * innerW);
-  const y = (v: number) => baseY - ((v - minVal) / range) * plotH;
-
-  const points = data.map((s, i) => ({ x: x(i), y: y(s.totalSize) }));
-  const lineD =
-    points.length > 1
-      ? points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-      : '';
-  const areaD =
-    points.length > 1
-      ? `${lineD} L${points[n - 1]!.x.toFixed(1)},${baseY} L${points[0]!.x.toFixed(1)},${baseY} Z`
-      : '';
-
-  const first = data[0]!;
-  const last = data[n - 1]!;
-  const delta = last.totalSize - first.totalSize;
-  const down = delta < 0;
-  const trendPct = first.totalSize > 0 ? Math.round((delta / first.totalSize) * 100) : 0;
-
-  // X-axis labels: start / middle / end (deduped for short windows).
-  const fmtAxis = (iso: string) =>
-    new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  const labelIdx = (n === 1 ? [0] : [0, Math.floor((n - 1) / 2), n - 1]).filter(
-    (idx, pos, arr) => arr.indexOf(idx) === pos
-  );
-
-  // Nearest-point selection; the tooltip stays pinned near the top and only
-  // tracks horizontally, so it never clips against the card edge.
-  const pick = (clientX: number, el: HTMLElement) => {
-    const rect = el.getBoundingClientRect();
-    const localW = el.offsetWidth || rect.width;
-    const px = ((clientX - rect.left) / localW) * W;
-    let best = 0;
-    let bd = Infinity;
-    for (let i = 0; i < n; i++) {
-      const d = Math.abs(x(i) - px);
-      if (d < bd) {
-        bd = d;
-        best = i;
-      }
-    }
-    const TIPW = 188;
-    const PAD = 6;
-    const center = (x(best) / W) * localW;
-    const maxLeft = localW - TIPW - PAD;
-    const leftPx =
-      maxLeft < PAD ? (localW - TIPW) / 2 : Math.max(PAD, Math.min(maxLeft, center - TIPW / 2));
-    setHover({ idx: best, leftPx });
-  };
-
-  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => pick(e.clientX, e.currentTarget);
-  const handleTouch = (e: React.TouchEvent<HTMLDivElement>) => {
-    const t = e.touches[0];
-    if (t) pick(t.clientX, e.currentTarget);
-  };
-
-  const hoveredSnap = hover ? data[hover.idx] : undefined;
-  const hoveredPt = hover ? points[hover.idx] : undefined;
-
-  return (
-    <div className="sc-card">
-      {/* Header */}
-      <div className="sc-head">
-        <div className="sc-ico">
-          <TrendingUp className="w-[18px] h-[18px]" strokeWidth={2} />
-        </div>
-        <div className="sc-head-t">
-          <div className="sc-title">{t('chart.title', 'Storage Trends')}</div>
-          <div className="sc-sub">{t('chart.librarySizeOver', 'Library size over {{count}} days', { count: n })}</div>
-        </div>
-        <div className="sc-head-actions">
-          {delta !== 0 && (
-            <div className={'st-trend' + (down ? ' down' : ' up')}>
-              {down ? <TrendingDown /> : <TrendingUp />}
-              {formatBytes(Math.abs(delta))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="sc-body">
-        <div className="cad-cap">
-          <span className="cad-cap-k">{t('chart.totalLibrarySize', 'Total library size')}</span>
-          <span className="cad-cap-sub">
-            {trendPct !== 0 ? `${down ? '−' : '+'}${Math.abs(trendPct)}% · ${n}d` : `${n}d`}
-          </span>
-        </div>
-
-        <div
-          className="st-wrap"
-          ref={wrapRef}
-          onMouseLeave={() => setHover(null)}
-          onMouseMove={handleMove}
-          onTouchStart={handleTouch}
-          onTouchMove={handleTouch}
-        >
-          <svg viewBox={`0 0 ${W} ${H}`} className="st-svg">
-            <defs>
-              <linearGradient id="stFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#38bdf8" stopOpacity="0.22" />
-                <stop offset="1" stopColor="#38bdf8" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-
-            {/* gridlines */}
-            {[0, 0.5, 1].map((g, i) => {
-              const gy = baseY - g * plotH;
-              return <line key={i} className="st-grid" x1={padL} y1={gy} x2={W - padR} y2={gy} />;
-            })}
-
-            {areaD && <path className="st-area" d={areaD} fill="url(#stFill)" />}
-            {lineD && <path className="st-line" d={lineD} />}
-
-            {/* hover guide */}
-            {hoveredPt && (
-              <line
-                className="st-guide"
-                x1={hoveredPt.x}
-                y1={padT - 6}
-                x2={hoveredPt.x}
-                y2={baseY}
-              />
-            )}
-
-            {/* current point marker (hidden while scrubbing) */}
-            {!hover && (
-              <circle className="st-dot-pt" cx={points[n - 1]!.x} cy={points[n - 1]!.y} r={3.2} />
-            )}
-            {hoveredPt && (
-              <circle className="st-dot-hover" cx={hoveredPt.x} cy={hoveredPt.y} r={4.2} />
-            )}
-
-            {/* x-axis labels */}
-            {labelIdx.map((idx) => (
-              <text key={idx} className="st-axis" x={x(idx)} y={baseY + 16} textAnchor="middle">
-                {fmtAxis(data[idx]!.capturedAt)}
-              </text>
-            ))}
-          </svg>
-
-          {/* tooltip */}
-          {hover && hoveredSnap && (
-            <div className="st-tip" style={{ left: hover.leftPx }}>
-              <div className="st-tip-date">
-                <span className="st-tip-dot" />
-                {new Date(hoveredSnap.capturedAt).toLocaleDateString(undefined, {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </div>
-              <div className="st-tip-row total">
-                <span className="k">
-                  <span className="st-sw acc" />
-                  {t('chart.total', 'Total')}
-                </span>
-                <span className="v">{formatBytes(hoveredSnap.totalSize)}</span>
-              </div>
-              <div className="st-tip-row">
-                <span className="k">
-                  <span className="st-sw vio" />
-                  {t('stats.movies', 'Movies')}
-                </span>
-                <span className="v">{formatBytes(hoveredSnap.movieSize)}</span>
-              </div>
-              <div className="st-tip-row">
-                <span className="k">
-                  <span className="st-sw eme" />
-                  {t('stats.tvShows', 'TV Shows')}
-                </span>
-                <span className="v">{formatBytes(hoveredSnap.showSize)}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="sc-foot">
-        <div className="sc-foot-cell">
-          <div className="sc-foot-k">{t('stats.movies', 'Movies')}</div>
-          <div className="sc-foot-v">
-            <span className="st-foot-dot vio" />
-            {formatBytes(last.movieSize)}
-          </div>
-        </div>
-        <div className="sc-foot-div" />
-        <div className="sc-foot-cell">
-          <div className="sc-foot-k">{t('stats.tvShows', 'TV Shows')}</div>
-          <div className="sc-foot-v">
-            <span className="st-foot-dot eme" />
-            {formatBytes(last.showSize)}
-          </div>
-        </div>
-        <div className="sc-foot-div" />
-        <div className="sc-foot-cell">
-          <div className="sc-foot-k">{t('chart.total', 'Total')}</div>
-          <div className="sc-foot-v">
-            <span className="st-foot-dot acc" />
-            {formatBytes(last.totalSize)}
-          </div>
-        </div>
       </div>
     </div>
   );

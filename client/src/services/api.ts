@@ -50,6 +50,7 @@ import type {
   SystemHealthResponse,
   ScanCadenceRun,
   StorageSnapshot,
+  StorageTrend,
   SonarrSeriesDetailResponse,
   EpisodeDeletionRequest,
   EpisodeDeletionResult,
@@ -119,6 +120,12 @@ export const dashboardApi = {
   getUpcomingDeletions: async (): Promise<UpcomingDeletion[]> => {
     const { data } = await api.get<ApiResponse<UpcomingDeletion[]>>('/queue/upcoming');
     return data.data || [];
+  },
+
+  getStorageTrend: async (days = 30): Promise<StorageTrend> => {
+    const { data } = await api.get<ApiResponse<StorageTrend>>(`/stats/storage-trend?days=${days}`);
+    if (!data.data) throw new Error(data.error || 'Failed to load storage trend');
+    return data.data;
   },
 
   getStorageHistory: async (days = 30): Promise<StorageSnapshot[]> => {

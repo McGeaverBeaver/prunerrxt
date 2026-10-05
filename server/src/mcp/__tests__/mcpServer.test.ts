@@ -264,6 +264,14 @@ describe('MCP connector', () => {
       expect(realRefused.isError).toBe(true);
 
       settingsRepo.set({ key: MCP_SETTING_ALLOW_IMMEDIATE_DELETION, value: 'true' });
+
+      // With the opt-in set, Archive's hold is the next gate: the item has no
+      // verdict yet, so Delete Now is refused until it has one.
+      const held = await client.callTool({ name: 'delete_now', arguments: { queueId: String(victim.id) } });
+      expect(held.isError).toBe(true);
+      expect(textOf(held)).toMatch(/held by Archive/);
+      updateMediaItem(victim.id, { availability: JSON.stringify({ verdict: 'replaceable', reasons: [], checkedAt: new Date().toISOString(), service: 'radarr', releases: 4, best: null, current: null }) });
+
       const allowed = await client.callTool({ name: 'delete_now', arguments: { queueId: String(victim.id) } });
       expect(allowed.isError).toBeFalsy();
       expect(textOf(allowed)).toContain('Delete Me Now');
