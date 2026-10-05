@@ -17,8 +17,14 @@
     "totalLibrarySize": "Tamaño total de la biblioteca"
   },
   "deletions": {
+    "archivePaused": "",
     "emptyDesc": "No hay elementos programados para eliminación. El contenido marcado por reglas o puesto en cola manualmente aparecerá aquí.",
     "emptyTitle": "La cola está vacía",
+    "held_one": "",
+    "held_many": "",
+    "held_other": "",
+    "heldBadge": "",
+    "heldHint": "",
     "subtitle": "Elementos programados para eliminación",
     "title": "Próximas eliminaciones"
   },

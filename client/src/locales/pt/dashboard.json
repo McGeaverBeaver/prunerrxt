@@ -17,8 +17,14 @@
     "totalLibrarySize": "Tamanho total da biblioteca"
   },
   "deletions": {
+    "archivePaused": "",
     "emptyDesc": "Não há itens agendados para eliminação. Os conteúdos sinalizados por regras ou colocados manualmente em fila aparecerão aqui.",
     "emptyTitle": "A fila está vazia",
+    "held_one": "",
+    "held_many": "",
+    "held_other": "",
+    "heldBadge": "",
+    "heldHint": "",
     "subtitle": "Itens agendados para remoção",
     "title": "Próximas Eliminações"
   },

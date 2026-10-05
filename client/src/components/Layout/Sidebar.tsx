@@ -9,6 +9,7 @@ import {
   UserRound,
   HeartPulse,
   ShieldCheck,
+  Lightbulb,
 } from 'lucide-react';
 import {
   DashboardIcon,
@@ -55,6 +56,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
   const allNavItems = [
     { id: 'dashboard', label: t('nav.dashboard', 'Dashboard'), href: '/', icon: DashboardIcon },
     { id: 'library', label: t('nav.library', 'Library'), href: '/library', icon: LibraryIcon },
+    { id: 'recommendations', label: t('nav.recommendations', 'Recommendations'), href: '/recommendations', icon: Lightbulb },
     { id: 'collections', label: t('nav.collections', 'Collections'), href: '/collections', icon: CollectionsIcon },
     { id: 'folders', label: t('nav.folders', 'Folders'), href: '/folders', icon: FoldersIcon },
     { id: 'rules', label: t('nav.rules', 'Rules'), href: '/rules', icon: RulesIcon },

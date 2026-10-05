@@ -204,6 +204,50 @@
       "title": "Wiedergabeverlaufsanbieter"
     }
   },
+  "diagnostics": {
+    "activity": {
+      "idle": "",
+      "recent": "",
+      "title": ""
+    },
+    "description": "",
+    "emptyBody": "",
+    "emptyTitle": "",
+    "health": {
+      "ok": "",
+      "title": "",
+      "up": "",
+      "version": "",
+      "wiki": ""
+    },
+    "loading": "",
+    "logs": {
+      "empty": "",
+      "level": "",
+      "levels": {
+        "error": "",
+        "info": "",
+        "warn": ""
+      },
+      "search": "",
+      "title": ""
+    },
+    "pickService": "",
+    "refresh": "",
+    "setup": {
+      "cleanup_one": "",
+      "cleanup_other": "",
+      "crossMount": "",
+      "free": "",
+      "inaccessible": "",
+      "noBin": "",
+      "noCleanup": "",
+      "ok": "",
+      "recycleBin": "",
+      "title": ""
+    },
+    "title": ""
+  },
   "diskPressure": {
     "criticalAuto": {
       "description": "Überspringt die Schonfrist, wenn der Speicherplatz kritisch knapp ist. Geschützte Elemente werden immer übersprungen.",

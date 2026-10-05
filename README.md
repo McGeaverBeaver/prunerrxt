@@ -44,6 +44,8 @@ You set up rules like "delete movies nobody's watched in 6 months that are over 
 
 - **Smart Deletion** &mdash; Grace periods, four deletion actions (unmonitor, delete files, full removal, etc.), Seerr request resets, and a review queue. Nothing gets deleted without your say-so. [More &rarr;](https://github.com/helliott20/prunerr/wiki/Deletion-Management)
 
+- **Diagnostics** &mdash; Sonarr's and Radarr's health, version, command queue, deletion setup (recycle bin, root folders, the cross-filesystem trap) and a filtered log tail, under Settings → Connections, so a failed delete is explained without leaving Prunerr.
+
 - **Protected** &mdash; One page for everything Prunerr has promised to leave alone: titles protected by hand, titles Archive kept, and protected collections, each with why and since when, and releasable from the row.
 
 - **Archive** &mdash; Before a queued title is deleted, Prunerr asks Radarr/Sonarr whether it could be downloaded again as good as the copy you have. Titles that could not be (no release, a downgrade, a few seeders) are held for a decision or archived automatically: protected for good, still playable, never scanned again. [More &rarr;](docs/archive.md)

@@ -15,8 +15,13 @@
     "totalLibrarySize": "Total library size"
   },
   "deletions": {
+    "archivePaused": "Archive checks paused ({{apps}}): unchecked items stay held until the indexers answer again.",
     "emptyDesc": "No items are scheduled for deletion. Media flagged by rules or manually queued will appear here.",
     "emptyTitle": "Queue is clear",
+    "held_one": "{{count}} held by Archive for a decision",
+    "held_other": "{{count}} held by Archive for a decision",
+    "heldBadge": "Held",
+    "heldHint": "Archive is holding this title because it may not be downloadable again. Decide on the Queue page.",
     "subtitle": "Items scheduled for removal",
     "title": "Upcoming Deletions"
   },

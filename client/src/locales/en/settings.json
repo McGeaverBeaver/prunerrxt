@@ -204,6 +204,50 @@
       "title": "Watch history provider"
     }
   },
+  "diagnostics": {
+    "activity": {
+      "idle": "Idle: nothing running or queued",
+      "recent": "Recently finished",
+      "title": "What {{app}} is doing"
+    },
+    "description": "Health, deletion setup, activity and logs straight from Sonarr and Radarr, so a failed delete can be explained without leaving this page",
+    "emptyBody": "Diagnostics read each app through its API. Add a URL and API key above and this section fills in.",
+    "emptyTitle": "Connect Sonarr or Radarr first",
+    "health": {
+      "ok": "No health warnings",
+      "title": "{{app}} health",
+      "up": "Up since",
+      "version": "Version",
+      "wiki": "Open the wiki page"
+    },
+    "loading": "Asking the app…",
+    "logs": {
+      "empty": "Nothing at this level matches",
+      "level": "Log level",
+      "levels": {
+        "error": "Errors only",
+        "info": "Everything",
+        "warn": "Warnings and errors"
+      },
+      "search": "Filter by text, e.g. a title or \"permission\"",
+      "title": "{{app}} log"
+    },
+    "pickService": "Which app to inspect",
+    "refresh": "Refresh",
+    "setup": {
+      "cleanup_one": "emptied after {{count}} days",
+      "cleanup_other": "emptied after {{count}} days",
+      "crossMount": "bin on another path",
+      "free": "free",
+      "inaccessible": "not accessible",
+      "noBin": "none, files are deleted outright",
+      "noCleanup": "never emptied automatically",
+      "ok": "ok",
+      "recycleBin": "Recycling bin",
+      "title": "How {{app}} deletes"
+    },
+    "title": "Diagnostics"
+  },
   "diskPressure": {
     "criticalAuto": {
       "description": "Bypasses the grace period when critically low. Protected items are always skipped.",

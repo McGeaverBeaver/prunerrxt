@@ -207,6 +207,51 @@
       "title": "Proveedor del historial de reproducción"
     }
   },
+  "diagnostics": {
+    "activity": {
+      "idle": "",
+      "recent": "",
+      "title": ""
+    },
+    "description": "",
+    "emptyBody": "",
+    "emptyTitle": "",
+    "health": {
+      "ok": "",
+      "title": "",
+      "up": "",
+      "version": "",
+      "wiki": ""
+    },
+    "loading": "",
+    "logs": {
+      "empty": "",
+      "level": "",
+      "levels": {
+        "error": "",
+        "info": "",
+        "warn": ""
+      },
+      "search": "",
+      "title": ""
+    },
+    "pickService": "",
+    "refresh": "",
+    "setup": {
+      "cleanup_one": "",
+      "cleanup_many": "",
+      "cleanup_other": "",
+      "crossMount": "",
+      "free": "",
+      "inaccessible": "",
+      "noBin": "",
+      "noCleanup": "",
+      "ok": "",
+      "recycleBin": "",
+      "title": ""
+    },
+    "title": ""
+  },
   "diskPressure": {
     "criticalAuto": {
       "description": "Omite el periodo de gracia cuando el espacio es críticamente bajo. Los elementos protegidos siempre se omiten.",

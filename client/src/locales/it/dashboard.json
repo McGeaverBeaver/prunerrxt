@@ -17,8 +17,14 @@
     "totalLibrarySize": "Dimensione totale della libreria"
   },
   "deletions": {
+    "archivePaused": "",
     "emptyDesc": "Nessun elemento è programmato per l'eliminazione. I contenuti contrassegnati dalle regole o messi in coda manualmente compariranno qui.",
     "emptyTitle": "La coda è vuota",
+    "held_one": "",
+    "held_many": "",
+    "held_other": "",
+    "heldBadge": "",
+    "heldHint": "",
     "subtitle": "Elementi programmati per la rimozione",
     "title": "Prossime eliminazioni"
   },

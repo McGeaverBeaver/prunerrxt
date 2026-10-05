@@ -1,7 +1,13 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import type {
   ArchiveStatus,
+  ArrLogLevel,
   AvailabilityCheckResult,
+  DeletionSetupResult,
+  DiagnosticsService,
+  ServiceActivityResult,
+  ServiceHealthResult,
+  ServiceLogsResult,
   MediaItem,
   LibraryFilters,
   LibraryResponse,
@@ -825,6 +831,30 @@ export const apiKeyApi = {
 };
 
 // Settings APIs
+// Sonarr/Radarr diagnostics, read through their own APIs
+export const diagnosticsApi = {
+  logs: async (service: DiagnosticsService, options: { level?: ArrLogLevel; limit?: number; search?: string } = {}): Promise<ServiceLogsResult> => {
+    const params = new URLSearchParams();
+    if (options.level) params.set('level', options.level);
+    if (options.limit) params.set('limit', String(options.limit));
+    if (options.search) params.set('search', options.search);
+    const { data } = await api.get<ApiResponse<ServiceLogsResult>>(`/diagnostics/${service}/logs${params.size ? `?${params}` : ''}`);
+    return data.data!;
+  },
+  health: async (service: DiagnosticsService): Promise<ServiceHealthResult> => {
+    const { data } = await api.get<ApiResponse<ServiceHealthResult>>(`/diagnostics/${service}/health`);
+    return data.data!;
+  },
+  activity: async (service: DiagnosticsService): Promise<ServiceActivityResult> => {
+    const { data } = await api.get<ApiResponse<ServiceActivityResult>>(`/diagnostics/${service}/activity`);
+    return data.data!;
+  },
+  deletionSetup: async (service: DiagnosticsService): Promise<DeletionSetupResult> => {
+    const { data } = await api.get<ApiResponse<DeletionSetupResult>>(`/diagnostics/${service}/deletion-setup`);
+    return data.data!;
+  },
+};
+
 export const settingsApi = {
   get: async (): Promise<Settings> => {
     const { data } = await api.get<ApiResponse<Settings>>('/settings');

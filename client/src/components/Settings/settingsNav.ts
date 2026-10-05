@@ -38,6 +38,7 @@ export const SETTINGS_NAV: NavCategory[] = [
       { id: 'overseerr', labelKey: 'nav.sub.overseerr', fallback: 'Seerr' },
       { id: 'unraid', labelKey: 'nav.sub.unraid', fallback: 'Unraid' },
       { id: 'media-folders', labelKey: 'nav.sub.mediaFolders', fallback: 'Media folders' },
+      { id: 'diagnostics', labelKey: 'nav.sub.diagnostics', fallback: 'Diagnostics' },
     ],
     // "overseerr"/"jellyseerr" stay searchable: the card is labelled Seerr, but
     // that is what people have installed and what they will type.
@@ -54,7 +55,7 @@ export const SETTINGS_NAV: NavCategory[] = [
       { id: 'scan-schedule', labelKey: 'nav.sub.scanSchedule', fallback: 'Scan schedule' },
       { id: 'disk-pressure', labelKey: 'nav.sub.diskPressure', fallback: 'Disk pressure' },
     ],
-    keywords: 'schedule cron scan sync grace reclaim observe queue interval disk space threshold',
+    keywords: 'schedule cron scan sync grace reclaim observe queue interval disk space threshold diagnostics logs health recycle bin root folder activity command',
   },
   {
     id: 'safety',

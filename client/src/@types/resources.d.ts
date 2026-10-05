@@ -352,8 +352,13 @@ export default interface Resources {
       "totalLibrarySize": "Total library size"
     },
     "deletions": {
+      "archivePaused": "Archive checks paused ({{apps}}): unchecked items stay held until the indexers answer again.",
       "emptyDesc": "No items are scheduled for deletion. Media flagged by rules or manually queued will appear here.",
       "emptyTitle": "Queue is clear",
+      "heldBadge": "Held",
+      "heldHint": "Archive is holding this title because it may not be downloadable again. Decide on the Queue page.",
+      "held_one": "{{count}} held by Archive for a decision",
+      "held_other": "{{count}} held by Archive for a decision",
       "subtitle": "Items scheduled for removal",
       "title": "Upcoming Deletions"
     },
@@ -949,6 +954,7 @@ export default interface Resources {
       "library": "Library",
       "protected": "Protected",
       "queue": "Queue",
+      "recommendations": "Recommendations",
       "rules": "Rules",
       "settings": "Settings"
     },
@@ -2008,6 +2014,50 @@ export default interface Resources {
         "saveFailed": "Could not save the watch history provider",
         "title": "Watch history provider"
       }
+    },
+    "diagnostics": {
+      "activity": {
+        "idle": "Idle: nothing running or queued",
+        "recent": "Recently finished",
+        "title": "What {{app}} is doing"
+      },
+      "description": "Health, deletion setup, activity and logs straight from Sonarr and Radarr, so a failed delete can be explained without leaving this page",
+      "emptyBody": "Diagnostics read each app through its API. Add a URL and API key above and this section fills in.",
+      "emptyTitle": "Connect Sonarr or Radarr first",
+      "health": {
+        "ok": "No health warnings",
+        "title": "{{app}} health",
+        "up": "Up since",
+        "version": "Version",
+        "wiki": "Open the wiki page"
+      },
+      "loading": "Asking the app…",
+      "logs": {
+        "empty": "Nothing at this level matches",
+        "level": "Log level",
+        "levels": {
+          "error": "Errors only",
+          "info": "Everything",
+          "warn": "Warnings and errors"
+        },
+        "search": "Filter by text, e.g. a title or \"permission\"",
+        "title": "{{app}} log"
+      },
+      "pickService": "Which app to inspect",
+      "refresh": "Refresh",
+      "setup": {
+        "cleanup_one": "emptied after {{count}} days",
+        "cleanup_other": "emptied after {{count}} days",
+        "crossMount": "bin on another path",
+        "free": "free",
+        "inaccessible": "not accessible",
+        "noBin": "none, files are deleted outright",
+        "noCleanup": "never emptied automatically",
+        "ok": "ok",
+        "recycleBin": "Recycling bin",
+        "title": "How {{app}} deletes"
+      },
+      "title": "Diagnostics"
     },
     "diskPressure": {
       "criticalAuto": {

@@ -207,6 +207,51 @@
       "title": "Fournisseur d'historique de visionnage"
     }
   },
+  "diagnostics": {
+    "activity": {
+      "idle": "",
+      "recent": "",
+      "title": ""
+    },
+    "description": "",
+    "emptyBody": "",
+    "emptyTitle": "",
+    "health": {
+      "ok": "",
+      "title": "",
+      "up": "",
+      "version": "",
+      "wiki": ""
+    },
+    "loading": "",
+    "logs": {
+      "empty": "",
+      "level": "",
+      "levels": {
+        "error": "",
+        "info": "",
+        "warn": ""
+      },
+      "search": "",
+      "title": ""
+    },
+    "pickService": "",
+    "refresh": "",
+    "setup": {
+      "cleanup_one": "",
+      "cleanup_many": "",
+      "cleanup_other": "",
+      "crossMount": "",
+      "free": "",
+      "inaccessible": "",
+      "noBin": "",
+      "noCleanup": "",
+      "ok": "",
+      "recycleBin": "",
+      "title": ""
+    },
+    "title": ""
+  },
   "diskPressure": {
     "criticalAuto": {
       "description": "Contourne la période de grâce en cas de niveau critique. Les éléments protégés sont toujours ignorés.",

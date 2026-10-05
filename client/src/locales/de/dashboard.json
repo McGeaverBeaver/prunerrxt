@@ -15,8 +15,13 @@
     "totalLibrarySize": "Gesamte Bibliotheksgröße"
   },
   "deletions": {
+    "archivePaused": "",
     "emptyDesc": "Es sind keine Elemente zur Löschung vorgesehen. Durch Regeln markierte oder manuell eingereihte Medien werden hier angezeigt.",
     "emptyTitle": "Warteschlange ist leer",
+    "held_one": "",
+    "held_other": "",
+    "heldBadge": "",
+    "heldHint": "",
     "subtitle": "Zur Entfernung vorgesehene Elemente",
     "title": "Anstehende Löschungen"
   },

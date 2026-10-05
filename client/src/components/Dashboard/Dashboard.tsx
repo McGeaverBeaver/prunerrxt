@@ -23,9 +23,10 @@ import {
   Activity,
   Shield,
   Layers,
+  ShieldAlert,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useStats, useRecentActivity, useUpcomingDeletions, useRecommendations, useMarkForDeletion, useUnraidStats, useHealthStatus, useStorageHistory, useSettings } from '@/hooks/useApi';
+import { useStats, useRecentActivity, useUpcomingDeletions, useRecommendations, useMarkForDeletion, useUnraidStats, useHealthStatus, useStorageHistory, useSettings, useArchiveStatus } from '@/hooks/useApi';
 import { SystemHealthCard } from '@/components/Health/SystemHealthCard';
 import { ScheduleCadenceCard } from '@/components/Health/ScheduleCadenceCard';
 import { WelcomeCard } from './WelcomeCard';
@@ -46,6 +47,8 @@ export default function Dashboard() {
   const { data: stats, isLoading: statsLoading, isError: statsError, error: statsErrorData, refetch: refetchStats } = useStats();
   const { data: recentActivity, isLoading: activityLoading, isError: activityError, error: activityErrorData, refetch: refetchActivity } = useRecentActivity();
   const { data: upcomingDeletions, isLoading: deletionsLoading, isError: deletionsError, error: deletionsErrorData, refetch: refetchDeletions } = useUpcomingDeletions();
+  const { data: archiveStatus } = useArchiveStatus();
+  const heldCount = upcomingDeletions?.filter((item) => item.held).length ?? 0;
   const { data: recommendations, isLoading: recommendationsLoading, isError: recommendationsError, error: recommendationsErrorData, refetch: refetchRecommendations } = useRecommendations(6, 90);
   const { data: unraidStats, isLoading: unraidLoading, isError: unraidError, error: unraidErrorData, refetch: refetchUnraid } = useUnraidStats();
   const { data: storageHistory, isLoading: storageHistoryLoading } = useStorageHistory(30);
@@ -318,9 +321,26 @@ export default function Dashboard() {
               <div className="p-2 rounded-lg bg-ruby-500/10">
                 <AlertTriangle className="w-5 h-5 text-ruby-text" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <h2 className="text-lg font-display font-semibold text-surface-50">{t('deletions.title', 'Upcoming Deletions')}</h2>
-                <p className="text-sm text-surface-500">{t('deletions.subtitle', 'Items scheduled for removal')}</p>
+                <p className="text-sm text-surface-500">
+                  {t('deletions.subtitle', 'Items scheduled for removal')}
+                  {heldCount > 0 && (
+                    <>
+                      {' · '}
+                      <Link to="/queue" className="text-accent-text hover:text-accent-text-hover transition-colors">
+                        {t('deletions.held', '{{count}} held by Archive for a decision', { count: heldCount })}
+                      </Link>
+                    </>
+                  )}
+                </p>
+                {archiveStatus && archiveStatus.paused.length > 0 && (
+                  <p className="mt-1 text-xs text-surface-400">
+                    {t('deletions.archivePaused', 'Archive checks paused ({{apps}}): unchecked items stay held until the indexers answer again.', {
+                      apps: archiveStatus.paused.map((p) => (p.service === 'radarr' ? 'Radarr' : 'Sonarr')).join(', '),
+                    })}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -738,9 +758,12 @@ interface DeletionItemData {
   type: 'movie' | 'tv';
   size: number;
   deleteAt: string;
+  /** Archive is holding it for a decision. */
+  held?: boolean;
 }
 
 function DeletionItem({ item }: { item: DeletionItemData }) {
+  const { t } = useTranslation('dashboard');
   const TypeIcon = item.type === 'movie' ? Film : Tv;
   const typeColor = item.type === 'movie' ? 'violet' : 'emerald';
   const detailHref = libraryItemPath(item.mediaItemId ?? item.id);
@@ -776,7 +799,14 @@ function DeletionItem({ item }: { item: DeletionItemData }) {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs font-medium text-ruby-text">{formatRelativeTime(item.deleteAt)}</p>
+          {item.held ? (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-accent-text" title={t('deletions.heldHint', 'Archive is holding this title because it may not be downloadable again. Decide on the Queue page.')}>
+              <ShieldAlert className="w-3.5 h-3.5" />
+              {t('deletions.heldBadge', 'Held')}
+            </span>
+          ) : (
+            <p className="text-xs font-medium text-ruby-text">{formatRelativeTime(item.deleteAt)}</p>
+          )}
         </div>
       </div>
     </div>

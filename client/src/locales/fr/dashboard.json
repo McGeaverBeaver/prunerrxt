@@ -17,8 +17,14 @@
     "totalLibrarySize": "Taille totale de la bibliothèque"
   },
   "deletions": {
+    "archivePaused": "",
     "emptyDesc": "Aucun élément n'est planifié pour suppression. Les médias signalés par des règles ou mis en file d'attente manuellement apparaîtront ici.",
     "emptyTitle": "La file d'attente est vide",
+    "held_one": "",
+    "held_many": "",
+    "held_other": "",
+    "heldBadge": "",
+    "heldHint": "",
     "subtitle": "Éléments planifiés pour suppression",
     "title": "Suppressions à venir"
   },

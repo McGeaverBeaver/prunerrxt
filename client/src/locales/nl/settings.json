@@ -204,6 +204,50 @@
       "title": "Kijkgeschiedenisprovider"
     }
   },
+  "diagnostics": {
+    "activity": {
+      "idle": "",
+      "recent": "",
+      "title": ""
+    },
+    "description": "",
+    "emptyBody": "",
+    "emptyTitle": "",
+    "health": {
+      "ok": "",
+      "title": "",
+      "up": "",
+      "version": "",
+      "wiki": ""
+    },
+    "loading": "",
+    "logs": {
+      "empty": "",
+      "level": "",
+      "levels": {
+        "error": "",
+        "info": "",
+        "warn": ""
+      },
+      "search": "",
+      "title": ""
+    },
+    "pickService": "",
+    "refresh": "",
+    "setup": {
+      "cleanup_one": "",
+      "cleanup_other": "",
+      "crossMount": "",
+      "free": "",
+      "inaccessible": "",
+      "noBin": "",
+      "noCleanup": "",
+      "ok": "",
+      "recycleBin": "",
+      "title": ""
+    },
+    "title": ""
+  },
   "diskPressure": {
     "criticalAuto": {
       "description": "Slaat de respijtperiode over wanneer de ruimte kritiek laag is. Beschermde items worden altijd overgeslagen.",

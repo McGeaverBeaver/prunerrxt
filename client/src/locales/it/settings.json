@@ -207,6 +207,51 @@
       "title": "Provider della cronologia di visione"
     }
   },
+  "diagnostics": {
+    "activity": {
+      "idle": "",
+      "recent": "",
+      "title": ""
+    },
+    "description": "",
+    "emptyBody": "",
+    "emptyTitle": "",
+    "health": {
+      "ok": "",
+      "title": "",
+      "up": "",
+      "version": "",
+      "wiki": ""
+    },
+    "loading": "",
+    "logs": {
+      "empty": "",
+      "level": "",
+      "levels": {
+        "error": "",
+        "info": "",
+        "warn": ""
+      },
+      "search": "",
+      "title": ""
+    },
+    "pickService": "",
+    "refresh": "",
+    "setup": {
+      "cleanup_one": "",
+      "cleanup_many": "",
+      "cleanup_other": "",
+      "crossMount": "",
+      "free": "",
+      "inaccessible": "",
+      "noBin": "",
+      "noCleanup": "",
+      "ok": "",
+      "recycleBin": "",
+      "title": ""
+    },
+    "title": ""
+  },
   "diskPressure": {
     "criticalAuto": {
       "description": "Ignora il periodo di tolleranza quando lo spazio è criticamente basso. Gli elementi protetti vengono sempre saltati.",

@@ -554,6 +554,66 @@ export interface UpcomingDeletion {
   type: MediaType;
   size: number;
   deleteAt: string;
+  daysRemaining?: number;
+  /** Archive is holding it for a decision; it will not go when the date passes. */
+  held?: boolean;
+  heldReason?: HoldReason;
+}
+
+// Sonarr/Radarr diagnostics (GET /api/diagnostics/:service/*)
+export type DiagnosticsService = 'sonarr' | 'radarr';
+export type ArrLogLevel = 'info' | 'warn' | 'error';
+
+export interface ArrLogRecord {
+  id: number;
+  time: string;
+  level: string;
+  logger: string;
+  message: string;
+  exception?: string;
+  exceptionType?: string;
+}
+
+export interface ServiceLogsResult {
+  service: DiagnosticsService;
+  level: ArrLogLevel;
+  records: ArrLogRecord[];
+  lines: string[];
+}
+
+export interface ServiceHealthResult {
+  service: DiagnosticsService;
+  version: string | null;
+  startTime: string | null;
+  health: Array<{ source: string; type: string; message: string; wikiUrl?: string }>;
+}
+
+export interface ArrCommand {
+  id: number;
+  name: string;
+  commandName?: string;
+  status: string;
+  queued?: string;
+  started?: string;
+  ended?: string;
+  duration?: string;
+  message?: string;
+  trigger?: string;
+}
+
+export interface ServiceActivityResult {
+  service: DiagnosticsService;
+  running: ArrCommand[];
+  queued: ArrCommand[];
+  recent: ArrCommand[];
+}
+
+export interface DeletionSetupResult {
+  service: DiagnosticsService;
+  recycleBin: string | null;
+  recycleBinCleanupDays: number | null;
+  rootFolders: Array<{ id: number; path: string; accessible: boolean; freeSpace?: number; sameMountAsRecycleBin: boolean | null }>;
+  warnings: string[];
 }
 
 export interface Recommendation {

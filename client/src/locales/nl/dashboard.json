@@ -15,8 +15,13 @@
     "totalLibrarySize": "Totale bibliotheekgrootte"
   },
   "deletions": {
+    "archivePaused": "",
     "emptyDesc": "Er zijn geen items ingepland voor verwijdering. Media die door regels is gemarkeerd of handmatig in de wachtrij is geplaatst, verschijnt hier.",
     "emptyTitle": "Wachtrij is leeg",
+    "held_one": "",
+    "held_other": "",
+    "heldBadge": "",
+    "heldHint": "",
     "subtitle": "Items ingepland voor verwijdering",
     "title": "Aankomende verwijderingen"
   },
