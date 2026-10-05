@@ -272,13 +272,15 @@ async function build(refresh: boolean): Promise<WatchPatternsReport> {
     viewers,
     topShows: top('episode'),
     topMovies: top('movie'),
+    // SUM() over an empty library is NULL, not 0; a fresh install must not
+    // turn that into a NOT NULL failure when the snapshot is stored.
     library: {
-      items: agg.items,
-      bytes: agg.bytes,
-      neverPlayed: { count: agg.never, bytes: agg.never_bytes },
-      neverPlayedOld: { count: agg.never_old, bytes: agg.never_old_bytes },
-      playedLast90: { count: agg.played90 },
-      quietOverYear: { count: agg.quiet, bytes: agg.quiet_bytes },
+      items: agg.items ?? 0,
+      bytes: agg.bytes ?? 0,
+      neverPlayed: { count: agg.never ?? 0, bytes: agg.never_bytes ?? 0 },
+      neverPlayedOld: { count: agg.never_old ?? 0, bytes: agg.never_old_bytes ?? 0 },
+      playedLast90: { count: agg.played90 ?? 0 },
+      quietOverYear: { count: agg.quiet ?? 0, bytes: agg.quiet_bytes ?? 0 },
     },
     quietLargest,
   };

@@ -100,7 +100,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
       <div className="sidebar-head h-20 flex items-center justify-between gap-4 px-6 border-b border-surface-800/50">
         <div className="flex items-center gap-4">
           <div className="sidebar-logo w-12 h-12 rounded-xl shadow-lg shadow-accent-500/20">
-            <LogoMark className="w-12 h-12" />
+            <LogoMark className="w-full h-full" />
           </div>
           <div>
             <h1 className="text-xl"><Wordmark /></h1>
