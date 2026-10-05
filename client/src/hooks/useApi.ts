@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   dashboardApi,
@@ -409,12 +410,36 @@ export function useRevokeSession() {
 
 /** Polled while the Queue page is open so a pause shows up and clears on its own. */
 export function useArchiveStatus() {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const query = useQuery({
     queryKey: ['queue', 'archive-status'] as const,
     queryFn: queueApi.archiveStatus,
     // Every few seconds while a pass is running, so the banner moves; otherwise a minute.
-    refetchInterval: (query) => (query.state.data?.pass || query.state.data?.checkingAll ? 3_000 : 60_000),
+    refetchInterval: (q) => (q.state.data?.pass || q.state.data?.checkingAll ? 3_000 : 60_000),
   });
+
+  // The queue rows and the stat cards carry the verdicts, so they must follow
+  // the check: refresh them every so often while it runs, and once more the
+  // moment it stops (or a pass elsewhere finishes), without a page reload.
+  const running = Boolean(query.data?.pass) || Boolean(query.data?.checkingAll);
+  const lastPassAt = query.data?.lastPassAt ?? null;
+  const wasRunning = useRef(running);
+  const seenPassAt = useRef(lastPassAt);
+  useEffect(() => {
+    const refresh = () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+    };
+    if (wasRunning.current && !running) refresh();
+    if (seenPassAt.current !== lastPassAt && !running) refresh();
+    wasRunning.current = running;
+    seenPassAt.current = lastPassAt;
+    if (!running) return;
+    const timer = setInterval(refresh, 15_000);
+    return () => clearInterval(timer);
+  }, [running, lastPassAt, queryClient]);
+
+  return query;
 }
 
 /** Start a check of everything queued; the status poll then follows it. */

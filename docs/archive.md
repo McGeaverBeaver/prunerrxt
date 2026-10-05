@@ -94,19 +94,20 @@ it is hard to find again.
   before the queue acts on it.
 - Any time from the Queue page (*Re-check*) or the item's page (*Check now*).
 
-Searches run one at a time with a short pause between them, and one background
-pass covers at most forty items, so a rule that queues a whole library does not
-hammer your indexers. Each interactive search can take up to a minute or two.
+Searches run one at a time with a short pause between them; that pause is
+what keeps a rule that queues a whole library from hammering your indexers.
+A pass covers at most forty items, and passes run back to back until every
+queued item has a verdict, whether the check was started by queueing, by the
+schedule, before the nightly queue run or by hand. Each interactive search
+can take up to a minute or two.
 
 When the queue holds items Archive has not looked at yet, the Queue page's
 *held by Archive* banner says so ("not checked yet" rather than "may not be
 downloadable again"), shows the pass in flight (the title being checked, the
 position in the pass, how many are still waiting and roughly how long), and
-offers **Check now** when nothing is running. Check now (`POST
-/api/queue/archive-check`, audited as `archive.check_all`) chains passes back
-to back until every queued item has a verdict, so a thousand queued titles do
-not wait for the 15-minute schedule forty at a time. It stops on its own when
-the only app with items left is paused.
+offers **Check now** when nothing is running (`POST /api/queue/archive-check`,
+audited as `archive.check_all`). The queue rows and the stat cards refresh on
+their own while a check runs and once more when it stops.
 
 ## When the indexers are down
 

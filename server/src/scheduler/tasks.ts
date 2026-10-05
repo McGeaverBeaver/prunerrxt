@@ -23,7 +23,7 @@ import type { DiskPressureData } from '../notifications/templates';
 import type { EvaluationContext } from '../rules/conditions';
 import type { MediaItem } from '../types';
 import { kickAvailabilityChecks } from '../services/availabilityKick';
-import { checkQueue } from '../services/availability';
+import { checkAll } from '../services/availability';
 import { holdState } from '../services/availabilityVerdict';
 import { verifyAuditChain } from '../services/audit';
 
@@ -575,7 +575,7 @@ export async function processDeletionQueue(): Promise<DeletionProcessingResult> 
     // Archive: every queued item gets a verdict before anything is deleted,
     // so at-risk titles can be held (or archived) instead of going.
     try {
-      await checkQueue({ actorName: 'Scheduler' });
+      await checkAll({ actorName: 'Scheduler' });
     } catch (availabilityError) {
       logger.warn('Availability checks failed before queue processing:', availabilityError);
     }
@@ -1532,7 +1532,7 @@ export async function checkAvailability(): Promise<TaskResult> {
   const startedAt = new Date();
   const taskName = 'checkAvailability';
   try {
-    const result = await checkQueue({ actorName: 'Scheduler' });
+    const result = await checkAll({ actorName: 'Scheduler' });
     const completedAt = new Date();
     return {
       success: true,

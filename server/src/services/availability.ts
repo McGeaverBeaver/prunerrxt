@@ -533,7 +533,7 @@ export function checkQueue(options: { limit?: number; actorName?: string; trigge
 }
 
 /**
- * Give every queued item a verdict now, not forty at a time: passes run back
+ * Give every queued item a verdict, not forty at a time: passes run back
  * to back until nothing needs a check, a pass checks nothing (every remaining
  * item belongs to a paused app), or the cap of passes is hit. One run at a
  * time; a second call joins the first. Returns the totals over all passes.
@@ -573,7 +573,9 @@ export function kickAvailabilityChecks(delayMs: number = 5_000, trigger: TaskTri
   // database is open (at start-up), and checkQueue reads the setting anyway.
   kickTimer = setTimeout(() => {
     kickTimer = null;
-    checkQueue({ actorName: 'Archive', trigger }).catch((error) => logger.warn('Background availability pass failed', error));
+    // Chain passes until the queue has its verdicts: the pause between
+    // searches is the rate control, the per-pass cap only bounds one pass.
+    checkAll({ actorName: 'Archive', trigger }).catch((error) => logger.warn('Background availability pass failed', error));
   }, delayMs);
   kickTimer.unref?.();
 }

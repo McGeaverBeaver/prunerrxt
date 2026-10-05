@@ -43,7 +43,7 @@ vi.mock('../../services/deletion', () => ({
 }));
 
 vi.mock('../../services/availability', () => ({
-  checkQueue: async () => ({ checked: 0, replaceable: 0, atRisk: 0, unknown: 0, archived: 0, skipped: 0 }),
+  checkAll: async () => ({ checked: 0, replaceable: 0, atRisk: 0, unknown: 0, archived: 0, skipped: 0 }),
 }));
 
 vi.mock('../../db/repositories/rules', () => ({
