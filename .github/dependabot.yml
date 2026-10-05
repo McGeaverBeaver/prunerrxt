@@ -9,6 +9,11 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    # Node majors are chosen by hand (LTS only): Dependabot proposes the
+    # newest release, which is a Current line for half the year.
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
