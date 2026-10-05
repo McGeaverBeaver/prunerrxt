@@ -224,7 +224,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
             {resolvedTheme === 'dark' ? <SunIcon className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
           <a
-            href="https://github.com/McGeaverBeaver/prunerr"
+            href="https://github.com/McGeaverBeaver/prunerrxt"
             target="_blank"
             rel="noopener noreferrer"
             className="sidebar-foot-link group p-2.5 rounded-lg text-surface-500 hover:text-accent-text-hover hover:bg-surface-800/60 transition-all"
@@ -233,7 +233,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
             <GithubIcon className="w-4 h-4" />
           </a>
           <a
-            href="https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr"
+            href="https://github.com/McGeaverBeaver/prunerrxt/pkgs/container/prunerrxt"
             target="_blank"
             rel="noopener noreferrer"
             className="sidebar-foot-link group p-2.5 rounded-lg text-surface-500 hover:text-accent-text-hover hover:bg-surface-800/60 transition-all"

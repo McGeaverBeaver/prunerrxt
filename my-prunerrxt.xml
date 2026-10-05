@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
     <Name>PrunerrXT</Name>
-    <Repository>ghcr.io/mcgeaverbeaver/prunerr:main</Repository>
+    <Repository>ghcr.io/mcgeaverbeaver/prunerrxt:main</Repository>
     <!-- Community Applications turns each Branch into a pickable channel:
          the Tag is appended to the repository above. -->
     <Branch>
@@ -12,12 +12,12 @@
         <Tag>beta</Tag>
         <TagDescription>Beta - rebuilt from the beta branch as changes land, for testing new features before release</TagDescription>
     </Branch>
-    <Registry>https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr</Registry>
+    <Registry>https://github.com/McGeaverBeaver/prunerrxt/pkgs/container/prunerrxt</Registry>
     <Network>bridge</Network>
     <Shell>sh</Shell>
     <Privileged>false</Privileged>
-    <Support>https://github.com/McGeaverBeaver/prunerr</Support>
-    <Project>https://github.com/McGeaverBeaver/prunerr</Project>
+    <Support>https://github.com/McGeaverBeaver/prunerrxt</Support>
+    <Project>https://github.com/McGeaverBeaver/prunerrxt</Project>
     <Overview>PrunerrXT is a media library cleanup tool for Plex, Jellyfin or Emby, working through Sonarr and Radarr. Rules flag what nobody watches, everything goes through a deletion queue with a grace period, and before a title is deleted PrunerrXT checks with Radarr or Sonarr whether it could be downloaded again. Built on Prunerr by Harry Elliott.&#xD;
 &#xD;
 Features:&#xD;
@@ -36,9 +36,9 @@ Features:&#xD;
 Service connections are configured in the web UI. Login and the AI connector are configured with the variables below.</Overview>
     <Category>MediaApp:Other MediaServer:Other</Category>
     <WebUI>http://[IP]:[PORT:3000]/</WebUI>
-    <TemplateURL>https://raw.githubusercontent.com/McGeaverBeaver/prunerr/main/my-prunerr.xml</TemplateURL>
+    <TemplateURL>https://raw.githubusercontent.com/McGeaverBeaver/prunerrxt/main/my-prunerrxt.xml</TemplateURL>
     <!-- Unraid fetches the icon over HTTP, so this URL only resolves while the repository is public. -->
-    <Icon>https://raw.githubusercontent.com/McGeaverBeaver/prunerr/main/assets/icon.png</Icon>
+    <Icon>https://raw.githubusercontent.com/McGeaverBeaver/prunerrxt/main/assets/icon.png</Icon>
 
     <Config Name="Web UI Port" Target="3000" Default="3000" Mode="tcp" Description="Port for the PrunerrXT web interface" Type="Port" Display="always" Required="true" Mask="false">3000</Config>
 

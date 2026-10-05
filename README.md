@@ -7,10 +7,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr"><img src="https://img.shields.io/badge/image-ghcr.io%2Fmcgeaverbeaver%2Fprunerr-0db7ed?style=flat-square" alt="Container image"></a>
-  <img src="https://img.shields.io/github/license/McGeaverBeaver/prunerr?style=flat-square" alt="License">
-  <a href="https://github.com/McGeaverBeaver/prunerr/actions/workflows/docker-publish.yml"><img src="https://img.shields.io/github/actions/workflow/status/McGeaverBeaver/prunerr/docker-publish.yml?style=flat-square&label=image%20build" alt="Image build"></a>
-  <a href="https://github.com/McGeaverBeaver/prunerr/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/McGeaverBeaver/prunerr/ci.yml?style=flat-square&label=ci" alt="CI"></a>
+  <a href="https://github.com/McGeaverBeaver/prunerrxt/pkgs/container/prunerrxt"><img src="https://img.shields.io/badge/image-ghcr.io%2Fmcgeaverbeaver%2Fprunerrxt-0db7ed?style=flat-square" alt="Container image"></a>
+  <img src="https://img.shields.io/github/license/McGeaverBeaver/prunerrxt?style=flat-square" alt="License">
+  <a href="https://github.com/McGeaverBeaver/prunerrxt/actions/workflows/docker-publish.yml"><img src="https://img.shields.io/github/actions/workflow/status/McGeaverBeaver/prunerrxt/docker-publish.yml?style=flat-square&label=image%20build" alt="Image build"></a>
+  <a href="https://github.com/McGeaverBeaver/prunerrxt/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/McGeaverBeaver/prunerrxt/ci.yml?style=flat-square&label=ci" alt="CI"></a>
 </p>
 
 <p align="center">
@@ -87,7 +87,7 @@ docker run -d \
   -e SONARR_API_KEY=your-sonarr-api-key \
   -e RADARR_URL=http://your-radarr:7878 \
   -e RADARR_API_KEY=your-radarr-api-key \
-  ghcr.io/mcgeaverbeaver/prunerr:main
+  ghcr.io/mcgeaverbeaver/prunerrxt:main
 ```
 
 For **Jellyfin** or **Emby**, swap the two Plex variables for:
@@ -105,11 +105,11 @@ Every other connection (Tautulli, Seerr, Unraid, Discord, media folders) is set 
 | Platform | How |
 |----------|-----|
 | **Docker Compose** | [`docker-compose.yml`](docker-compose.yml) in this repository |
-| **Unraid** | Add [`my-prunerr.xml`](my-prunerr.xml) as a template, or paste its raw URL into *Add Container* &rarr; *Template* |
+| **Unraid** | Add [`my-prunerrxt.xml`](my-prunerrxt.xml) as a template, or paste its raw URL into *Add Container* &rarr; *Template* |
 
 ### Image channels
 
-The image is published to the GitHub Container Registry as [`ghcr.io/mcgeaverbeaver/prunerr`](https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr), for amd64 and arm64.
+The image is published to the GitHub Container Registry as [`ghcr.io/mcgeaverbeaver/prunerrxt`](https://github.com/McGeaverBeaver/prunerrxt/pkgs/container/prunerrxt), for amd64 and arm64.
 
 | Tag | What it is |
 |---|---|
@@ -166,8 +166,8 @@ PrunerrXT keeps Prunerr's MIT licence. The name marks a different direction (no 
 
 ## Support
 
-- **GitHub:** [McGeaverBeaver/prunerr](https://github.com/McGeaverBeaver/prunerr)
-- **Container image:** [ghcr.io/mcgeaverbeaver/prunerr](https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr)
+- **GitHub:** [McGeaverBeaver/prunerrxt](https://github.com/McGeaverBeaver/prunerrxt)
+- **Container image:** [ghcr.io/mcgeaverbeaver/prunerrxt](https://github.com/McGeaverBeaver/prunerrxt/pkgs/container/prunerrxt)
 - **Original project:** [helliott20/prunerr](https://github.com/helliott20/prunerr)
 
 ## License

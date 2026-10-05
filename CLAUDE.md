@@ -14,12 +14,12 @@ PrunerrXT is a media library cleanup tool for Plex/Jellyfin/Emby with Sonarr and
 /client          # React frontend
 /server          # Express backend
 /assets          # Icons and images
-/my-prunerr.xml  # Unraid template
+/my-prunerrxt.xml  # Unraid template
 ```
 
 ## Release Workflow
 
-The image lives on the GitHub Container Registry as `ghcr.io/mcgeaverbeaver/prunerr`
+The image lives on the GitHub Container Registry as `ghcr.io/mcgeaverbeaver/prunerrxt`
 (built by `.github/workflows/docker-publish.yml`, both amd64 and arm64, using
 only the repository's own GitHub token). Three ways to publish:
 
@@ -46,8 +46,8 @@ Do not add telemetry, update checks, remote feeds, CDN assets or any other
 request to a third party.
 
 ## Related Repositories
-- **This repository (PrunerrXT)**: https://github.com/McGeaverBeaver/prunerr
-- **Container image**: https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr
+- **This repository (PrunerrXT)**: https://github.com/McGeaverBeaver/prunerrxt
+- **Container image**: https://github.com/McGeaverBeaver/prunerrxt/pkgs/container/prunerrxt
 - **Upstream (the original Prunerr)**: https://github.com/helliott20/prunerr (its wiki is still the
   user documentation the README links to)
 

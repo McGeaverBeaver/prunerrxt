@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*'
-    # Every push to `beta` republishes ghcr.io/<owner>/prunerr:beta, so testers can
+    # Every push to `beta` republishes ghcr.io/<owner>/prunerrxt:beta, so testers can
     # track the branch without a release or a version tag.
     branches:
       - beta
@@ -40,7 +40,7 @@ jobs:
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
           # GHCR image names must be lowercase; the owner login may not be.
-          echo "IMAGE_NAME=${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/prunerr" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/prunerrxt" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -124,7 +124,7 @@ jobs:
 
       - name: Prepare
         run: |
-          echo "IMAGE_NAME=${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/prunerr" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/prunerrxt" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3

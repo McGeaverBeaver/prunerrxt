@@ -58,7 +58,7 @@ LABEL org.opencontainers.image.title="PrunerrXT"
 LABEL org.opencontainers.image.description="Media library cleanup tool for Plex/Sonarr/Radarr"
 LABEL org.opencontainers.image.version="${APP_VERSION}"
 LABEL org.opencontainers.image.vendor="PrunerrXT"
-LABEL org.opencontainers.image.source="https://github.com/McGeaverBeaver/prunerr"
+LABEL org.opencontainers.image.source="https://github.com/McGeaverBeaver/prunerrxt"
 LABEL org.opencontainers.image.licenses="MIT"
 
 # su-exec switches to PUID:PGID at startup. libcap's setcap gives the Node
