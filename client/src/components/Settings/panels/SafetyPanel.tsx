@@ -57,7 +57,7 @@ function keysOf(libraries: LibraryInfo[]): string {
 }
 
 /**
- * Safety: which libraries Prunerr is even allowed to look at, and which titles
+ * Safety: which libraries PrunerrXT is even allowed to look at, and which titles
  * are shielded once it does. Both sub-sections own their own endpoint, so each
  * registers a saver with the shell rather than writing on click.
  */

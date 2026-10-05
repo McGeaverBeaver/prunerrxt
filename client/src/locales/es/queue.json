@@ -35,7 +35,7 @@
   "arrWarning": {
     "bannerDesc": "La eliminación requiere Sonarr o Radarr para quitar archivos del disco. Los elementos se pueden poner en cola, pero no se procesarán hasta que se configure un servicio.",
     "goToSettings": "Ir a Ajustes",
-    "modalDesc": "Los elementos se marcarán como eliminados en Prunerr, pero los archivos no se quitarán del disco. Configura primero Sonarr o Radarr en Ajustes.",
+    "modalDesc": "Los elementos se marcarán como eliminados en PrunerrXT, pero los archivos no se quitarán del disco. Configura primero Sonarr o Radarr en Ajustes.",
     "title": "Sonarr/Radarr no configurado"
   },
   "deleteAllModal": {

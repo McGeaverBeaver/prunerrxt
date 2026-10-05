@@ -55,7 +55,7 @@ const EVENT_CONFIG: Record<
     colorClass: 'text-accent-text',
     bgClass: 'bg-amber-500/15 border-amber-500/20',
   },
-  // Derived from Sonarr's own history rather than Prunerr's activity log.
+  // Derived from Sonarr's own history rather than PrunerrXT's activity log.
   sonarr_history: {
     icon: Download,
     colorClass: 'text-cyan-text',
@@ -70,7 +70,7 @@ const EVENT_CONFIG: Record<
 
 // Stable logic keys for synthetic lifecycle entries; the action string doubles as
 // the icon-lookup key while the visible text is localised separately.
-const SYNTHETIC_FIRST_SCANNED = 'First scanned by Prunerr';
+const SYNTHETIC_FIRST_SCANNED = 'First scanned by PrunerrXT';
 const SYNTHETIC_ADDED_TO_PLEX = 'Added to Plex';
 
 const ACTOR_CONFIG: Record<string, { variant: 'accent' | 'violet' | 'warning' }> = {
@@ -107,7 +107,7 @@ function formatAction(entry: TimelineEntry): string {
     item_restored: i18n.t('timeline.action.itemRestored', 'Restored'),
     rule_matched: i18n.t('timeline.action.ruleMatched', 'Matched by rule'),
     scanned: i18n.t('timeline.action.scanned', 'Library scan'),
-    [SYNTHETIC_FIRST_SCANNED]: i18n.t('timeline.action.firstScanned', 'First scanned by Prunerr'),
+    [SYNTHETIC_FIRST_SCANNED]: i18n.t('timeline.action.firstScanned', 'First scanned by PrunerrXT'),
     [SYNTHETIC_ADDED_TO_PLEX]: i18n.t('timeline.action.addedToPlex', 'Added to {{name}}', {
       name: String(entry.metadata?.['mediaServer'] ?? 'Plex'),
     }),
@@ -298,7 +298,7 @@ function TimelineRow({
   const details = episodeDetailLines(entry, formatBytes);
   const freedBytes = entry.metadata?.['freedBytes'];
   // Rows derived from Sonarr's history are attributed to Sonarr, not to
-  // Prunerr's scheduler.
+  // PrunerrXT's scheduler.
   const fromSonarr = entry.eventType === 'sonarr_history';
 
   return (

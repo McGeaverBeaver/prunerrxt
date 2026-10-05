@@ -280,7 +280,7 @@ export function McpSection({
               <p className="text-[11.5px] text-surface-400">
                 {t(
                   'mcp.hostedBody',
-                  'Add the endpoint above as a custom connector. No key needed: the client registers itself, sends you to the Prunerr login, asks once for permission, and then acts as you with your role. Make sure Prunerr knows its public address (APP_URL, or X-Forwarded-Proto/Host from the proxy).'
+                  'Add the endpoint above as a custom connector. No key needed: the client registers itself, sends you to the PrunerrXT login, asks once for permission, and then acts as you with your role. Make sure PrunerrXT knows its public address (APP_URL, or X-Forwarded-Proto/Host from the proxy).'
                 )}
               </p>
             </div>
@@ -288,7 +288,7 @@ export function McpSection({
             <Snippet
               title={t('mcp.snippetClaudeCode', 'Claude Code')}
               code={snippets.claudeCode}
-              hint={t('mcp.snippetClaudeCodeHint', 'Run once in a terminal; adds Prunerr to your user-level MCP servers.')}
+              hint={t('mcp.snippetClaudeCodeHint', 'Run once in a terminal; adds PrunerrXT to your user-level MCP servers.')}
             />
             <Snippet
               title={t('mcp.snippetJson', 'Cursor, Windsurf, VS Code and other HTTP clients')}

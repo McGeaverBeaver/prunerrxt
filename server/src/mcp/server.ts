@@ -1,5 +1,5 @@
 /**
- * Builds a Prunerr MCP server with every tool, resource and prompt registered.
+ * Builds a PrunerrXT MCP server with every tool, resource and prompt registered.
  * One instance is created per client session; the registrations are cheap
  * closures over the shared repositories and services.
  */
@@ -25,7 +25,7 @@ export const MCP_SERVER_NAME = 'prunerr';
 function buildInstructions(): string {
   const immediate = allowsImmediateDeletion();
   return [
-    'Prunerr manages a Plex/Jellyfin/Emby media library through Sonarr and Radarr: it finds content nobody watches and reclaims the space.',
+    'PrunerrXT manages a Plex/Jellyfin/Emby media library through Sonarr and Radarr: it finds content nobody watches and reclaims the space.',
     '',
     'How deletion works here: nothing is deleted directly. Items are *queued* with a grace period (queue_for_deletion, run_rule, trigger_scan); the queue is processed later, and anything in it can be removed again (remove_from_queue). Protected items — directly or via a protected collection — are never deleted.',
     '',
@@ -36,14 +36,14 @@ function buildInstructions(): string {
     `- Immediate deletion (delete_now, process_queue with dryRun=false, queue_episodes_for_deletion with immediate=true) is ${
       immediate ? 'enabled on this install, but still confirm explicitly with the user first' : 'DISABLED on this install; those calls will be refused'
     }.`,
-    '- Sizes are given both human-readable and in bytes; ids are Prunerr ids, not Plex/Sonarr ids, unless named otherwise.',
+    '- Sizes are given both human-readable and in bytes; ids are PrunerrXT ids, not Plex/Sonarr ids, unless named otherwise.',
     '- Read describe_rule_fields (or the prunerr://rules/schema resource) before writing a rule.',
   ].join('\n');
 }
 
 export function createMcpServer(): McpServer {
   const server = new McpServer(
-    { name: MCP_SERVER_NAME, title: 'Prunerr', version: getAppVersion() },
+    { name: MCP_SERVER_NAME, title: 'PrunerrXT', version: getAppVersion() },
     {
       capabilities: { logging: {} },
       instructions: buildInstructions(),

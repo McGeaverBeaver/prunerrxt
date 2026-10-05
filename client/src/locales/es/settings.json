@@ -108,7 +108,7 @@
       "weekly": "cada semana"
     },
     "librarySync": {
-      "description": "Trae automáticamente a Prunerr las nuevas películas y series de {{name}}",
+      "description": "Trae automáticamente a PrunerrXT las nuevas películas y series de {{name}}",
       "enable": "Sincronización automática de {{name}}",
       "enableHint": "Actualiza la biblioteca para que los elementos nuevos aparezcan sin pulsar «Sincronizar biblioteca»",
       "title": "Sincronización de la biblioteca de {{name}}"
@@ -126,7 +126,7 @@
     "confirmImportBody": "Importar sobrescribirá todos los ajustes actuales con los valores de <strong>{{filename}}</strong>. Esta acción no se puede deshacer.",
     "confirmImportTitle": "Confirmar importación",
     "confirmRestore": "Reemplazar mis datos",
-    "confirmRestoreBody": "Todo lo que hay ahora en Prunerr — biblioteca, reglas, cola e historial — se reemplazará por <strong>{{filename}}</strong>.",
+    "confirmRestoreBody": "Todo lo que hay ahora en PrunerrXT — biblioteca, reglas, cola e historial — se reemplazará por <strong>{{filename}}</strong>.",
     "confirmRestoreSafety": "Tu base de datos actual se guarda antes junto a ella, así que un error se puede deshacer desde la carpeta de datos.",
     "confirmRestoreTitle": "¿Restaurar esta copia de seguridad?",
     "description": "Exporta los ajustes para hacer una copia de seguridad o impórtalos desde una exportación anterior",
@@ -136,7 +136,7 @@
     "exportHint": "Las exportaciones incluyen todos los ajustes, incluidas las credenciales de los servicios. Mantén el archivo seguro.",
     "fullDownloaded": "Copia de seguridad descargada",
     "fullFailed": "Error en la copia de seguridad",
-    "fullHint": "Toda la base de datos: biblioteca, reglas, cola, historial y ajustes. Al restaurar se reemplaza todo lo que hay ahora en Prunerr.",
+    "fullHint": "Toda la base de datos: biblioteca, reglas, cola, historial y ajustes. Al restaurar se reemplaza todo lo que hay ahora en PrunerrXT.",
     "fullTitle": "Copia de seguridad completa",
     "import": "Importar ajustes",
     "importFailed": "Error al importar: {{error}}",
@@ -169,7 +169,7 @@
     "docs": "Abrir la documentación de {{name}}",
     "edit": "Editar",
     "firstRun": {
-      "body": "Conecta {{name}} y Prunerr podrá leer tu biblioteca. Añade Sonarr o Radarr cuando quieras que elimine de verdad: hasta entonces el análisis permanece desactivado.",
+      "body": "Conecta {{name}} y PrunerrXT podrá leer tu biblioteca. Añade Sonarr o Radarr cuando quieras que elimine de verdad: hasta entonces el análisis permanece desactivado.",
       "connect": "Conectar {{name}}",
       "title": "Aún no hay nada conectado"
     },
@@ -186,9 +186,9 @@
       "recommended": "Recomendado"
     },
     "sections": {
-      "overseerrDescription": "Borra la solicitud cuando Prunerr elimina lo que se había pedido",
+      "overseerrDescription": "Borra la solicitud cuando PrunerrXT elimina lo que se había pedido",
       "sonarrRadarr": "Sonarr y Radarr",
-      "sonarrRadarrDescription": "Prunerr elimina a través de ellos: sin ellos solo puede informar",
+      "sonarrRadarrDescription": "PrunerrXT elimina a través de ellos: sin ellos solo puede informar",
       "unraidDescription": "Supervisión del array y de los discos: alimenta el indicador de presión de disco"
     },
     "status": {
@@ -504,7 +504,7 @@
     "truncated": ""
   },
   "mediaServer": {
-    "description": "El servidor del que Prunerr lee tu biblioteca",
+    "description": "El servidor del que PrunerrXT lee tu biblioteca",
     "playbackReportingHint": "Consejo: instala el complemento Playback Reporting en tu servidor. Sin él solo se registra la reproducción más reciente de cada elemento, por lo que no se detectan las repeticiones y los recuentos quedan bajos.",
     "title": "Servidor multimedia"
   },
@@ -673,7 +673,7 @@
     "system": "Clave de API y copias de seguridad"
   },
   "system": {
-    "productName": "Prunerr"
+    "productName": "PrunerrXT"
   },
   "toasts": {
     "apiKeyDisabled": "",
@@ -715,8 +715,8 @@
       "range": "",
       "title": "Periodo del historial"
     },
-    "mediaServerDirectInfo": "No se necesita configuración adicional: Prunerr leerá el historial de tu servidor multimedia usando la conexión configurada en la sección Servidor multimedia de arriba. Instala el complemento Playback Reporting para obtener recuentos de reproducción exactos.",
-    "plexDirectInfo": "No se necesita configuración adicional: Prunerr leerá el historial de tu servidor Plex usando la conexión configurada en la sección Servidor multimedia de arriba. Requiere el token del propietario del servidor.",
+    "mediaServerDirectInfo": "No se necesita configuración adicional: PrunerrXT leerá el historial de tu servidor multimedia usando la conexión configurada en la sección Servidor multimedia de arriba. Instala el complemento Playback Reporting para obtener recuentos de reproducción exactos.",
+    "plexDirectInfo": "No se necesita configuración adicional: PrunerrXT leerá el historial de tu servidor Plex usando la conexión configurada en la sección Servidor multimedia de arriba. Requiere el token del propietario del servidor.",
     "providers": {
       "tautulli": {
         "fieldLabel": "Clave de API"
@@ -731,7 +731,7 @@
     "add": "Añadir webhook",
     "delivered": "Entregado (HTTP {{status}})",
     "deliveryFailed": "Error en la entrega",
-    "description": "Envía eventos mediante POST a cualquier URL: conecta Prunerr con Home Assistant, n8n o tus propias automatizaciones",
+    "description": "Envía eventos mediante POST a cualquier URL: conecta PrunerrXT con Home Assistant, n8n o tus propias automatizaciones",
     "empty": "No hay webhooks configurados. Añade uno para empezar a enviar eventos.",
     "enterUrlFirst": "Introduce primero una URL",
     "events": {

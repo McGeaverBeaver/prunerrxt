@@ -35,7 +35,7 @@
   "arrWarning": {
     "bannerDesc": "A eliminação requer o Sonarr ou o Radarr para remover ficheiros do disco. Os itens podem ser colocados em fila, mas não serão processados até que um serviço seja configurado.",
     "goToSettings": "Ir para as definições",
-    "modalDesc": "Os itens serão marcados como eliminados no Prunerr, mas os ficheiros não serão removidos do disco. Configure primeiro o Sonarr ou o Radarr nas definições.",
+    "modalDesc": "Os itens serão marcados como eliminados no PrunerrXT, mas os ficheiros não serão removidos do disco. Configure primeiro o Sonarr ou o Radarr nas definições.",
     "title": "Sonarr/Radarr não configurado"
   },
   "deleteAllModal": {

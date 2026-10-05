@@ -201,7 +201,7 @@ export default function AutomationPanel({
         })}
         description={t(
           'automation.librarySync.description',
-          'Automatically pull new movies and shows from {{name}} into Prunerr',
+          'Automatically pull new movies and shows from {{name}} into PrunerrXT',
           { name: mediaServer.name }
         )}
       >

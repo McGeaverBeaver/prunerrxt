@@ -41,7 +41,7 @@ function useTaskNames() {
 }
 
 /**
- * Everything Prunerr does in the background, in one place: what is running
+ * Everything PrunerrXT does in the background, in one place: what is running
  * right now (with progress), every scheduled job with its last and next run,
  * and the recent run history. Polls every five seconds while open.
  */
@@ -76,7 +76,7 @@ export default function Tasks() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-surface-50">{t('header.title', 'Tasks')}</h1>
-          <p className="text-surface-400 mt-1 text-sm sm:text-base">{t('header.subtitle', 'What Prunerr is doing in the background, and what it did')}</p>
+          <p className="text-surface-400 mt-1 text-sm sm:text-base">{t('header.subtitle', 'What PrunerrXT is doing in the background, and what it did')}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
           <RefreshCw className={cn('w-3.5 h-3.5 mr-1.5', isFetching && 'animate-spin motion-reduce:animate-none')} />

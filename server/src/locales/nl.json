@@ -1,23 +1,23 @@
 {
   "common": {
     "andMore": "en nog {{count}}",
-    "brand": "Prunerr"
+    "brand": "PrunerrXT"
   },
   "itemsMarked": {
-    "groupedHeader_one": "[Prunerr] {{count}} item in de wachtrij voor verwijdering",
-    "groupedHeader_other": "[Prunerr] {{count}} items in de wachtrij voor verwijdering",
+    "groupedHeader_one": "[PrunerrXT] {{count}} item in de wachtrij voor verwijdering",
+    "groupedHeader_other": "[PrunerrXT] {{count}} items in de wachtrij voor verwijdering",
     "groupRule": "Regel: {{name}} ({{days}} dagen respijtperiode)",
     "willDeleteAfter": "Wordt verwijderd na: {{date}}",
     "itemLine": "  - {{title}} ({{type}})",
-    "singleHeader": "[Prunerr] Item gemarkeerd voor verwijdering",
+    "singleHeader": "[PrunerrXT] Item gemarkeerd voor verwijdering",
     "fieldTitle": "Titel: {{title}}",
     "fieldType": "Type: {{type}}",
     "fieldGracePeriod": "Respijtperiode: {{days}} dagen",
     "fieldMatchedRule": "Overeenkomende regel: {{name}}",
-    "multiHeader_one": "[Prunerr] {{count}} item gemarkeerd voor verwijdering",
-    "multiHeader_other": "[Prunerr] {{count}} items gemarkeerd voor verwijdering",
+    "multiHeader_one": "[PrunerrXT] {{count}} item gemarkeerd voor verwijdering",
+    "multiHeader_other": "[PrunerrXT] {{count}} items gemarkeerd voor verwijdering",
     "itemsHeading": "Items:",
-    "fallback": "[Prunerr] Items gemarkeerd voor verwijdering ({{days}} dagen respijtperiode)",
+    "fallback": "[PrunerrXT] Items gemarkeerd voor verwijdering ({{days}} dagen respijtperiode)",
     "discord": {
       "queuedTitle_one": "📋 {{count}} item in de wachtrij voor verwijdering",
       "queuedTitle_other": "📋 {{count}} items in de wachtrij voor verwijdering",
@@ -52,19 +52,19 @@
     "urgentPrefix": "⚠️ DRINGEND: ",
     "timeframeHigh": "binnen 24 uur",
     "timeframeNormal": "binnen 3 dagen",
-    "header_one": "[Prunerr] {{count}} item wacht op verwijdering",
-    "header_other": "[Prunerr] {{count}} items wachten op verwijdering",
+    "header_one": "[PrunerrXT] {{count}} item wacht op verwijdering",
+    "header_other": "[PrunerrXT] {{count}} items wachten op verwijdering",
     "intro": "De volgende items worden {{timeframe}} verwijderd:",
     "itemLine_one": "  - {{title}} (nog {{count}} dag)",
     "itemLine_other": "  - {{title}} (nog {{count}} dagen)",
-    "footer": "Bekijk en demarkeer items in Prunerr als je ze wilt behouden.",
+    "footer": "Bekijk en demarkeer items in PrunerrXT als je ze wilt behouden.",
     "discord": {
       "titleUrgent_one": "⚠️ Aanstaande verwijderingen — {{count}} item",
       "titleUrgent_other": "⚠️ Aanstaande verwijderingen — {{count}} items",
       "titleNormal_one": "📅 Aankomende verwijderingen — {{count}} item",
       "titleNormal_other": "📅 Aankomende verwijderingen — {{count}} items",
-      "desc_one": "**{{count}} item** wordt {{timeframe}} verwijderd. Bekijk in Prunerr om te annuleren.",
-      "desc_other": "**{{count}} items** worden {{timeframe}} verwijderd. Bekijk in Prunerr om te annuleren.",
+      "desc_one": "**{{count}} item** wordt {{timeframe}} verwijderd. Bekijk in PrunerrXT om te annuleren.",
+      "desc_other": "**{{count}} items** worden {{timeframe}} verwijderd. Bekijk in PrunerrXT om te annuleren.",
       "itemBullet_one": "• {{title}} — nog {{count}} dag",
       "itemBullet_other": "• {{title}} — nog {{count}} dagen",
       "fieldItems": "Items",
@@ -72,7 +72,7 @@
     }
   },
   "deletionComplete": {
-    "header": "[Prunerr] Verwijdering voltooid",
+    "header": "[PrunerrXT] Verwijdering voltooid",
     "itemsDeleted": "Verwijderde items: {{count}}",
     "spaceFreed": "Vrijgemaakte ruimte: {{gb}} GB",
     "errors": "Fouten: {{count}}",
@@ -94,7 +94,7 @@
     }
   },
   "scanComplete": {
-    "header": "[Prunerr] Bibliotheekscan voltooid",
+    "header": "[PrunerrXT] Bibliotheekscan voltooid",
     "itemsScanned": "Gescande items: {{count}}",
     "itemsFlagged": "Gemarkeerde items: {{count}}",
     "itemsProtected": "Beschermde items: {{count}}",
@@ -112,7 +112,7 @@
     }
   },
   "scanError": {
-    "header": "[Prunerr] Scan mislukt",
+    "header": "[PrunerrXT] Scan mislukt",
     "errorLine": "Fout tijdens {{phase}}: {{error}}",
     "itemsBefore": "Items gescand voor de fout: {{count}}",
     "time": "Tijd: {{date}}",
@@ -125,7 +125,7 @@
     }
   },
   "deletionError": {
-    "header": "[Prunerr] Verwijderingsfout",
+    "header": "[PrunerrXT] Verwijderingsfout",
     "errorLine": "Fout: {{error}}",
     "failedItem": "Mislukt item: {{title}}",
     "itemsProcessed": "Items verwerkt voor de fout: {{count}}",
@@ -141,7 +141,7 @@
   },
   "diskPressure": {
     "criticalPrefix": "⚠️ KRITIEK: ",
-    "header": "[Prunerr] Schijfdruk op {{path}}",
+    "header": "[PrunerrXT] Schijfdruk op {{path}}",
     "freeLine": "Vrij: {{free}} van {{total}} (doel: {{target}}, tekort van {{deficit}})",
     "actionWouldQueue": "zou in de wachtrij worden geplaatst voor verwijdering",
     "actionQueued": "in de wachtrij geplaatst voor verwijdering",
@@ -171,12 +171,12 @@
       "andMoreInline": "\n... en nog {{count}}",
       "fieldItems": "Items",
       "observeName": "👁️ Alleen observeren",
-      "observeValue": "Er is niets verwijderd. Schakel alleen-observeren uit om Prunerr automatisch ruimte te laten vrijmaken."
+      "observeValue": "Er is niets verwijderd. Schakel alleen-observeren uit om PrunerrXT automatisch ruimte te laten vrijmaken."
     }
   },
   "test": {
     "title": "✅ Testmelding",
-    "desc": "Je Discord-webhook is correct geconfigureerd. Prunerr stuurt hier meldingen naartoe op basis van je voorkeuren.",
+    "desc": "Je Discord-webhook is correct geconfigureerd. PrunerrXT stuurt hier meldingen naartoe op basis van je voorkeuren.",
     "scanAlertsName": "Scanmeldingen",
     "scanAlertsValue": "Wanneer regels overeenkomen met items",
     "queueAlertsName": "Wachtrijmeldingen",
@@ -184,6 +184,6 @@
     "deletionAlertsName": "Verwijderingsmeldingen",
     "deletionAlertsValue": "Wanneer items worden verwijderd"
   },
-  "fallback": "[Prunerr] Melding: {{event}}",
-  "fallbackDiscord": "[Prunerr] {{event}}"
+  "fallback": "[PrunerrXT] Melding: {{event}}",
+  "fallbackDiscord": "[PrunerrXT] {{event}}"
 }

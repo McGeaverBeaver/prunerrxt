@@ -33,7 +33,7 @@ function useDebounced<T>(value: T, delay: number): T {
 }
 
 /**
- * Everything Prunerr has promised to leave alone, in one place: titles
+ * Everything PrunerrXT has promised to leave alone, in one place: titles
  * protected by hand (or by an exclusion pattern), titles Archive kept because
  * they could not be downloaded again, and collections whose protection covers
  * their members. Each row says why and since when, and can be released here.

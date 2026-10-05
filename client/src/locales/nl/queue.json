@@ -32,7 +32,7 @@
   "arrWarning": {
     "bannerDesc": "Voor verwijdering is Sonarr of Radarr nodig om bestanden van de schijf te verwijderen. Items kunnen in de wachtrij worden geplaatst, maar worden pas verwerkt zodra een service is ingesteld.",
     "goToSettings": "Naar Instellingen",
-    "modalDesc": "Items worden in Prunerr als verwijderd gemarkeerd, maar de bestanden worden niet van de schijf verwijderd. Stel eerst Sonarr of Radarr in bij Instellingen.",
+    "modalDesc": "Items worden in PrunerrXT als verwijderd gemarkeerd, maar de bestanden worden niet van de schijf verwijderd. Stel eerst Sonarr of Radarr in bij Instellingen.",
     "title": "Sonarr/Radarr niet geconfigureerd"
   },
   "deleteAllModal": {

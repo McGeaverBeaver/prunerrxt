@@ -60,7 +60,7 @@ function escapeHtml(value: string): string {
 function page(title: string, body: string): string {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(title)} · Prunerr</title>
+<title>${escapeHtml(title)} · PrunerrXT</title>
 <style>
   :root{color-scheme:dark}
   body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#030712;color:#e5e7eb;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -127,7 +127,7 @@ function requireMcp(req: Request, res: Response): boolean {
   const reason = mcpDisabledReason();
   const detail =
     reason === 'auth_disabled'
-      ? 'The MCP connector is off because login is disabled on this Prunerr (AUTH_ENABLED is not true).'
+      ? 'The MCP connector is off because login is disabled on this PrunerrXT (AUTH_ENABLED is not true).'
       : reason === 'env'
         ? 'The MCP connector is disabled by MCP_ENABLED=false.'
         : 'The MCP connector is turned off in Settings → System → AI assistant.';
@@ -266,7 +266,7 @@ router.get('/oauth/authorize', (req: Request, res: Response) => {
 
   const session = sessionFromRequest(req);
   if (!session) {
-    // Sign in with Prunerr first (Authentik or the local account), then come back here.
+    // Sign in with PrunerrXT first (Authentik or the local account), then come back here.
     const returnTo = req.originalUrl;
     noStore(res);
     res.redirect(`/login?returnTo=${encodeURIComponent(returnTo)}`);
@@ -287,7 +287,7 @@ router.get('/oauth/authorize', (req: Request, res: Response) => {
   res.type('html').send(
     page(
       'Allow access',
-      `<h1>Allow ${escapeHtml(appName)} to use Prunerr?</h1>
+      `<h1>Allow ${escapeHtml(appName)} to use PrunerrXT?</h1>
        <p>It will act with your account and your role.</p>
        <div class="who">Signed in as <b>${escapeHtml(session.displayName ?? session.username)}</b> · ${escapeHtml(session.role)}</div>
        <ul>

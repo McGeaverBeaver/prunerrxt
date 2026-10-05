@@ -142,7 +142,7 @@ describe('inspect and fix', () => {
 });
 
 describe('explaining a permission error', () => {
-  it('names the file, its owner and who Prunerr is', async () => {
+  it('names the file, its owner and who PrunerrXT is', async () => {
     const dir = tree('Show D');
     const file = path.join(dir, 'poster.jpg');
     const error = Object.assign(new Error(`EACCES: permission denied, unlink '${file}'`), { code: 'EACCES', path: file });
@@ -152,6 +152,6 @@ describe('explaining a permission error', () => {
     const text = await explainPermissionError(error, dir);
     expect(text).toContain(`Permission denied on ${file}`);
     expect(text).toContain(`owned by ${uid}:${gid} with mode 0664`);
-    expect(text).toContain(`Prunerr runs as ${uid}:${gid}`);
+    expect(text).toContain(`PrunerrXT runs as ${uid}:${gid}`);
   });
 });

@@ -28,7 +28,7 @@ export function registerFolderTools(server: McpServer): void {
       name: 'list_orphan_folders',
       title: 'List folders no app manages',
       description:
-        "Folders inside Sonarr's and Radarr's root folders that belong to none of their series or movies: leftovers from manual moves, failed imports or titles removed without deleting files. Each comes with its parsed title/year, and with its size and contents when a folder mapping lets Prunerr see it. Follow up with lookup_orphan_folder + import_orphan_folder to bring one into the right app, or delete_orphan_folder to clean it up.",
+        "Folders inside Sonarr's and Radarr's root folders that belong to none of their series or movies: leftovers from manual moves, failed imports or titles removed without deleting files. Each comes with its parsed title/year, and with its size and contents when a folder mapping lets PrunerrXT see it. Follow up with lookup_orphan_folder + import_orphan_folder to bring one into the right app, or delete_orphan_folder to clean it up.",
       group: 'folders',
       inputSchema: {
         includeIgnored: z.boolean().optional().describe('Also list folders the user chose to ignore.'),
@@ -129,7 +129,7 @@ export function registerFolderTools(server: McpServer): void {
       name: 'delete_orphan_folder',
       title: 'Delete an unmanaged folder',
       description:
-        'Remove the folder and everything in it from disk. Needs a folder mapping so Prunerr can reach the files, and refuses anything that resolves outside the mapped media path. Irreversible; requires the "allow immediate deletion" setting and explicit confirmation from the user.',
+        'Remove the folder and everything in it from disk. Needs a folder mapping so PrunerrXT can reach the files, and refuses anything that resolves outside the mapped media path. Irreversible; requires the "allow immediate deletion" setting and explicit confirmation from the user.',
       group: 'folders',
       inputSchema: {
         id: z.string().min(1).describe('Folder id from list_orphan_folders.'),
@@ -153,7 +153,7 @@ export function registerFolderTools(server: McpServer): void {
       name: 'get_folder_permissions',
       title: 'Check a folder\'s ownership',
       description:
-        "Who owns the files in an unmanaged folder and with what modes, compared with the owner and modes Prunerr is configured to apply (normally PUID:PGID, 0775/0664). Also reports who Prunerr runs as and whether it is able to change ownership. Files owned by another user are why a delete or an import fails with 'permission denied'.",
+        "Who owns the files in an unmanaged folder and with what modes, compared with the owner and modes PrunerrXT is configured to apply (normally PUID:PGID, 0775/0664). Also reports who PrunerrXT runs as and whether it is able to change ownership. Files owned by another user are why a delete or an import fails with 'permission denied'.",
       group: 'folders',
       inputSchema: { id: z.string().min(1).describe('Folder id from list_orphan_folders.') },
       annotations: EXTERNAL_READ,
@@ -165,7 +165,7 @@ export function registerFolderTools(server: McpServer): void {
         const settings = getPermissionSettings();
         return ok(
           { folder: { id: folder.id, name: folder.name, path: folder.path, localPath: folder.localPath }, report, capabilities, settings },
-          `${folder.name}: ${report.checked} entries checked, ${report.wrongOwner} with the wrong owner, ${report.wrongMode} with the wrong mode, ${report.writable ? 'writable' : 'NOT writable'} by Prunerr (${capabilities.uid}:${capabilities.gid}). Target is ${settings.uid}:${settings.gid}, dirs ${settings.dirMode}, files ${settings.fileMode}.${capabilities.canChown ? '' : ` ${capabilities.reason}`}`
+          `${folder.name}: ${report.checked} entries checked, ${report.wrongOwner} with the wrong owner, ${report.wrongMode} with the wrong mode, ${report.writable ? 'writable' : 'NOT writable'} by PrunerrXT (${capabilities.uid}:${capabilities.gid}). Target is ${settings.uid}:${settings.gid}, dirs ${settings.dirMode}, files ${settings.fileMode}.${capabilities.canChown ? '' : ` ${capabilities.reason}`}`
         );
       } catch (error) {
         return describeError(error);

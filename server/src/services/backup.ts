@@ -22,7 +22,7 @@ import { refreshServices } from './init';
 const SQLITE_MAGIC = Buffer.concat([Buffer.from('SQLite format 3', 'latin1'), Buffer.from([0])]);
 
 /**
- * Tables a file must have to be a plausible Prunerr backup. Deliberately a
+ * Tables a file must have to be a plausible PrunerrXT backup. Deliberately a
  * core subset rather than the full list, so a backup taken before a later
  * migration added a table still restores (migrations run afterwards).
  */
@@ -65,7 +65,7 @@ export function createBackup(destination: string): void {
 }
 
 /**
- * Check that a file is a SQLite database that looks like Prunerr's, before it
+ * Check that a file is a SQLite database that looks like PrunerrXT's, before it
  * is allowed anywhere near the live one.
  */
 export function validateBackupFile(filePath: string): ValidationResult {
@@ -115,7 +115,7 @@ export function validateBackupFile(filePath: string): ValidationResult {
     if (missing.length > 0) {
       return {
         valid: false,
-        error: `Backup is missing expected tables: ${missing.join(', ')}. It does not look like a Prunerr backup.`,
+        error: `Backup is missing expected tables: ${missing.join(', ')}. It does not look like a PrunerrXT backup.`,
       };
     }
 

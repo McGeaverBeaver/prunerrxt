@@ -1,7 +1,7 @@
 # Unmanaged folders
 
 Sonarr and Radarr each know which folders under their root folders belong to
-none of their series or movies. Prunerr lists them on the **Folders** page,
+none of their series or movies. PrunerrXT lists them on the **Folders** page,
 reading straight from both apps, and offers the two things worth doing with
 such a folder:
 
@@ -9,7 +9,7 @@ such a folder:
   folder name, or your own search term, or a `{tmdb-123}` / `[tvdb-123]` tag
   in the name) picks the title; the app adds it with the folder as its path
   and scans it in place. Nothing is moved.
-- **Delete** it from disk. Sonarr and Radarr have no API for this, so Prunerr
+- **Delete** it from disk. Sonarr and Radarr have no API for this, so PrunerrXT
   needs to see the files itself: see *Folder mappings* below.
 - **Ignore** it, to keep a folder you know about off the list.
 
@@ -22,16 +22,16 @@ immediate deletion" switch, like every other destructive tool.
 ## Folder mappings
 
 A mapping pairs a path as Sonarr/Radarr see it with the same location as the
-Prunerr container sees it, for example `/movies` → `/media/movies`. With a
-mapping in place Prunerr can measure each folder (size, file count, the video
+PrunerrXT container sees it, for example `/movies` → `/media/movies`. With a
+mapping in place PrunerrXT can measure each folder (size, file count, the video
 files inside) and delete it. Without one, folders are still listed and can
 still be imported; they just show no size and cannot be deleted.
 
-1. Mount the media share into the Prunerr container, read-write if you want
+1. Mount the media share into the PrunerrXT container, read-write if you want
    to delete. On Unraid that is a Path in the container settings, for
    example `/mnt/user/media` → `/media`.
 2. In Settings, Connections, **Media folders**, add a mapping per root folder.
-   The section lists the root folders your apps report, and the Prunerr side
+   The section lists the root folders your apps report, and the PrunerrXT side
    is a pick list of the volumes mounted into the container (and the folders
    inside them, two levels deep), read from the container's own mount table.
    Pick the one that holds the same files; choose *Type a path…* for anything
@@ -46,14 +46,14 @@ after re-checking with the app that the folder is still unmanaged.
 ## Ownership and permissions
 
 Media directories collect files owned by whoever wrote them: a DVR running as
-root, a download client as another user. Prunerr runs as PUID:PGID, which is
+root, a download client as another user. PrunerrXT runs as PUID:PGID, which is
 also what Sonarr and Radarr usually run as, so such files block a delete
 ("permission denied") and would block the app's own renames after an import.
 
 The image gives the Node binary the two Linux capabilities needed to set a
 file's owner and mode without owning it (CAP_CHOWN and CAP_FOWNER), and
 nothing more. On the Folders page a folder whose entries are owned by someone
-else, or that Prunerr cannot write to, shows a badge and a **Fix permissions**
+else, or that PrunerrXT cannot write to, shows a badge and a **Fix permissions**
 button. Repairing sets the configured owner and modes on the folder and
 everything in it; with *Repair automatically* on (the default), a delete or
 import that hits a permission error repairs the folder first and carries on,

@@ -35,7 +35,7 @@ export function registerLibraryTools(server: McpServer): void {
       name: 'search_library',
       title: 'Search the library',
       description:
-        'Find movies and shows in Prunerr\'s copy of the library. Filter by title, type, status, watched state, staleness, size and protection; sort and page. Returns compact summaries — use get_media_item for the full record. Sizes in the filters are gigabytes.',
+        'Find movies and shows in PrunerrXT\'s copy of the library. Filter by title, type, status, watched state, staleness, size and protection; sort and page. Returns compact summaries — use get_media_item for the full record. Sizes in the filters are gigabytes.',
       group: 'library',
       inputSchema: {
         query: z.string().optional().describe('Title search, case-insensitive substring.'),
@@ -125,10 +125,10 @@ export function registerLibraryTools(server: McpServer): void {
       name: 'get_media_item',
       title: 'Media item details',
       description:
-        'Everything Prunerr knows about one movie or show: metadata, ratings, file details, watch history summary, protection (including protection inherited from a collection), queue state, collections it belongs to, queued episodes, and its recent activity.',
+        'Everything PrunerrXT knows about one movie or show: metadata, ratings, file details, watch history summary, protection (including protection inherited from a collection), queue state, collections it belongs to, queued episodes, and its recent activity.',
       group: 'library',
       inputSchema: {
-        id: z.number().int().positive().describe('Prunerr media item id (from search_library or list_queue).'),
+        id: z.number().int().positive().describe('PrunerrXT media item id (from search_library or list_queue).'),
       },
       annotations: READ_ONLY,
     },
@@ -181,7 +181,7 @@ export function registerLibraryTools(server: McpServer): void {
         'For a TV show: the season and episode breakdown from Sonarr with file sizes, monitored flags, download state and which episodes are already queued for deletion. Needed before queue_episodes_for_deletion. Requires Sonarr.',
       group: 'library',
       inputSchema: {
-        id: z.number().int().positive().describe('Prunerr media item id of the show.'),
+        id: z.number().int().positive().describe('PrunerrXT media item id of the show.'),
         season: z.number().int().min(0).optional().describe('Only this season number.'),
       },
       annotations: EXTERNAL_READ,
@@ -273,7 +273,7 @@ export function registerLibraryTools(server: McpServer): void {
       name: 'list_libraries',
       title: 'List media-server libraries',
       description:
-        'Library sections on the media server (Plex/Jellyfin/Emby) with their keys, types and whether Prunerr excludes them. Library keys are what rules\' libraryKeys refer to.',
+        'Library sections on the media server (Plex/Jellyfin/Emby) with their keys, types and whether PrunerrXT excludes them. Library keys are what rules\' libraryKeys refer to.',
       group: 'library',
       annotations: EXTERNAL_READ,
     },

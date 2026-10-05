@@ -52,9 +52,7 @@
   },
   "links": {
     "containerImage": "",
-    "github": "GitHub",
-    "website": "Website",
-    "websiteAria": "Website do Prunerr"
+    "github": "GitHub"
   },
   "menuLabel": "Menu",
   "nav": {

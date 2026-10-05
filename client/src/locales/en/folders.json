@@ -68,7 +68,7 @@
     "weak": "check"
   },
   "capabilityNotice": {
-    "title": "Prunerr cannot change ownership on this install. "
+    "title": "PrunerrXT cannot change ownership on this install. "
   },
   "deleteModal": {
     "confirm": "Delete folder",
@@ -132,18 +132,18 @@
   },
   "loading": "Asking Sonarr and Radarr for their unmapped folders…",
   "mappingNotice": {
-    "body": "Prunerr can list these folders through Sonarr and Radarr, but it can only measure or delete them when it can see the files itself. Map the root folder's path to the path where Prunerr sees it.",
+    "body": "PrunerrXT can list these folders through Sonarr and Radarr, but it can only measure or delete them when it can see the files itself. Map the root folder's path to the path where PrunerrXT sees it.",
     "link": "Add a mapping in Settings",
     "title": "Sizes and deletion need a folder mapping"
   },
   "refresh": "Re-read from Sonarr and Radarr",
   "row": {
     "delete": "Delete folder",
-    "deleteDisabled": "Add a folder mapping in Settings so Prunerr can reach this folder",
+    "deleteDisabled": "Add a folder mapping in Settings so PrunerrXT can reach this folder",
     "files_one": "{{count}} files",
     "files_other": "{{count}} files",
     "fix": "Fix permissions (owner {{owner}})",
-    "fixDisabled": "Prunerr cannot change ownership on this install",
+    "fixDisabled": "PrunerrXT cannot change ownership on this install",
     "ignore": "Ignore",
     "ignored": "Ignored",
     "import": "Import into {{service}}",
@@ -151,7 +151,7 @@
     "looksLike": "Looks like: {{title}}",
     "modified": "changed {{when}}",
     "notWritable": "not writable",
-    "notWritableHint": "Prunerr cannot write to this folder as it is; a delete or import would fail with permission denied",
+    "notWritableHint": "PrunerrXT cannot write to this folder as it is; a delete or import would fail with permission denied",
     "permissionIssues_one": "{{count}} with other owner/mode",
     "permissionIssues_other": "{{count}} with other owner/mode",
     "permissionIssuesHint": "Entries not owned by {{owner}} or with other modes than configured",

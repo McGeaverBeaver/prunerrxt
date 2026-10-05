@@ -404,7 +404,7 @@ export default function AlertsPanel({ draft, onChange, fresh, registerSection }:
         title={t('webhooks.title', 'Outbound Webhooks')}
         description={t(
           'webhooks.description',
-          'POST events to any URL — wire Prunerr into Home Assistant, n8n, or your own automations'
+          'POST events to any URL — wire PrunerrXT into Home Assistant, n8n, or your own automations'
         )}
         register={registerSection}
         action={

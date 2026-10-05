@@ -105,7 +105,7 @@
       "weekly": "weekly"
     },
     "librarySync": {
-      "description": "Automatically pull new movies and shows from {{name}} into Prunerr",
+      "description": "Automatically pull new movies and shows from {{name}} into PrunerrXT",
       "enable": "Automatic {{name}} sync",
       "enableHint": "Refresh the library so new items appear without clicking “Sync Library”",
       "title": "{{name}} library sync"
@@ -123,7 +123,7 @@
     "confirmImportBody": "Importing will overwrite all current settings with the values from <strong>{{filename}}</strong>. This action cannot be undone.",
     "confirmImportTitle": "Confirm Import",
     "confirmRestore": "Replace my data",
-    "confirmRestoreBody": "Everything currently in Prunerr — library, rules, queue and history — will be replaced by <strong>{{filename}}</strong>.",
+    "confirmRestoreBody": "Everything currently in PrunerrXT — library, rules, queue and history — will be replaced by <strong>{{filename}}</strong>.",
     "confirmRestoreSafety": "Your current database is saved alongside it first, so a mistake can be undone from the data folder.",
     "confirmRestoreTitle": "Restore this backup?",
     "description": "Export settings for backup or import from a previous export",
@@ -133,7 +133,7 @@
     "exportHint": "Exports include all settings including service credentials. Keep the file secure.",
     "fullDownloaded": "Backup downloaded",
     "fullFailed": "Backup failed",
-    "fullHint": "The entire database — library, rules, queue, history and settings. Restoring replaces everything currently in Prunerr.",
+    "fullHint": "The entire database — library, rules, queue, history and settings. Restoring replaces everything currently in PrunerrXT.",
     "fullTitle": "Full backup",
     "import": "Import Settings",
     "importFailed": "Import failed: {{error}}",
@@ -166,7 +166,7 @@
     "docs": "Open {{name}} documentation",
     "edit": "Edit",
     "firstRun": {
-      "body": "Connect {{name}} and Prunerr can read your library. Add Sonarr or Radarr when you want it to actually delete things — scanning stays off until then.",
+      "body": "Connect {{name}} and PrunerrXT can read your library. Add Sonarr or Radarr when you want it to actually delete things — scanning stays off until then.",
       "connect": "Connect {{name}}",
       "title": "Nothing is connected yet"
     },
@@ -183,9 +183,9 @@
       "recommended": "Recommended"
     },
     "sections": {
-      "overseerrDescription": "Clears the request when Prunerr deletes what it asked for",
+      "overseerrDescription": "Clears the request when PrunerrXT deletes what it asked for",
       "sonarrRadarr": "Sonarr & Radarr",
-      "sonarrRadarrDescription": "Prunerr deletes through these — without them it can only report",
+      "sonarrRadarrDescription": "PrunerrXT deletes through these — without them it can only report",
       "unraidDescription": "Array and disk monitoring — feeds the disk-pressure gauge"
     },
     "status": {
@@ -372,8 +372,8 @@
     "apiKeyNote": "The API key always acts as an administrator, with or without login.",
     "clientId": "Client ID",
     "defaultRole": "Everyone else",
-    "description": "Who can open Prunerr, and what each role may do. Configured by environment variables.",
-    "disabledBody": "Anyone who can reach this address can use Prunerr, and the MCP connector stays off. Fine on a trusted LAN or behind a reverse proxy that handles login; set AUTH_ENABLED=true to turn on single sign-on or a local account.",
+    "description": "Who can open PrunerrXT, and what each role may do. Configured by environment variables.",
+    "disabledBody": "Anyone who can reach this address can use PrunerrXT, and the MCP connector stays off. Fine on a trusted LAN or behind a reverse proxy that handles login; set AUTH_ENABLED=true to turn on single sign-on or a local account.",
     "disabledTitle": "Login disabled",
     "enabledBody": "Every page and API call needs a signed-in user or the API key. Sessions last {{hours}} hours; {{sessions}} active now.",
     "enabledTitle": "Login required",
@@ -433,14 +433,14 @@
       "scans": "Scans & sync",
       "system": "System"
     },
-    "hostedBody": "Add the endpoint above as a custom connector. No key needed: the client registers itself, sends you to the Prunerr login, asks once for permission, and then acts as you with your role. Make sure Prunerr knows its public address (APP_URL, or X-Forwarded-Proto/Host from the proxy).",
+    "hostedBody": "Add the endpoint above as a custom connector. No key needed: the client registers itself, sends you to the PrunerrXT login, asks once for permission, and then acts as you with your role. Make sure PrunerrXT knows its public address (APP_URL, or X-Forwarded-Proto/Host from the proxy).",
     "hostedTitle": "Claude.ai and other hosted clients",
     "immediateBody": "Off by default. An assistant can always queue items (they wait out the grace period and can be removed from the queue), but \"delete now\" and processing the queue for real are refused unless this is on.",
     "immediateTitle": "Allow immediate deletion",
     "offBecauseAuth": "Off because login is disabled. An AI connector on an install anyone on the network can open is one exposure too many, so set AUTH_ENABLED=true (see Login & access below) to turn it on.",
     "offBecauseEnv": "Turned off for this container by MCP_ENABLED=false. This switch cannot override it.",
     "snippetClaudeCode": "Claude Code",
-    "snippetClaudeCodeHint": "Run once in a terminal; adds Prunerr to your user-level MCP servers.",
+    "snippetClaudeCodeHint": "Run once in a terminal; adds PrunerrXT to your user-level MCP servers.",
     "snippetClaudeDesktop": "Claude Desktop (via mcp-remote)",
     "snippetClaudeDesktopHint": "Claude Desktop only launches local commands; mcp-remote bridges it to the HTTP endpoint. Needs Node.js on that machine.",
     "snippetJson": "Cursor, Windsurf, VS Code and other HTTP clients",
@@ -455,11 +455,11 @@
     "childCount_other": "{{count}} folders",
     "collapse": "Hide subfolders of {{path}}",
     "customPath": "Type a path…",
-    "description": "Lets Prunerr measure and delete unmanaged folders. Pair each root folder as Sonarr/Radarr see it with the path where this container sees the same files.",
+    "description": "Lets PrunerrXT measure and delete unmanaged folders. Pair each root folder as Sonarr/Radarr see it with the path where this container sees the same files.",
     "expand_one": "Show {{count}} subfolders of {{path}}",
     "expand_other": "Show {{count}} subfolders of {{path}}",
-    "help": "Mount the media share into the Prunerr container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, Prunerr sees /media/movies.",
-    "localPlaceholder": "Path as Prunerr sees it, e.g. /media/movies",
+    "help": "Mount the media share into the PrunerrXT container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, PrunerrXT sees /media/movies.",
+    "localPlaceholder": "Path as PrunerrXT sees it, e.g. /media/movies",
     "mappedTo": "mapped to {{path}}",
     "mapThis": "map this",
     "mounts": {
@@ -472,11 +472,11 @@
     "none": "No mappings yet. Sizes stay unknown and deletion stays off until you add one.",
     "permissions": {
       "autoFix": "Repair automatically when a delete or import hits a permission error",
-      "capable": "Prunerr runs as {{uid}}:{{gid}} and can change the owner and mode of files it does not own.",
+      "capable": "PrunerrXT runs as {{uid}}:{{gid}} and can change the owner and mode of files it does not own.",
       "dirMode": "Folder mode",
       "fileMode": "File mode",
       "gid": "Group gid",
-      "help": "What Prunerr sets when it repairs a folder: the owner (normally PUID:PGID, the same ids Sonarr and Radarr run as) and the modes. With automatic repair on, a delete or import that would fail on files owned by someone else repairs the folder first and carries on.",
+      "help": "What PrunerrXT sets when it repairs a folder: the owner (normally PUID:PGID, the same ids Sonarr and Radarr run as) and the modes. With automatic repair on, a delete or import that would fail on files owned by someone else repairs the folder first and carries on.",
       "save": "Save permission settings",
       "saved": "Permission settings saved",
       "saveFailed": "Could not save",
@@ -496,7 +496,7 @@
     "truncated": "Only the first folders are listed; type a deeper path if yours is missing."
   },
   "mediaServer": {
-    "description": "The server Prunerr reads your library from",
+    "description": "The server PrunerrXT reads your library from",
     "playbackReportingHint": "Tip: install the Playback Reporting plugin on your server. Without it only the most recent play of each item is recorded, so repeat views are missed and play counts read low.",
     "title": "Media Server"
   },
@@ -662,7 +662,7 @@
     "system": "API key and backups"
   },
   "system": {
-    "productName": "Prunerr"
+    "productName": "PrunerrXT"
   },
   "toasts": {
     "apiKeyDisabled": "API key access turned off",
@@ -703,8 +703,8 @@
       "range": "Between {{min}} and {{max}} days",
       "title": "History Lookback"
     },
-    "mediaServerDirectInfo": "No extra configuration needed — Prunerr will read history from your media server using the connection set in the Media Server section above. Install the Playback Reporting plugin for full play-count accuracy.",
-    "plexDirectInfo": "No extra configuration needed — Prunerr will read history from your Plex server using the connection set in the Media Server section above. Requires the server-owner's token.",
+    "mediaServerDirectInfo": "No extra configuration needed — PrunerrXT will read history from your media server using the connection set in the Media Server section above. Install the Playback Reporting plugin for full play-count accuracy.",
+    "plexDirectInfo": "No extra configuration needed — PrunerrXT will read history from your Plex server using the connection set in the Media Server section above. Requires the server-owner's token.",
     "providers": {
       "tautulli": {
         "fieldLabel": "API Key"
@@ -719,7 +719,7 @@
     "add": "Add webhook",
     "delivered": "Delivered (HTTP {{status}})",
     "deliveryFailed": "Delivery failed",
-    "description": "POST events to any URL — wire Prunerr into Home Assistant, n8n, or your own automations",
+    "description": "POST events to any URL — wire PrunerrXT into Home Assistant, n8n, or your own automations",
     "empty": "No webhooks configured. Add one to start sending events.",
     "enterUrlFirst": "Enter a URL first",
     "events": {

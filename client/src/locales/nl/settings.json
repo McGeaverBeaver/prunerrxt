@@ -105,7 +105,7 @@
       "weekly": "wekelijks"
     },
     "librarySync": {
-      "description": "Haal nieuwe films en series automatisch van {{name}} naar Prunerr",
+      "description": "Haal nieuwe films en series automatisch van {{name}} naar PrunerrXT",
       "enable": "Automatische {{name}}-sync",
       "enableHint": "Ververs de bibliotheek zodat nieuwe items verschijnen zonder op “Bibliotheek synchroniseren” te klikken",
       "title": "{{name}}-bibliotheeksync"
@@ -123,7 +123,7 @@
     "confirmImportBody": "Bij het importeren worden alle huidige instellingen overschreven met de waarden uit <strong>{{filename}}</strong>. Deze actie kan niet ongedaan worden gemaakt.",
     "confirmImportTitle": "Importeren bevestigen",
     "confirmRestore": "Mijn gegevens vervangen",
-    "confirmRestoreBody": "Alles wat nu in Prunerr staat — bibliotheek, regels, wachtrij en geschiedenis — wordt vervangen door <strong>{{filename}}</strong>.",
+    "confirmRestoreBody": "Alles wat nu in PrunerrXT staat — bibliotheek, regels, wachtrij en geschiedenis — wordt vervangen door <strong>{{filename}}</strong>.",
     "confirmRestoreSafety": "Je huidige database wordt er eerst naast opgeslagen, dus een vergissing kun je ongedaan maken vanuit de datamap.",
     "confirmRestoreTitle": "Deze back-up herstellen?",
     "description": "Exporteer instellingen voor een back-up of importeer ze uit een eerdere export",
@@ -133,7 +133,7 @@
     "exportHint": "Exports bevatten alle instellingen, inclusief servicegegevens. Bewaar het bestand veilig.",
     "fullDownloaded": "Back-up gedownload",
     "fullFailed": "Back-up mislukt",
-    "fullHint": "De volledige database — bibliotheek, regels, wachtrij, geschiedenis en instellingen. Herstellen vervangt alles wat nu in Prunerr staat.",
+    "fullHint": "De volledige database — bibliotheek, regels, wachtrij, geschiedenis en instellingen. Herstellen vervangt alles wat nu in PrunerrXT staat.",
     "fullTitle": "Volledige back-up",
     "import": "Instellingen importeren",
     "importFailed": "Importeren mislukt: {{error}}",
@@ -166,7 +166,7 @@
     "docs": "{{name}}-documentatie openen",
     "edit": "Bewerken",
     "firstRun": {
-      "body": "Verbind {{name}} en Prunerr kan je bibliotheek lezen. Voeg Sonarr of Radarr toe wanneer je wilt dat er echt iets verwijderd wordt — tot die tijd blijft scannen uit.",
+      "body": "Verbind {{name}} en PrunerrXT kan je bibliotheek lezen. Voeg Sonarr of Radarr toe wanneer je wilt dat er echt iets verwijderd wordt — tot die tijd blijft scannen uit.",
       "connect": "{{name}} verbinden",
       "title": "Er is nog niets verbonden"
     },
@@ -183,9 +183,9 @@
       "recommended": "Aanbevolen"
     },
     "sections": {
-      "overseerrDescription": "Wist het verzoek wanneer Prunerr verwijdert waar het om vroeg",
+      "overseerrDescription": "Wist het verzoek wanneer PrunerrXT verwijdert waar het om vroeg",
       "sonarrRadarr": "Sonarr en Radarr",
-      "sonarrRadarrDescription": "Prunerr verwijdert hierdoorheen — zonder deze kan het alleen rapporteren",
+      "sonarrRadarrDescription": "PrunerrXT verwijdert hierdoorheen — zonder deze kan het alleen rapporteren",
       "unraidDescription": "Array- en schijfbewaking — voedt de schijfdrukmeter"
     },
     "status": {
@@ -496,7 +496,7 @@
     "truncated": ""
   },
   "mediaServer": {
-    "description": "De server waarvan Prunerr je bibliotheek leest",
+    "description": "De server waarvan PrunerrXT je bibliotheek leest",
     "playbackReportingHint": "Tip: installeer de Playback Reporting-plug-in op je server. Zonder deze plug-in wordt alleen de meest recente weergave van elk item vastgelegd, waardoor herhaalde weergaven ontbreken en afspeeltellingen te laag zijn.",
     "title": "Mediaserver"
   },
@@ -662,7 +662,7 @@
     "system": "API-sleutel en back-ups"
   },
   "system": {
-    "productName": "Prunerr"
+    "productName": "PrunerrXT"
   },
   "toasts": {
     "apiKeyDisabled": "",
@@ -703,8 +703,8 @@
       "range": "",
       "title": "Terugkijkperiode"
     },
-    "mediaServerDirectInfo": "Geen extra configuratie nodig — Prunerr leest de geschiedenis van je mediaserver via de verbinding die hierboven is ingesteld in het gedeelte Mediaserver. Installeer de Playback Reporting-plug-in voor nauwkeurige afspeeltellingen.",
-    "plexDirectInfo": "Geen extra configuratie nodig — Prunerr leest de geschiedenis van je Plex-server via de verbinding die hierboven is ingesteld in het gedeelte Mediaserver. Vereist het token van de servereigenaar.",
+    "mediaServerDirectInfo": "Geen extra configuratie nodig — PrunerrXT leest de geschiedenis van je mediaserver via de verbinding die hierboven is ingesteld in het gedeelte Mediaserver. Installeer de Playback Reporting-plug-in voor nauwkeurige afspeeltellingen.",
+    "plexDirectInfo": "Geen extra configuratie nodig — PrunerrXT leest de geschiedenis van je Plex-server via de verbinding die hierboven is ingesteld in het gedeelte Mediaserver. Vereist het token van de servereigenaar.",
     "providers": {
       "tautulli": {
         "fieldLabel": "API-sleutel"
@@ -719,7 +719,7 @@
     "add": "Webhook toevoegen",
     "delivered": "Afgeleverd (HTTP {{status}})",
     "deliveryFailed": "Aflevering mislukt",
-    "description": "POST gebeurtenissen naar elke URL — koppel Prunerr aan Home Assistant, n8n of je eigen automatiseringen",
+    "description": "POST gebeurtenissen naar elke URL — koppel PrunerrXT aan Home Assistant, n8n of je eigen automatiseringen",
     "empty": "Geen webhooks geconfigureerd. Voeg er een toe om gebeurtenissen te gaan verzenden.",
     "enterUrlFirst": "Voer eerst een URL in",
     "events": {

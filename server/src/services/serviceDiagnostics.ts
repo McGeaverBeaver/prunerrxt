@@ -1,5 +1,5 @@
 /**
- * Troubleshooting Sonarr and Radarr from inside Prunerr.
+ * Troubleshooting Sonarr and Radarr from inside PrunerrXT.
  *
  * The REST routes and the MCP tools both come here, so a user in the browser
  * and an assistant on the connector see the same logs, the same health

@@ -322,7 +322,7 @@ export default function ConnectionsPanel({
         id="media-server"
         register={registerSection}
         title={t('mediaServer.title', 'Media Server')}
-        description={t('mediaServer.description', 'The server Prunerr reads your library from')}
+        description={t('mediaServer.description', 'The server PrunerrXT reads your library from')}
         action={testAllAction}
       >
         {fresh && (
@@ -334,7 +334,7 @@ export default function ConnectionsPanel({
               <p className="max-w-2xl text-[12px] text-surface-300">
                 {t(
                   'connections.firstRun.body',
-                  'Connect {{name}} and Prunerr can read your library. Add Sonarr or Radarr when you want it to actually delete things — scanning stays off until then.',
+                  'Connect {{name}} and PrunerrXT can read your library. Add Sonarr or Radarr when you want it to actually delete things — scanning stays off until then.',
                   { name: mediaServer.name }
                 )}
               </p>
@@ -392,7 +392,7 @@ export default function ConnectionsPanel({
         title={t('connections.sections.sonarrRadarr', 'Sonarr & Radarr')}
         description={t(
           'connections.sections.sonarrRadarrDescription',
-          'Prunerr deletes through these — without them it can only report'
+          'PrunerrXT deletes through these — without them it can only report'
         )}
       >
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
@@ -450,7 +450,7 @@ export default function ConnectionsPanel({
         title={INTEGRATIONS.overseerr.name}
         description={t(
           'connections.sections.overseerrDescription',
-          'Clears the request when Prunerr deletes what it asked for'
+          'Clears the request when PrunerrXT deletes what it asked for'
         )}
       >
         <IntegrationCard
@@ -991,11 +991,11 @@ function WatchHistoryCard({
           {isPlexBackend
             ? t(
                 'watchHistory.plexDirectInfo',
-                "No extra configuration needed — Prunerr will read history from your Plex server using the connection set in the Media Server section above. Requires the server-owner's token."
+                "No extra configuration needed — PrunerrXT will read history from your Plex server using the connection set in the Media Server section above. Requires the server-owner's token."
               )
             : t(
                 'watchHistory.mediaServerDirectInfo',
-                'No extra configuration needed — Prunerr will read history from your media server using the connection set in the Media Server section above. Install the Playback Reporting plugin for full play-count accuracy.'
+                'No extra configuration needed — PrunerrXT will read history from your media server using the connection set in the Media Server section above. Install the Playback Reporting plugin for full play-count accuracy.'
               )}
         </p>
       )}
@@ -1122,7 +1122,7 @@ function LookbackInput({ value, onChange }: { value: number; onChange: (days: nu
 /* -------------------------------------------------------------------------- */
 
 /** Creates a key with the viewer role — read-only access. */
-const UNRAID_API_KEY_TEMPLATE = '?name=Prunerr&scopes=role%3Aviewer';
+const UNRAID_API_KEY_TEMPLATE = '?name=PrunerrXT&scopes=role%3Aviewer';
 
 function UnraidApiKeyHelper() {
   const { t } = useTranslation('settings');

@@ -1,5 +1,5 @@
 interface:
-  display_name: "Prunerr"
+  display_name: "PrunerrXT"
   short_description: "Repo-specific patterns and workflows for prunerr"
   default_prompt: "Use the prunerr repo skill to follow existing architecture, testing, and workflow conventions."
 policy:

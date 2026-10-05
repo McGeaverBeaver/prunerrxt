@@ -222,10 +222,10 @@ export async function enqueueFolderBatch(request: FolderBatchRequest): Promise<F
 
 function precheck(action: FolderJobAction, folder: OrphanFolder): string | null {
   if ((action === 'delete' || action === 'fix_permissions') && !folder.localPath) {
-    return `No folder mapping covers ${folder.path}; add one in Settings so Prunerr can reach the files`;
+    return `No folder mapping covers ${folder.path}; add one in Settings so PrunerrXT can reach the files`;
   }
   if (action === 'delete' && !folder.canDelete) {
-    return `${folder.localPath} does not exist on Prunerr's side; check the mapping`;
+    return `${folder.localPath} does not exist on PrunerrXT's side; check the mapping`;
   }
   return null;
 }

@@ -1,7 +1,6 @@
 import { useState, forwardRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  Scissors,
   Sparkles,
   X,
   Moon,
@@ -23,11 +22,11 @@ import {
   ActivityIcon,
   SettingsIcon,
   SunIcon,
-  GlobeIcon,
   GithubIcon,
   ContainerIcon,
   FoldersIcon,
 } from './NavIcons';
+import { LogoMark, Wordmark } from '@/components/common/Logo';
 import { cn } from '@/lib/utils';
 import { useUnraidStats, useDeletionQueue, useVersion, useStats } from '@/hooks/useApi';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -100,11 +99,11 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
       {/* Logo - with close button on mobile */}
       <div className="sidebar-head h-20 flex items-center justify-between gap-4 px-6 border-b border-surface-800/50">
         <div className="flex items-center gap-4">
-          <div className="sidebar-logo w-12 h-12 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-lg shadow-accent-500/20">
-            <Scissors className="w-6 h-6 text-amber-950" />
+          <div className="sidebar-logo w-12 h-12 rounded-xl shadow-lg shadow-accent-500/20">
+            <LogoMark className="w-12 h-12" />
           </div>
           <div>
-            <h1 className="text-xl font-display font-bold text-surface-50 tracking-tight">Prunerr</h1>
+            <h1 className="text-xl"><Wordmark /></h1>
             <p className="text-xs text-surface-500 font-medium">{t('tagline', 'Media Library Manager')}</p>
           </div>
         </div>
@@ -224,16 +223,6 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
           >
             {resolvedTheme === 'dark' ? <SunIcon className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <a
-            href="https://prunerr.media"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sidebar-foot-link group p-2.5 rounded-lg text-surface-500 hover:text-accent-text-hover hover:bg-surface-800/60 transition-all"
-            title={t('links.website', 'Website')}
-            aria-label={t('links.websiteAria', 'Prunerr website')}
-          >
-            <GlobeIcon className="w-4 h-4" />
-          </a>
           <a
             href="https://github.com/McGeaverBeaver/prunerr"
             target="_blank"

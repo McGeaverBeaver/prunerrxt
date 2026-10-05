@@ -4,15 +4,15 @@
  * Each app reports, per root folder, the sub-folders that belong to none of
  * its movies or series ("unmapped folders"): leftovers from a manual move,
  * a failed import, a title removed from the app with "delete files" off, or
- * media copied in by hand. Prunerr lists them from both apps, and offers the
+ * media copied in by hand. PrunerrXT lists them from both apps, and offers the
  * two things worth doing with such a folder: import it into the app that
  * owns that root folder (a lookup picks the title, the app then scans the
  * folder in place), or delete it.
  *
  * Sonarr and Radarr have no API to delete an arbitrary folder, so deleting
- * needs Prunerr to see the files itself: a folder mapping says which local
+ * needs PrunerrXT to see the files itself: a folder mapping says which local
  * path corresponds to a root folder as the app sees it. With a mapping,
- * Prunerr also reports each folder's size and contents.
+ * PrunerrXT also reports each folder's size and contents.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -45,7 +45,7 @@ export const IGNORED_FOLDERS_SETTING = 'orphan_folders_ignored';
 export interface FolderMapping {
   /** Path prefix as Sonarr/Radarr see it, e.g. `/movies`. */
   remotePath: string;
-  /** The same location as Prunerr sees it, e.g. `/media/movies`. */
+  /** The same location as PrunerrXT sees it, e.g. `/media/movies`. */
   localPath: string;
 }
 
@@ -117,7 +117,7 @@ export interface OrphanFolder {
   name: string;
   /** As the service sees it. */
   path: string;
-  /** As Prunerr sees it, when a mapping covers it. */
+  /** As PrunerrXT sees it, when a mapping covers it. */
   localPath: string | null;
   sizeBytes: number | null;
   fileCount: number | null;
@@ -125,11 +125,11 @@ export interface OrphanFolder {
   videoFiles: string[];
   modifiedAt: string | null;
   ignored: boolean;
-  /** Whether Prunerr can delete it (mapped and present locally). */
+  /** Whether PrunerrXT can delete it (mapped and present locally). */
   canDelete: boolean;
   /** Entries whose owner or mode differ from the configured ones; null when unmapped. */
   permissionIssues: number | null;
-  /** Whether Prunerr can create and remove entries in the folder as it is now. */
+  /** Whether PrunerrXT can create and remove entries in the folder as it is now. */
   writable: boolean | null;
   /** Title and year parsed from the folder name, and an id tag if it carries one. */
   guess: { title: string; year: number | null; tmdbId: number | null; tvdbId: number | null; imdbId: string | null };
@@ -650,7 +650,7 @@ export async function importFolder(id: string, options: ImportFolderOptions): Pr
     matchNote = `${match.candidate.title} (${match.candidate.year ?? '?'}): ${match.reason}`;
   }
 
-  // The app will want to rename and move files in this folder. If Prunerr can
+  // The app will want to rename and move files in this folder. If PrunerrXT can
   // see that it is owned by someone else, put it right first (same owner the
   // apps run as) so the import does not stall on a permission error there.
   let permissionsFixed: FixResult | null = null;
@@ -732,7 +732,7 @@ export interface DeleteFolderResult {
 /**
  * Remove the folder from disk. Only a mapped folder can go, and only when its
  * resolved location sits strictly inside the mapping's local path: a mapping
- * can never make Prunerr delete a root folder, a parent, or anything a
+ * can never make PrunerrXT delete a root folder, a parent, or anything a
  * symlink points at outside the media tree.
  */
 /**
@@ -743,7 +743,7 @@ export interface DeleteFolderResult {
  */
 async function resolveInsideMapping(folder: OrphanFolder): Promise<string> {
   if (!folder.localPath) {
-    throw new Error(`No folder mapping covers ${folder.path}. Add one in Settings (Connections, Media folders) so Prunerr can see the files.`);
+    throw new Error(`No folder mapping covers ${folder.path}. Add one in Settings (Connections, Media folders) so PrunerrXT can see the files.`);
   }
   const mappings = getFolderMappings();
   const mapping = mappings.find((m) => folder.localPath === m.localPath || folder.localPath!.startsWith(`${m.localPath}/`));
@@ -755,7 +755,7 @@ async function resolveInsideMapping(folder: OrphanFolder): Promise<string> {
     real = await fs.realpath(folder.localPath);
     realBase = await fs.realpath(mapping.localPath);
   } catch {
-    throw new Error(`${folder.localPath} does not exist on Prunerr's side; check the mapping`);
+    throw new Error(`${folder.localPath} does not exist on PrunerrXT's side; check the mapping`);
   }
   if (real === realBase || !real.startsWith(`${realBase}${path.sep}`)) {
     throw new Error('Refusing to touch it: the folder resolves outside its mapped media path');

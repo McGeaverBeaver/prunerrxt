@@ -102,7 +102,7 @@ router.put('/mappings', (req: Request, res: Response) => {
   }
 });
 
-// GET /api/folders/permissions - who Prunerr is, what it can change, and the target owner/modes
+// GET /api/folders/permissions - who PrunerrXT is, what it can change, and the target owner/modes
 router.get('/permissions', (_req: Request, res: Response) => {
   res.json({ success: true, data: { capabilities: getPermissionCapabilities(), settings: getPermissionSettings() } });
 });

@@ -48,9 +48,7 @@
   },
   "links": {
     "containerImage": "Container image",
-    "github": "GitHub",
-    "website": "Website",
-    "websiteAria": "Prunerr website"
+    "github": "GitHub"
   },
   "menuLabel": "Menu",
   "nav": {

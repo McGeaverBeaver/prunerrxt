@@ -2,7 +2,7 @@
 
 The **Insights** page reads the services you already connected and answers
 four questions. Nothing is sent anywhere; every number comes from the media
-server, Sonarr, Radarr, the watch history provider and Prunerr's own
+server, Sonarr, Radarr, the watch history provider and PrunerrXT's own
 database. The same reports are available to an assistant through the MCP
 connector (`get_insights`, `get_insight_trends`).
 
@@ -13,12 +13,12 @@ worst first, each with a next step:
 
 - **Sonarr and Radarr's own health checks** (indexer down, download client
   unreachable, root folder missing, update available), their queue (downloads
-  stuck with errors never import, which leaves a gap after Prunerr deletes
+  stuck with errors never import, which leaves a gap after PrunerrXT deletes
   the old file), inaccessible root folders, and a recycle bin on another
   filesystem.
 - **Connectivity** of every configured service, from the dashboard's health
   check.
-- **Prunerr itself**: a failed or stale library sync, a failed scan, deletion
+- **PrunerrXT itself**: a failed or stale library sync, a failed scan, deletion
   jobs stuck or failed in the last week, queued items past their grace
   period with automatic processing off, a folder mapping that points nowhere
   or sits on a read-only volume, missing permission capabilities, disk
@@ -56,7 +56,7 @@ in a year, with its size. These are the numbers the rules engine works from,
 shown so a "not watched in a year" rule can be judged before it runs.
 
 Sessions come from Tautulli when it is the watch history provider, or from
-the history Prunerr caches for Tracearr and for the media server's own
+the history PrunerrXT caches for Tracearr and for the media server's own
 history. Per-title play counts come from the sync whichever provider is in
 use.
 
@@ -70,7 +70,7 @@ transcode rate and the codecs they choke on; the titles that transcode most;
 and plays dropped in the first fifth, with how many were tried again within
 a day (the shape of a playback problem rather than a change of mind).
 
-Buffering counts and client errors are not persisted anywhere Prunerr can
+Buffering counts and client errors are not persisted anywhere PrunerrXT can
 read, so this is inference about friction, not a count of failures.
 
 ## Trends

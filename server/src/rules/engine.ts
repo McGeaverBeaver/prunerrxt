@@ -24,7 +24,7 @@ export type { EvaluationContext };
  * Evaluate a rule's stored `conditions` JSON against a single media item.
  *
  * Parses JSON, upgrades v1 → v2, then walks the tree. This is the canonical
- * entry point for all rule evaluation in Prunerr v1.3+.
+ * entry point for all rule evaluation in PrunerrXT v1.3+.
  */
 export function evaluateRuleConditions(
   rawConditionsJson: string,

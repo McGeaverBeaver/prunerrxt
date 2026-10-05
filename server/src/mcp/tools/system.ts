@@ -38,7 +38,7 @@ export function registerSystemTools(server: McpServer): void {
       name: 'get_task_status',
       title: 'Background tasks: running now and recent runs',
       description:
-        'What Prunerr is doing in the background: the Archive availability pass in progress (current title, done/total), paused apps, active deletion jobs, and the last runs of every scheduled task with duration and outcome. Use list_scheduled_tasks for schedules and next runs.',
+        'What PrunerrXT is doing in the background: the Archive availability pass in progress (current title, done/total), paused apps, active deletion jobs, and the last runs of every scheduled task with duration and outcome. Use list_scheduled_tasks for schedules and next runs.',
       group: 'system',
       inputSchema: { limit: z.number().int().min(1).max(100).optional().describe('Recent runs to include (default 20).') },
       annotations: READ_ONLY,
@@ -103,7 +103,7 @@ export function registerSystemTools(server: McpServer): void {
       name: 'get_settings_summary',
       title: 'Settings summary',
       description:
-        'A redacted view of how this Prunerr is configured: which services are connected (URLs only, never keys), the media server type, scan and sync schedules, deletion defaults, disk-pressure settings, exclusions, notification channels, and MCP safety switches.',
+        'A redacted view of how this PrunerrXT is configured: which services are connected (URLs only, never keys), the media server type, scan and sync schedules, deletion defaults, disk-pressure settings, exclusions, notification channels, and MCP safety switches.',
       group: 'system',
       annotations: READ_ONLY,
     },
@@ -149,7 +149,7 @@ export function registerSystemTools(server: McpServer): void {
         mcp: { immediateDeletionAllowed: allowsImmediateDeletion() },
       };
       const connected = Object.entries(data.services).filter(([, v]) => v.configured).map(([k]) => k);
-      return ok(data, `Prunerr ${data.version} on ${data.mediaServer.label}. Configured services: ${connected.join(', ') || 'none'}.`);
+      return ok(data, `PrunerrXT ${data.version} on ${data.mediaServer.label}. Configured services: ${connected.join(', ') || 'none'}.`);
     }
   );
 
@@ -158,7 +158,7 @@ export function registerSystemTools(server: McpServer): void {
     {
       name: 'test_connection',
       title: 'Test a service connection',
-      description: 'Check that Prunerr can reach one configured service with its stored credentials.',
+      description: 'Check that PrunerrXT can reach one configured service with its stored credentials.',
       group: 'system',
       inputSchema: { service: z.enum(SERVICES) },
       annotations: EXTERNAL_READ,

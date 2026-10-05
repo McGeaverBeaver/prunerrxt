@@ -485,7 +485,7 @@ export default function SystemPanel({ registerSection }: PanelProps) {
               <p className="mt-0.5 text-[12.5px] leading-relaxed text-surface-400">
                 {t(
                   'backup.fullHint',
-                  'The entire database — library, rules, queue, history and settings. Restoring replaces everything currently in Prunerr.'
+                  'The entire database — library, rules, queue, history and settings. Restoring replaces everything currently in PrunerrXT.'
                 )}
               </p>
             </div>
@@ -593,7 +593,7 @@ export default function SystemPanel({ registerSection }: PanelProps) {
         </SettingsCard>
 
         <div className="flex items-center justify-between rounded-[14px] border border-surface-700/80 bg-surface-800/40 px-[18px] py-3.5">
-          <span className="text-[12.5px] text-surface-400">{t('system.productName', 'Prunerr')}</span>
+          <span className="text-[12.5px] text-surface-400">{t('system.productName', 'PrunerrXT')}</span>
           <span className="font-mono text-[12.5px] text-surface-300">
             {version ? `v${version}` : '—'}
           </span>
@@ -665,7 +665,7 @@ export default function SystemPanel({ registerSection }: PanelProps) {
               ns="settings"
               values={{ filename: restoreFile?.name ?? '' }}
             >
-              Everything currently in Prunerr — library, rules, queue and history — will be replaced by <strong>{'{{filename}}'}</strong>.
+              Everything currently in PrunerrXT — library, rules, queue and history — will be replaced by <strong>{'{{filename}}'}</strong>.
             </Trans>
           </p>
           <p className="rounded-xl border border-surface-700/80 bg-surface-800/50 px-3.5 py-3 text-xs text-surface-400">

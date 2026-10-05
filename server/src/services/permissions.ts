@@ -2,7 +2,7 @@
  * Ownership and mode of files on the mapped media paths.
  *
  * Media directories collect files owned by whichever process wrote them: a
- * DVR running as root, a download client as another user. Prunerr runs as
+ * DVR running as root, a download client as another user. PrunerrXT runs as
  * PUID:PGID, so it can neither remove those files nor can Sonarr/Radarr
  * (running as the same ids) rename them on import. The image grants the
  * Node binary CAP_CHOWN and CAP_FOWNER, which is exactly what is needed to
@@ -20,9 +20,9 @@ import logger from '../utils/logger';
 export const PERMISSION_SETTINGS_KEY = 'media_permissions';
 
 export interface PermissionSettings {
-  /** Owner to apply; defaults to the user Prunerr runs as (PUID). */
+  /** Owner to apply; defaults to the user PrunerrXT runs as (PUID). */
   uid: number;
-  /** Group to apply; defaults to Prunerr's group (PGID). */
+  /** Group to apply; defaults to PrunerrXT's group (PGID). */
   gid: number;
   /** Mode for directories, octal string, default 0775. */
   dirMode: string;
@@ -57,7 +57,7 @@ export interface PermissionReport {
   wrongOwner: number;
   wrongMode: number;
   unreadable: number;
-  /** Whether Prunerr can create and remove entries in the top folder right now. */
+  /** Whether PrunerrXT can create and remove entries in the top folder right now. */
   writable: boolean;
   examples: PermissionIssueExample[];
   needsFix: boolean;
@@ -154,7 +154,7 @@ export function getPermissionCapabilities(statusText?: string): PermissionCapabi
     reason =
       caps === null
         ? 'Could not read this process\'s capabilities; permission repair may not work on this platform.'
-        : `Prunerr runs as ${ids.uid}:${ids.gid} without the CAP_CHOWN/CAP_FOWNER capabilities, so it can only change files it already owns. Update to an image that grants them, or run the container with --cap-add CHOWN --cap-add FOWNER.`;
+        : `PrunerrXT runs as ${ids.uid}:${ids.gid} without the CAP_CHOWN/CAP_FOWNER capabilities, so it can only change files it already owns. Update to an image that grants them, or run the container with --cap-add CHOWN --cap-add FOWNER.`;
   }
   return { ...ids, canChown, canChmod, reason };
 }
@@ -285,7 +285,7 @@ function describeFsError(error: unknown): string {
 
 /**
  * Turn an EACCES/EPERM from a delete into a sentence that says who owns the
- * file, who Prunerr is, and what to do about it.
+ * file, who PrunerrXT is, and what to do about it.
  */
 export async function explainPermissionError(error: unknown, fallbackPath: string): Promise<string> {
   const err = error as NodeJS.ErrnoException;
@@ -309,5 +309,5 @@ export async function explainPermissionError(error: unknown, fallbackPath: strin
   const hint = caps.canChown
     ? 'Use "Fix permissions" on the folder (or turn on automatic repair in Settings, Media folders) and try again.'
     : (caps.reason ?? '');
-  return `Permission denied on ${target}.${owner} Prunerr runs as ${ids.uid}:${ids.gid}. ${hint}`.trim();
+  return `Permission denied on ${target}.${owner} PrunerrXT runs as ${ids.uid}:${ids.gid}. ${hint}`.trim();
 }

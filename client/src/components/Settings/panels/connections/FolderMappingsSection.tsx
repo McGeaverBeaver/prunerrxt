@@ -22,7 +22,7 @@ function pickerPaths(mounts: ContainerMount[]): string[] {
 }
 
 /**
- * The best guess for where Prunerr sees a root folder: the same path when it
+ * The best guess for where PrunerrXT sees a root folder: the same path when it
  * is mounted under the same name (the shared `/data` layout), else the
  * detected folder with the same final segment (`/movies` → `/media/movies`),
  * else nothing.
@@ -42,8 +42,8 @@ import { SettingsCard } from '../../components/SettingsCard';
 import type { PanelProps } from '../../types';
 
 /**
- * Where Prunerr can see the media that Sonarr and Radarr manage. A mapping
- * pairs a root folder as the app sees it with the same location as Prunerr
+ * Where PrunerrXT can see the media that Sonarr and Radarr manage. A mapping
+ * pairs a root folder as the app sees it with the same location as PrunerrXT
  * sees it, which is what lets the Folders page measure and delete unmanaged
  * folders instead of only listing them.
  */
@@ -91,12 +91,12 @@ export function FolderMappingsSection({ registerSection }: { registerSection: Pa
       id="media-folders"
       register={registerSection}
       title={t('mediaFolders.title', 'Media folders')}
-      description={t('mediaFolders.description', 'Lets Prunerr measure and delete unmanaged folders. Pair each root folder as Sonarr/Radarr see it with the path where this container sees the same files.')}
+      description={t('mediaFolders.description', 'Lets PrunerrXT measure and delete unmanaged folders. Pair each root folder as Sonarr/Radarr see it with the path where this container sees the same files.')}
     >
       <SettingsCard>
         <div className="space-y-4">
           <p className="text-sm text-surface-400">
-            {t('mediaFolders.help', 'Mount the media share into the Prunerr container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, Prunerr sees /media/movies.')}
+            {t('mediaFolders.help', 'Mount the media share into the PrunerrXT container (read-write if you want to delete), then map it here. Example: Radarr sees /movies, PrunerrXT sees /media/movies.')}
           </p>
 
           {mountsQuery.data && (
@@ -194,7 +194,7 @@ export function FolderMappingsSection({ registerSection }: { registerSection: Pa
 }
 
 /**
- * The owner and modes Prunerr applies when it repairs a folder, and whether
+ * The owner and modes PrunerrXT applies when it repairs a folder, and whether
  * this install is able to. Files written by other users (a DVR as root, a
  * download client as another id) are the usual reason a delete or import
  * fails with "permission denied"; repairing them first makes the end state
@@ -232,14 +232,14 @@ function PermissionsCard() {
         <div>
           <h3 className="text-sm font-semibold text-surface-50">{t('mediaFolders.permissions.title', 'Ownership and permissions')}</h3>
           <p className="mt-1 text-sm text-surface-400">
-            {t('mediaFolders.permissions.help', 'What Prunerr sets when it repairs a folder: the owner (normally PUID:PGID, the same ids Sonarr and Radarr run as) and the modes. With automatic repair on, a delete or import that would fail on files owned by someone else repairs the folder first and carries on.')}
+            {t('mediaFolders.permissions.help', 'What PrunerrXT sets when it repairs a folder: the owner (normally PUID:PGID, the same ids Sonarr and Radarr run as) and the modes. With automatic repair on, a delete or import that would fail on files owned by someone else repairs the folder first and carries on.')}
           </p>
         </div>
 
         {caps && (
           <p className={caps.canChown ? 'text-xs text-emerald-text' : 'text-xs text-ruby-text'}>
             {caps.canChown
-              ? t('mediaFolders.permissions.capable', 'Prunerr runs as {{uid}}:{{gid}} and can change the owner and mode of files it does not own.', { uid: caps.uid, gid: caps.gid })
+              ? t('mediaFolders.permissions.capable', 'PrunerrXT runs as {{uid}}:{{gid}} and can change the owner and mode of files it does not own.', { uid: caps.uid, gid: caps.gid })
               : caps.reason}
           </p>
         )}

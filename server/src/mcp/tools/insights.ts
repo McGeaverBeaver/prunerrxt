@@ -22,7 +22,7 @@ export function registerInsightTools(server: McpServer): void {
       name: 'get_insights',
       title: 'Insights: stack health, library quality, watch patterns, playback friction',
       description:
-        'How the whole setup is doing. "stack": every problem across Prunerr, the media server, Sonarr, Radarr and the watch history provider, with severity and next step. "library": resolution and codec mix, HDR, items below their quality cutoff, low-resolution titles nobody played. "watching": plays per week, viewers, most played titles, never-played and quiet share of the library. "playback": transcode rate by client and title, abandoned plays (Tautulli only). "all" returns the four together. Pass refresh=true to bypass the one-to-five-minute caches.',
+        'How the whole setup is doing. "stack": every problem across PrunerrXT, the media server, Sonarr, Radarr and the watch history provider, with severity and next step. "library": resolution and codec mix, HDR, items below their quality cutoff, low-resolution titles nobody played. "watching": plays per week, viewers, most played titles, never-played and quiet share of the library. "playback": transcode rate by client and title, abandoned plays (Tautulli only). "all" returns the four together. Pass refresh=true to bypass the one-to-five-minute caches.',
       group: 'overview',
       inputSchema: {
         section: z.enum(SECTIONS).default('all').describe('Which block to read; "all" for every block.'),

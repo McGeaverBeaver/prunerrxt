@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-    <Name>Prunerr</Name>
+    <Name>PrunerrXT</Name>
     <Repository>ghcr.io/mcgeaverbeaver/prunerr:main</Repository>
     <!-- Community Applications turns each Branch into a pickable channel:
          the Tag is appended to the repository above. -->
@@ -18,37 +18,37 @@
     <Privileged>false</Privileged>
     <Support>https://github.com/McGeaverBeaver/prunerr</Support>
     <Project>https://github.com/McGeaverBeaver/prunerr</Project>
-    <Overview>Prunerr is a media library cleanup and management tool designed to work with Plex, Jellyfin or Emby, plus Sonarr and Radarr. Automatically reclaim disk space by identifying and removing unwanted media based on customizable rules.&#xD;
+    <Overview>PrunerrXT is a media library cleanup tool for Plex, Jellyfin or Emby, working through Sonarr and Radarr. Rules flag what nobody watches, everything goes through a deletion queue with a grace period, and before a title is deleted PrunerrXT checks with Radarr or Sonarr whether it could be downloaded again. Built on Prunerr by Harry Elliott.&#xD;
 &#xD;
 Features:&#xD;
-- Smart rules engine: Create flexible rules based on watch status, age, file size, resolution, and more&#xD;
-- Automatic cleanup: Schedule scans to automatically flag and remove unwatched media&#xD;
-- Plex, Jellyfin and Emby: Pulls library data and watch history directly from whichever you use&#xD;
-- Tautulli and Tracearr integration: Advanced watch history analysis for accurate play tracking (Plex only)&#xD;
-- Sonarr and Radarr integration: Intelligently removes media through your *arr stack&#xD;
-- Seerr integration: Tracks who requested content and optionally resets requests&#xD;
-- Grace periods: Configurable retention periods before items are deleted&#xD;
-- Deletion queue: Review and approve flagged items before removal&#xD;
-- Discord notifications: Get notified about cleanup actions&#xD;
-- Storage trends: Track your library size and space reclaimed over time&#xD;
-- Modern dashboard: Real-time overview of your library with stats and recommendations&#xD;
+- Rules engine: watch status, age, size, resolution, ratings, per-viewer watch state and more, with a live preview&#xD;
+- Deletion queue: grace periods, four deletion actions, Seerr request resets, nothing removed without review&#xD;
+- Archive: titles that could not be downloaded again are held or archived instead of deleted&#xD;
+- Insights: stack health across your apps, library quality, watch patterns, playback friction&#xD;
+- Audit log: a tamper-evident record of every login, change, delete and protect decision&#xD;
+- Tasks: what runs in the background, with live progress and history&#xD;
+- Unmanaged folders: import or clean up folders Sonarr and Radarr do not own; repair permissions&#xD;
+- Login and roles: single sign-on through Authentik or any OpenID Connect provider (optional)&#xD;
+- AI assistant: a Model Context Protocol server for Claude, Cursor and other MCP clients (optional)&#xD;
+- Plex, Jellyfin and Emby; Tautulli and Tracearr; Seerr; Unraid; Discord, webhooks and Home Assistant&#xD;
+- No telemetry, no update checks, no outbound calls except to the services you configure&#xD;
 &#xD;
-All service connections are configured through the web UI — no config files needed.</Overview>
+Service connections are configured in the web UI. Login and the AI connector are configured with the variables below.</Overview>
     <Category>MediaApp:Other MediaServer:Other</Category>
     <WebUI>http://[IP]:[PORT:3000]/</WebUI>
     <TemplateURL>https://raw.githubusercontent.com/McGeaverBeaver/prunerr/main/my-prunerr.xml</TemplateURL>
-    <!-- Unraid fetches the icon over HTTP; this repository is private, so upstream's public copy of the same icon is used. -->
-    <Icon>https://raw.githubusercontent.com/helliott20/prunerr/main/assets/icon.png</Icon>
+    <!-- Unraid fetches the icon over HTTP, so this URL only resolves while the repository is public. -->
+    <Icon>https://raw.githubusercontent.com/McGeaverBeaver/prunerr/main/assets/icon.png</Icon>
 
-    <Config Name="Web UI Port" Target="3000" Default="3000" Mode="tcp" Description="Port for the Prunerr web interface" Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+    <Config Name="Web UI Port" Target="3000" Default="3000" Mode="tcp" Description="Port for the PrunerrXT web interface" Type="Port" Display="always" Required="true" Mask="false">3000</Config>
 
-    <Config Name="Data Path" Target="/app/data" Default="/mnt/user/appdata/prunerr" Mode="rw" Description="Path to store Prunerr database and configuration" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/prunerr</Config>
+    <Config Name="Data Path" Target="/app/data" Default="/mnt/user/appdata/prunerr" Mode="rw" Description="Path to store PrunerrXT database and configuration" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/prunerr</Config>
 
-    <Config Name="PUID" Target="PUID" Default="99" Description="User ID Prunerr runs as, and the owner it applies when repairing media folder permissions (Unraid default 99 = nobody). Use the same ids as Sonarr and Radarr." Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
+    <Config Name="PUID" Target="PUID" Default="99" Description="User ID PrunerrXT runs as, and the owner it applies when repairing media folder permissions (Unraid default 99 = nobody). Use the same ids as Sonarr and Radarr." Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
 
     <Config Name="PGID" Target="PGID" Default="100" Description="Group ID for file permissions" Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
 
-    <Config Name="Require login" Target="AUTH_ENABLED" Default="false" Description="Set to true to require a login. Configure single sign-on (Authentik or any OpenID Connect provider) with the OIDC_* variables below and/or a local account with AUTH_LOCAL_*. Off keeps Prunerr open to anyone on your network, as before, and disables the AI assistant (MCP) connector. Guide: docs/authentication.md" Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+    <Config Name="Require login" Target="AUTH_ENABLED" Default="false" Description="Set to true to require a login. Configure single sign-on (Authentik or any OpenID Connect provider) with the OIDC_* variables below and/or a local account with AUTH_LOCAL_*. Off keeps PrunerrXT open to anyone on your network, as before, and disables the AI assistant (MCP) connector. Guide: docs/authentication.md" Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
 
     <Config Name="OIDC issuer URL" Target="OIDC_ISSUER_URL" Default="" Description="Single sign-on issuer, e.g. https://auth.example.com/application/o/prunerr/ for Authentik. Register the redirect URI http://[IP]:[PORT:3000]/api/auth/oidc/callback at the provider." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
 

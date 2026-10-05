@@ -1,26 +1,26 @@
 # Home Assistant Integration
 
-Prunerr integrates with Home Assistant three ways, no custom component required:
+PrunerrXT integrates with Home Assistant three ways, no custom component required:
 
-1. **Outbound webhooks** — Prunerr POSTs events to HA, which become automation triggers.
+1. **Outbound webhooks** — PrunerrXT POSTs events to HA, which become automation triggers.
 2. **REST sensors** — HA pulls live state (free space, pending deletions) from `/api/stats`.
 3. **REST commands** — HA triggers a scan via `/api/scan/trigger`.
 
 Together these let HA be your notification layer (TTS on speakers, phone push, dashboard cards) and react to disk-pressure events — reaching people on the devices they actually use.
 
-> **Auth:** All `/api/*` routes accept an `X-Api-Key` header. Find/regenerate the key under **Settings → API Key** in Prunerr. Requests from the web UI bypass the key (same-origin), but HA must always send it. Replace `http://prunerr.local:3000` and `YOUR_API_KEY` below with your values.
+> **Auth:** All `/api/*` routes accept an `X-Api-Key` header. Find/regenerate the key under **Settings → API Key** in PrunerrXT. Requests from the web UI bypass the key (same-origin), but HA must always send it. Replace `http://prunerr.local:3000` and `YOUR_API_KEY` below with your values.
 
 ---
 
-## 1. Receive Prunerr events (webhooks → automation triggers)
+## 1. Receive PrunerrXT events (webhooks → automation triggers)
 
-In Prunerr, go to **Settings → Outbound Webhooks → Add webhook** and point it at an HA webhook URL:
+In PrunerrXT, go to **Settings → Outbound Webhooks → Add webhook** and point it at an HA webhook URL:
 
 ```
 http://homeassistant.local:8123/api/webhook/prunerr-events
 ```
 
-Tick the events you care about (e.g. **Disk pressure**, **Deletion complete**). Optionally set a **signing secret** — Prunerr then sends an `X-Prunerr-Signature: sha256=<hmac>` header computed over the exact request body, which you can verify.
+Tick the events you care about (e.g. **Disk pressure**, **Deletion complete**). Optionally set a **signing secret** — PrunerrXT then sends an `X-Prunerr-Signature: sha256=<hmac>` header computed over the exact request body, which you can verify.
 
 ### Payload shape
 
@@ -53,7 +53,7 @@ Also sent as headers: `X-Prunerr-Event: <EVENT_NAME>` and (if a secret is set) `
 
 ```yaml
 automation:
-  - alias: "Prunerr disk pressure → announce"
+  - alias: "PrunerrXT disk pressure → announce"
     trigger:
       - platform: webhook
         webhook_id: prunerr-events
@@ -65,7 +65,7 @@ automation:
     action:
       - service: notify.mobile_app_my_phone
         data:
-          title: "Prunerr: {{ trigger.json.data.severity }} disk pressure"
+          title: "PrunerrXT: {{ trigger.json.data.severity }} disk pressure"
           message: >
             {{ trigger.json.data.path }} is low.
             {{ trigger.json.data.itemsQueued }} item(s) queued
@@ -74,7 +74,7 @@ automation:
 
 ---
 
-## 2. Pull Prunerr state (REST sensors)
+## 2. Pull PrunerrXT state (REST sensors)
 
 Add to `configuration.yaml`. The disk fields are populated when **Disk Pressure** is enabled with at least one monitored path; otherwise they are `null`.
 
@@ -85,15 +85,15 @@ rest:
     headers:
       X-Api-Key: "YOUR_API_KEY"
     sensor:
-      - name: "Prunerr Free Space"
+      - name: "PrunerrXT Free Space"
         value_template: "{{ value_json.data.diskFreeBytes | int(0) }}"
         device_class: data_size
         unit_of_measurement: "B"
-      - name: "Prunerr Disk Pressure"
+      - name: "PrunerrXT Disk Pressure"
         value_template: "{{ value_json.data.diskPressureSeverity | default('ok') }}"
-      - name: "Prunerr Pending Deletions"
+      - name: "PrunerrXT Pending Deletions"
         value_template: "{{ value_json.data.itemsMarkedForDeletion | int(0) }}"
-      - name: "Prunerr Reclaimable Space"
+      - name: "PrunerrXT Reclaimable Space"
         value_template: "{{ value_json.data.reclaimableSpace | int(0) }}"
         device_class: data_size
         unit_of_measurement: "B"
@@ -118,7 +118,7 @@ Use it from an automation, e.g. run a scan when free space drops:
 
 ```yaml
 automation:
-  - alias: "Prunerr scan when disk fills"
+  - alias: "PrunerrXT scan when disk fills"
     trigger:
       - platform: numeric_state
         entity_id: sensor.prunerr_free_space
@@ -132,5 +132,5 @@ automation:
 ## Notes
 
 - Free space is read directly from the filesystem (`statfs`) on the paths configured under **Settings → Disk Pressure**, so it works without Unraid.
-- Webhook delivery is fire-and-forget with up to 3 retries on transient failures (5xx / network / 429); it never blocks Prunerr's own processing.
+- Webhook delivery is fire-and-forget with up to 3 retries on transient failures (5xx / network / 429); it never blocks PrunerrXT's own processing.
 - All byte fields are raw bytes — divide by `1024**3` for GB or `1024**4` for TB in templates.

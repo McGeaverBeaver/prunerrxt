@@ -42,7 +42,7 @@ export function registerHistoryTools(server: McpServer): void {
     {
       name: 'list_deletion_history',
       title: 'Deletion history',
-      description: 'What Prunerr has deleted, newest first, with sizes and the rule responsible, plus totals.',
+      description: 'What PrunerrXT has deleted, newest first, with sizes and the rule responsible, plus totals.',
       group: 'history',
       inputSchema: {
         search: z.string().optional().describe('Title substring.'),

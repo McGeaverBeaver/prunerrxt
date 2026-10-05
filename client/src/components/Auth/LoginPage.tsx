@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { KeyRound, LogIn, Scissors, ShieldAlert } from 'lucide-react';
+import { KeyRound, LogIn, ShieldAlert } from 'lucide-react';
+import { LogoMark, Wordmark } from '@/components/common/Logo';
 import { authApi } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/common/Button';
@@ -15,17 +16,17 @@ function useErrorMessage(code: string | null): string | null {
     if (!code) return null;
     switch (code) {
       case 'no_role':
-        return t('errors.noRole', 'Your account signed in, but it is not in any group that Prunerr grants access to. Ask an administrator to add you to one of the mapped groups.');
+        return t('errors.noRole', 'Your account signed in, but it is not in any group that PrunerrXT grants access to. Ask an administrator to add you to one of the mapped groups.');
       case 'oidc_denied':
         return t('errors.denied', 'The identity provider refused the sign-in.');
       case 'oidc_state':
         return t('errors.state', 'That sign-in attempt expired or did not start here. Please try again.');
       case 'oidc_exchange':
-        return t('errors.exchange', 'Prunerr could not exchange the login code with the identity provider. Check the client ID, secret and redirect URI.');
+        return t('errors.exchange', 'PrunerrXT could not exchange the login code with the identity provider. Check the client ID, secret and redirect URI.');
       case 'oidc_token':
-        return t('errors.token', 'The identity provider returned a token Prunerr could not verify.');
+        return t('errors.token', 'The identity provider returned a token PrunerrXT could not verify.');
       case 'oidc_provider':
-        return t('errors.provider', 'Prunerr could not reach the identity provider.');
+        return t('errors.provider', 'PrunerrXT could not reach the identity provider.');
       case 'oidc_unavailable':
         return t('errors.unavailable', 'Single sign-on is not configured on this install.');
       default:
@@ -92,11 +93,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-surface-950 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-3 mb-8">
-          <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center shadow-lg shadow-accent-500/20">
-            <Scissors className="w-7 h-7 text-amber-950" aria-hidden />
+          <div className="w-16 h-16 rounded-2xl shadow-lg shadow-accent-500/20">
+            <LogoMark className="w-16 h-16" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-display font-bold text-surface-50 tracking-tight">Prunerr</h1>
+            <h1 className="text-2xl"><Wordmark /></h1>
             <p className="text-sm text-surface-400 mt-1">{t('subtitle', 'Sign in to manage your library')}</p>
           </div>
         </div>

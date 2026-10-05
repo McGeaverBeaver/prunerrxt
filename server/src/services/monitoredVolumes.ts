@@ -3,7 +3,7 @@
  * with statfs inside this container, plus the volumes Sonarr and Radarr
  * report for their root folders, which need no mount here at all. A volume
  * seen both ways is counted once, with the statfs reading kept because it is
- * measured where Prunerr can act.
+ * measured where PrunerrXT can act.
  */
 import { getUsageForPaths, type FsUsage } from './diskSpace';
 import { getArrVolumes, includesArrVolumes, sameVolume } from './arrDiskSpace';

@@ -179,7 +179,7 @@ function localDayKey(d: Date): string {
  * ribbon. The chart is day-based rather than scan-row-based so it back-fills
  * from existing pruning history and keeps the weekday axis on consecutive days.
  *
- * Prunerr flags items during a scan but deletes them on a separate task once the
+ * PrunerrXT flags items during a scan but deletes them on a separate task once the
  * grace period elapses, so "files pruned / GB freed" is the actual deletion
  * activity (deletion_history) bucketed by day; `status`/`dur` come from a scan
  * that ran that day. A day with no pruning reads as `skipped`; a day whose scan

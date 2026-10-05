@@ -78,7 +78,7 @@ function getScanner(): ScannerService {
           const { status: _status, ...plexFields } = input;
 
           // Revive a deleted item only when it has genuinely been re-added to
-          // Plex. After Prunerr deletes something, Plex keeps a stale metadata
+          // Plex. After PrunerrXT deletes something, Plex keeps a stale metadata
           // entry for a while; that entry keeps its original (pre-deletion)
           // added date, so it stays a tombstone and rules leave it alone. A
           // real re-add (re-request → re-download) lands with an added date

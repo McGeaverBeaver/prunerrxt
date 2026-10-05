@@ -252,7 +252,7 @@ export interface FolderMapping {
   localPath: string;
 }
 
-/** A volume mounted into the Prunerr container, as GET /api/folders/mounts reports it. */
+/** A volume mounted into the PrunerrXT container, as GET /api/folders/mounts reports it. */
 export interface ContainerMount {
   mountPoint: string;
   fsType: string;
@@ -286,7 +286,7 @@ export interface OrphanFolder {
   canDelete: boolean;
   /** Entries whose owner or mode differ from the configured ones; null when unmapped. */
   permissionIssues: number | null;
-  /** Whether Prunerr can create and remove entries in the folder right now. */
+  /** Whether PrunerrXT can create and remove entries in the folder right now. */
   writable: boolean | null;
   guess: { title: string; year: number | null; tmdbId: number | null; tvdbId: number | null; imdbId: string | null };
 }
@@ -708,7 +708,7 @@ export interface DisplaySettings {
   language: SupportedLanguage;
 }
 
-/** Which media server backend Prunerr reads the library from. */
+/** Which media server backend PrunerrXT reads the library from. */
 export type MediaServerType = 'plex' | 'jellyfin' | 'emby';
 
 export interface Settings {

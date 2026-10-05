@@ -2,7 +2,7 @@
  * Free and total space as Sonarr and Radarr see their volumes.
  *
  * Both apps expose `/diskspace`: one row per filesystem, with free and total
- * bytes, measured inside their own container. That needs no mount in Prunerr
+ * bytes, measured inside their own container. That needs no mount in PrunerrXT
  * at all, which makes disk pressure work on any install, not only ones where
  * a media path was typed in by hand.
  *

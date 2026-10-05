@@ -1,25 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background with rounded corners and gradient -->
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <!-- PrunerrXT mark: open shears forming an X, a sprig between the blades. -->
   <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f59e0b"/>
-      <stop offset="100%" style="stop-color:#d97706"/>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2740"/>
+      <stop offset="1" stop-color="#090e1a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.62">
+      <stop offset="0" stop-color="#f59e0b" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fcd34d"/>
+      <stop offset="1" stop-color="#f59e0b"/>
     </linearGradient>
   </defs>
-
-  <!-- Rounded rectangle background -->
-  <rect width="256" height="256" rx="48" fill="url(#bgGradient)"/>
-
-  <!-- Scissors icon (based on Lucide scissors) -->
-  <g transform="translate(48, 48) scale(6.67)" stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <!-- Left scissor blade circle -->
-    <circle cx="6" cy="6" r="3"/>
-    <!-- Right scissor blade circle -->
-    <circle cx="6" cy="18" r="3"/>
-    <!-- Cutting lines -->
-    <path d="M20 4 8.12 15.88"/>
-    <path d="M14.47 14.48 20 20"/>
-    <path d="M8.12 8.12 12 12"/>
+  <rect width="256" height="256" rx="56" fill="url(#tile)"/>
+  <rect width="256" height="256" rx="56" fill="url(#glow)"/>
+  <rect x="3" y="3" width="250" height="250" rx="53" stroke="#ffffff" stroke-opacity="0.06" stroke-width="2"/>
+  <!-- sprig -->
+  <g stroke="#2dd4bf" stroke-width="12" stroke-linecap="round" fill="none">
+    <path d="M128 104 V40"/>
+    <path d="M128 76 C119 70 110 70 100 58"/>
+    <path d="M128 60 C137 52 146 52 156 40"/>
   </g>
+  <!-- shears -->
+  <g stroke="url(#amber)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M128 128 L66 46" stroke-width="24"/>
+    <path d="M128 128 L190 46" stroke-width="24"/>
+    <path d="M128 128 L106 170" stroke-width="20"/>
+    <path d="M128 128 L150 170" stroke-width="20"/>
+    <circle cx="90" cy="196" r="26" stroke-width="16"/>
+    <circle cx="166" cy="196" r="26" stroke-width="16"/>
+  </g>
+  <circle cx="128" cy="128" r="9" fill="#090e1a"/>
 </svg>

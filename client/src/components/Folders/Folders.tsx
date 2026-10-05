@@ -35,7 +35,7 @@ type ProblemFilter = 'all' | 'permissions' | 'unmapped';
 /**
  * Folders under Sonarr's and Radarr's root folders that no series or movie
  * owns. Each can be imported into the app that owns its root folder, deleted
- * (when a folder mapping lets Prunerr reach it), or ignored.
+ * (when a folder mapping lets PrunerrXT reach it), or ignored.
  */
 export default function Folders() {
   const { t } = useTranslation('folders');
@@ -255,7 +255,7 @@ export default function Folders() {
           <div className="text-sm">
             <p className="font-medium text-surface-50">{t('mappingNotice.title', 'Sizes and deletion need a folder mapping')}</p>
             <p className="mt-1 text-surface-400">
-              {t('mappingNotice.body', "Prunerr can list these folders through Sonarr and Radarr, but it can only measure or delete them when it can see the files itself. Map the root folder's path to the path where Prunerr sees it.")}
+              {t('mappingNotice.body', "PrunerrXT can list these folders through Sonarr and Radarr, but it can only measure or delete them when it can see the files itself. Map the root folder's path to the path where PrunerrXT sees it.")}
               {auth.isAdmin && (
                 <>
                   {' '}
@@ -272,7 +272,7 @@ export default function Folders() {
         <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm">
           <Lock className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent-text" />
           <p className="text-surface-300">
-            <span className="font-medium text-surface-50">{t('capabilityNotice.title', 'Prunerr cannot change ownership on this install. ')}</span>
+            <span className="font-medium text-surface-50">{t('capabilityNotice.title', 'PrunerrXT cannot change ownership on this install. ')}</span>
             {permissions.data.capabilities.reason}
           </p>
         </div>
@@ -329,7 +329,7 @@ export default function Folders() {
                       size="sm"
                       onClick={() => queueBulk('fix_permissions', selectedFixable.map((f) => f.id))}
                       disabled={selectedFixable.length === 0 || !(permissions.data?.capabilities.canChown ?? false) || queueJobs.isPending}
-                      title={permissions.data?.capabilities.canChown ? t('bulk.fixHint', 'Set the configured owner and modes on each selected folder') : t('row.fixDisabled', 'Prunerr cannot change ownership on this install')}
+                      title={permissions.data?.capabilities.canChown ? t('bulk.fixHint', 'Set the configured owner and modes on each selected folder') : t('row.fixDisabled', 'PrunerrXT cannot change ownership on this install')}
                     >
                       <Wrench className="h-4 w-4" />
                       <span className="ml-1">{t('bulk.fix', 'Fix permissions {{count}}', { count: selectedFixable.length })}</span>
@@ -501,7 +501,7 @@ function FolderRow({
               size="sm"
               title={
                 folder.writable === false
-                  ? t('row.notWritableHint', 'Prunerr cannot write to this folder as it is; a delete or import would fail with permission denied')
+                  ? t('row.notWritableHint', 'PrunerrXT cannot write to this folder as it is; a delete or import would fail with permission denied')
                   : t('row.permissionIssuesHint', 'Entries not owned by {{owner}} or with other modes than configured', { owner })
               }
             >
@@ -535,7 +535,7 @@ function FolderRow({
               size="sm"
               onClick={onFix}
               disabled={!canFix || fixing || queued}
-              title={canFix ? t('row.fix', 'Fix permissions (owner {{owner}})', { owner }) : t('row.fixDisabled', 'Prunerr cannot change ownership on this install')}
+              title={canFix ? t('row.fix', 'Fix permissions (owner {{owner}})', { owner }) : t('row.fixDisabled', 'PrunerrXT cannot change ownership on this install')}
             >
               {fixing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wrench className="h-4 w-4" />}
             </Button>
@@ -545,7 +545,7 @@ function FolderRow({
             size="sm"
             onClick={onDelete}
             disabled={!folder.canDelete || queued}
-            title={folder.canDelete ? t('row.delete', 'Delete folder') : t('row.deleteDisabled', 'Add a folder mapping in Settings so Prunerr can reach this folder')}
+            title={folder.canDelete ? t('row.delete', 'Delete folder') : t('row.deleteDisabled', 'Add a folder mapping in Settings so PrunerrXT can reach this folder')}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

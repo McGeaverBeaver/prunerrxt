@@ -32,7 +32,7 @@
   "arrWarning": {
     "bannerDesc": "Zum Löschen wird Sonarr oder Radarr benötigt, um Dateien von der Festplatte zu entfernen. Elemente können in die Warteschlange aufgenommen werden, werden aber erst verarbeitet, wenn ein Dienst eingerichtet ist.",
     "goToSettings": "Zu den Einstellungen",
-    "modalDesc": "Elemente werden in Prunerr als gelöscht markiert, aber die Dateien werden nicht von der Festplatte entfernt. Richte zuerst Sonarr oder Radarr in den Einstellungen ein.",
+    "modalDesc": "Elemente werden in PrunerrXT als gelöscht markiert, aber die Dateien werden nicht von der Festplatte entfernt. Richte zuerst Sonarr oder Radarr in den Einstellungen ein.",
     "title": "Sonarr/Radarr nicht konfiguriert"
   },
   "deleteAllModal": {

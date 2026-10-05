@@ -104,7 +104,7 @@ async function build(refresh: boolean): Promise<PlaybackFrictionReport> {
       result.provider === 'none'
         ? 'No watch history provider is configured.'
         : result.provider === 'tracearr'
-          ? 'Tracearr does not expose transcode decisions or players to Prunerr, so playback friction cannot be read. Tautulli records both.'
+          ? 'Tracearr does not expose transcode decisions or players to PrunerrXT, so playback friction cannot be read. Tautulli records both.'
           : 'Reading history straight from the media server gives plays but not transcode decisions or players. Tautulli records both; point the watch history provider at it to fill this in.';
     return {
       checkedAt,

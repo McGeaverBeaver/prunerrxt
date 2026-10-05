@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Menu, Sun, Moon } from 'lucide-react';
 import Sidebar from './Sidebar';
+import { LogoMark, Wordmark } from '@/components/common/Logo';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { PageScrollProvider } from '@/contexts/PageScrollContext';
@@ -282,16 +283,8 @@ export default function Layout({ children }: LayoutProps) {
           <Menu className="w-6 h-6" />
         </button>
         <div className="flex items-center gap-3 ml-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-lg flex items-center justify-center">
-            <svg className="w-4 h-4 text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="6" cy="6" r="3" />
-              <path d="M8.12 8.12 12 12" />
-              <path d="M20 4 8.12 15.88" />
-              <circle cx="6" cy="18" r="3" />
-              <path d="M14.8 14.8 20 20" />
-            </svg>
-          </div>
-          <span className="text-lg font-display font-bold text-surface-50">Prunerr</span>
+          <LogoMark className="w-8 h-8 rounded-lg" />
+          <span className="text-lg"><Wordmark /></span>
         </div>
         <button
           onClick={toggleTheme}

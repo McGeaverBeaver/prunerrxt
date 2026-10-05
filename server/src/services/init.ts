@@ -172,7 +172,7 @@ export async function initializeServices(): Promise<void> {
   } catch (error) {
     logger.debug(`Could not tidy task runs: ${(error as Error).message}`);
   }
-  recordAudit({ action: 'system.started', actor: { type: 'system', name: 'Prunerr' }, source: 'system', details: { version: process.env['APP_VERSION'] ?? null, node: process.version } });
+  recordAudit({ action: 'system.started', actor: { type: 'system', name: 'PrunerrXT' }, source: 'system', details: { version: process.env['APP_VERSION'] ?? null, node: process.version } });
 
   // Initialize service instances based on config
   const sonarr = getSonarrService();

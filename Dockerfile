@@ -1,5 +1,5 @@
 # ============================================
-# Prunerr - Multi-stage Docker Build
+# PrunerrXT - Multi-stage Docker Build
 # ============================================
 
 # Stage 1: Build the client application
@@ -54,15 +54,15 @@ FROM node:20-alpine AS production
 ARG APP_VERSION=1.0.0
 
 # Labels for container metadata
-LABEL org.opencontainers.image.title="Prunerr"
+LABEL org.opencontainers.image.title="PrunerrXT"
 LABEL org.opencontainers.image.description="Media library cleanup tool for Plex/Sonarr/Radarr"
 LABEL org.opencontainers.image.version="${APP_VERSION}"
-LABEL org.opencontainers.image.vendor="Prunerr"
+LABEL org.opencontainers.image.vendor="PrunerrXT"
 LABEL org.opencontainers.image.source="https://github.com/McGeaverBeaver/prunerr"
 LABEL org.opencontainers.image.licenses="MIT"
 
 # su-exec switches to PUID:PGID at startup. libcap's setcap gives the Node
-# binary CAP_CHOWN and CAP_FOWNER so Prunerr, running unprivileged, can still
+# binary CAP_CHOWN and CAP_FOWNER so PrunerrXT, running unprivileged, can still
 # set the owner and mode of media files written by other users (a DVR running
 # as root, a download client as another id) when cleaning up or importing
 # unmanaged folders. Those two capabilities allow exactly that and nothing

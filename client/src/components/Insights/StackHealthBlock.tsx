@@ -65,7 +65,7 @@ function ConnectionDots({ report, mediaServer }: { report: StackHealthReport; me
 }
 
 /**
- * Stack health: one list of what is wrong across Prunerr and the apps it
+ * Stack health: one list of what is wrong across PrunerrXT and the apps it
  * talks to, worst first, each with a next step. An empty list is the good
  * news, and says so.
  */
@@ -113,7 +113,7 @@ export function StackHealthBlock() {
           <div>
             <h2 className="font-display text-[15px] font-semibold text-surface-50">{t('stack.title', 'Stack health')}</h2>
             <p className="text-[12px] text-surface-400">
-              {t('stack.subtitle', 'Prunerr, {{mediaServer}}, Sonarr, Radarr and the watch history provider, checked together.', { mediaServer })}
+              {t('stack.subtitle', 'PrunerrXT, {{mediaServer}}, Sonarr, Radarr and the watch history provider, checked together.', { mediaServer })}
             </p>
           </div>
         </div>
@@ -178,7 +178,7 @@ export function StackHealthBlock() {
                 <p className="text-[12px] text-surface-400">
                   {acknowledged.length > 0
                     ? t('stack.allClearAcked', 'Every remaining finding has been acknowledged. An acknowledged finding comes back on its own if it gets worse.')
-                    : t('stack.allClearBody', 'Every configured service answers, the apps report no health problems, and nothing in Prunerr is stale or stuck.')}
+                    : t('stack.allClearBody', 'Every configured service answers, the apps report no health problems, and nothing in PrunerrXT is stale or stuck.')}
                 </p>
               </div>
             </div>

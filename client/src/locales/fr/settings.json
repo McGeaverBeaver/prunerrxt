@@ -108,7 +108,7 @@
       "weekly": "hebdomadaire"
     },
     "librarySync": {
-      "description": "Récupère automatiquement les nouveaux films et séries de {{name}} dans Prunerr",
+      "description": "Récupère automatiquement les nouveaux films et séries de {{name}} dans PrunerrXT",
       "enable": "Synchro {{name}} automatique",
       "enableHint": "Actualise la bibliothèque pour que les nouveaux éléments apparaissent sans cliquer sur « Synchroniser la bibliothèque »",
       "title": "Synchro de la bibliothèque {{name}}"
@@ -126,7 +126,7 @@
     "confirmImportBody": "L'importation écrasera tous les paramètres actuels avec les valeurs de <strong>{{filename}}</strong>. Cette action est irréversible.",
     "confirmImportTitle": "Confirmer l'importation",
     "confirmRestore": "Remplacer mes données",
-    "confirmRestoreBody": "Tout ce qui se trouve actuellement dans Prunerr — bibliothèque, règles, file d'attente et historique — sera remplacé par <strong>{{filename}}</strong>.",
+    "confirmRestoreBody": "Tout ce qui se trouve actuellement dans PrunerrXT — bibliothèque, règles, file d'attente et historique — sera remplacé par <strong>{{filename}}</strong>.",
     "confirmRestoreSafety": "Votre base de données actuelle est d'abord sauvegardée à côté, une erreur peut donc être annulée depuis le dossier de données.",
     "confirmRestoreTitle": "Restaurer cette sauvegarde ?",
     "description": "Exportez les paramètres pour les sauvegarder ou importez-les depuis une exportation précédente",
@@ -136,7 +136,7 @@
     "exportHint": "Les exportations incluent tous les paramètres, y compris les identifiants des services. Conservez le fichier en lieu sûr.",
     "fullDownloaded": "Sauvegarde téléchargée",
     "fullFailed": "Échec de la sauvegarde",
-    "fullHint": "L'intégralité de la base de données — bibliothèque, règles, file d'attente, historique et réglages. La restauration remplace tout ce qui se trouve actuellement dans Prunerr.",
+    "fullHint": "L'intégralité de la base de données — bibliothèque, règles, file d'attente, historique et réglages. La restauration remplace tout ce qui se trouve actuellement dans PrunerrXT.",
     "fullTitle": "Sauvegarde complète",
     "import": "Importer les paramètres",
     "importFailed": "Échec de l'importation : {{error}}",
@@ -169,7 +169,7 @@
     "docs": "Ouvrir la documentation {{name}}",
     "edit": "Modifier",
     "firstRun": {
-      "body": "Connectez {{name}} et Prunerr pourra lire votre bibliothèque. Ajoutez Sonarr ou Radarr lorsque vous voudrez qu'il supprime réellement des éléments — l'analyse reste désactivée jusque-là.",
+      "body": "Connectez {{name}} et PrunerrXT pourra lire votre bibliothèque. Ajoutez Sonarr ou Radarr lorsque vous voudrez qu'il supprime réellement des éléments — l'analyse reste désactivée jusque-là.",
       "connect": "Connecter {{name}}",
       "title": "Rien n'est encore connecté"
     },
@@ -186,9 +186,9 @@
       "recommended": "Recommandé"
     },
     "sections": {
-      "overseerrDescription": "Efface la demande quand Prunerr supprime ce qui avait été demandé",
+      "overseerrDescription": "Efface la demande quand PrunerrXT supprime ce qui avait été demandé",
       "sonarrRadarr": "Sonarr et Radarr",
-      "sonarrRadarrDescription": "Prunerr supprime via ces services — sans eux, il ne peut que signaler",
+      "sonarrRadarrDescription": "PrunerrXT supprime via ces services — sans eux, il ne peut que signaler",
       "unraidDescription": "Surveillance de l'array et des disques — alimente la jauge de pression disque"
     },
     "status": {
@@ -504,7 +504,7 @@
     "truncated": ""
   },
   "mediaServer": {
-    "description": "Le serveur depuis lequel Prunerr lit votre bibliothèque",
+    "description": "Le serveur depuis lequel PrunerrXT lit votre bibliothèque",
     "playbackReportingHint": "Astuce : installez le plugin Playback Reporting sur votre serveur. Sans lui, seule la lecture la plus récente de chaque élément est enregistrée : les visionnages répétés sont ignorés et les compteurs sont sous-évalués.",
     "title": "Serveur multimédia"
   },
@@ -673,7 +673,7 @@
     "system": "Clé API et sauvegardes"
   },
   "system": {
-    "productName": "Prunerr"
+    "productName": "PrunerrXT"
   },
   "toasts": {
     "apiKeyDisabled": "",
@@ -715,8 +715,8 @@
       "range": "",
       "title": "Période d'historique"
     },
-    "mediaServerDirectInfo": "Aucune configuration supplémentaire nécessaire — Prunerr lira l'historique depuis votre serveur multimédia en utilisant la connexion définie dans la section Serveur multimédia ci-dessus. Installez le plugin Playback Reporting pour des compteurs de lecture exacts.",
-    "plexDirectInfo": "Aucune configuration supplémentaire nécessaire — Prunerr lira l'historique depuis votre serveur Plex en utilisant la connexion définie dans la section Serveur multimédia ci-dessus. Nécessite le jeton du propriétaire du serveur.",
+    "mediaServerDirectInfo": "Aucune configuration supplémentaire nécessaire — PrunerrXT lira l'historique depuis votre serveur multimédia en utilisant la connexion définie dans la section Serveur multimédia ci-dessus. Installez le plugin Playback Reporting pour des compteurs de lecture exacts.",
+    "plexDirectInfo": "Aucune configuration supplémentaire nécessaire — PrunerrXT lira l'historique depuis votre serveur Plex en utilisant la connexion définie dans la section Serveur multimédia ci-dessus. Nécessite le jeton du propriétaire du serveur.",
     "providers": {
       "tautulli": {
         "fieldLabel": "Clé API"
@@ -731,7 +731,7 @@
     "add": "Ajouter un webhook",
     "delivered": "Distribué (HTTP {{status}})",
     "deliveryFailed": "Échec de la distribution",
-    "description": "Envoyez des événements en POST vers n'importe quelle URL — connectez Prunerr à Home Assistant, n8n ou vos propres automatisations",
+    "description": "Envoyez des événements en POST vers n'importe quelle URL — connectez PrunerrXT à Home Assistant, n8n ou vos propres automatisations",
     "empty": "Aucun webhook configuré. Ajoutez-en un pour commencer à envoyer des événements.",
     "enterUrlFirst": "Saisissez d'abord une URL",
     "events": {

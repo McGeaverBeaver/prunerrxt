@@ -91,7 +91,7 @@ export function registerScanTools(server: McpServer): void {
       name: 'sync_library',
       title: 'Sync the library from the media server',
       description:
-        'Pull the current catalogue and watch state from Plex/Jellyfin/Emby (and match it to Sonarr/Radarr) so Prunerr\'s data is fresh. Runs in the background; poll get_sync_status. Changes nothing on the media server.',
+        'Pull the current catalogue and watch state from Plex/Jellyfin/Emby (and match it to Sonarr/Radarr) so PrunerrXT\'s data is fresh. Runs in the background; poll get_sync_status. Changes nothing on the media server.',
       group: 'scans',
       annotations: MUTATING,
     },

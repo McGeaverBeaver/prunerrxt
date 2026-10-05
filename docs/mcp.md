@@ -1,12 +1,12 @@
 # AI assistant connector (MCP)
 
-Prunerr speaks the [Model Context Protocol](https://modelcontextprotocol.io), so
+PrunerrXT speaks the [Model Context Protocol](https://modelcontextprotocol.io), so
 an AI assistant — Claude, Cursor, Windsurf, VS Code Copilot, anything that can
 talk to an MCP server — can look at your library, review the deletion queue,
 build and test rules, and queue cleanups with you, using the same logic the
 web UI uses.
 
-The connector lives at **`/mcp`** on the Prunerr port and uses the Streamable
+The connector lives at **`/mcp`** on the PrunerrXT port and uses the Streamable
 HTTP transport. Nothing else to install or run.
 
 ## Turning it on
@@ -26,7 +26,7 @@ through Authentik or another OpenID Connect provider, or a local account.
 
 ### Immediate deletion is a separate opt-in
 
-Everything an assistant does goes through Prunerr's normal safety model:
+Everything an assistant does goes through PrunerrXT's normal safety model:
 items are *queued* with a grace period, protected items can never be queued,
 and anything in the queue can be taken back out. Two things bypass that —
 "delete now" and processing the queue for real — and those are **refused by
@@ -41,20 +41,20 @@ There are two ways to authenticate, depending on the client.
 ### Hosted clients: sign in with OAuth (claude.ai, Claude Desktop connectors)
 
 Clients that cannot send a custom header use the MCP OAuth flow, which
-Prunerr serves itself. Add the endpoint as a custom connector:
+PrunerrXT serves itself. Add the endpoint as a custom connector:
 
 ```
 https://prunerr.example.com/mcp
 ```
 
-The client registers itself automatically, sends you to Prunerr to sign in
+The client registers itself automatically, sends you to PrunerrXT to sign in
 (through Authentik, or the local account), and shows a one-time **Allow**
 page. From then on it acts with **your** account and **your role**: a viewer
 gets read-only tools, an operator can queue and manage, an admin can also use
 the system tools. Approvals are remembered per client; tokens last an hour
 and refresh for 30 days.
 
-For this to work Prunerr must know its public address. Behind a reverse proxy
+For this to work PrunerrXT must know its public address. Behind a reverse proxy
 either pass `X-Forwarded-Proto` and `X-Forwarded-Host`, or set
 `APP_URL=https://prunerr.example.com` — the OAuth issuer and redirect targets
 are built from it, and a mismatch shows up as *Couldn't register* or
@@ -67,7 +67,7 @@ PKCE (S256) only; public clients are accepted; tokens are stored hashed.
 
 ### Local clients: the API key
 
-Clients you run yourself can send your Prunerr API key (Settings → System →
+Clients you run yourself can send your PrunerrXT API key (Settings → System →
 API key) as either header and act as an admin:
 
 ```
@@ -114,7 +114,7 @@ machine) in `claude_desktop_config.json`:
 }
 ```
 
-If Prunerr sits behind a reverse proxy, point the client at the public URL
+If PrunerrXT sits behind a reverse proxy, point the client at the public URL
 and make sure the proxy passes `Authorization`, `Mcp-Session-Id` and
 `Accept: text/event-stream` through unbuffered.
 
@@ -207,7 +207,7 @@ Actions taken through the connector appear in the Activity log attributed to
 | `403 … off because login is disabled` | `AUTH_ENABLED` is not `true`. |
 | `403 … disabled by MCP_ENABLED=false` | The container switch. |
 | `403 … turned off in Settings` | The in-app toggle. |
-| `401 Authentication required` | No `Authorization`/`X-Api-Key` header reached Prunerr (check the proxy). |
+| `401 Authentication required` | No `Authorization`/`X-Api-Key` header reached PrunerrXT (check the proxy). |
 | `401 Invalid API key` | Wrong or regenerated key. |
 | `401 API key access is turned off` | *External API access* is off under Settings → System → API key. Turn it on, or sign in through OAuth. |
 | `delete_now` returns *Immediate deletion is not allowed* | Expected. Turn on **Allow immediate deletion** or queue instead. |

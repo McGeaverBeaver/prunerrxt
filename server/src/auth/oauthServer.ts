@@ -1,5 +1,5 @@
 /**
- * Prunerr as an OAuth 2.1 authorization server, for MCP clients.
+ * PrunerrXT as an OAuth 2.1 authorization server, for MCP clients.
  *
  * Hosted MCP clients (claude.ai, Claude Desktop connectors, ChatGPT, …)
  * cannot be given an API-key header. They follow the MCP authorization spec
@@ -7,7 +7,7 @@
  * (RFC 7591), send the user through `/oauth/authorize`, exchange the code
  * for tokens with PKCE, and present the access token as a Bearer header.
  *
- * The user signs in with Prunerr's normal login (so Authentik users go
+ * The user signs in with PrunerrXT's normal login (so Authentik users go
  * through Authentik and get their mapped role), approves the client once,
  * and the token carries that role. Everything is stored in SQLite; tokens
  * and codes are stored hashed.
@@ -469,7 +469,7 @@ export function protectedResourceMetadata(baseUrl: string) {
     authorization_servers: [baseUrl],
     bearer_methods_supported: ['header'],
     scopes_supported: [SCOPE],
-    resource_name: 'Prunerr',
+    resource_name: 'PrunerrXT',
     resource_documentation: 'https://github.com/McGeaverBeaver/prunerr/blob/main/docs/mcp.md',
   };
 }

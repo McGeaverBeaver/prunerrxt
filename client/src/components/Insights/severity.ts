@@ -31,7 +31,7 @@ export function useSourceLabel() {
   return (source: InsightSource, mediaServer: string): string => {
     switch (source) {
       case 'prunerr':
-        return 'Prunerr';
+        return 'PrunerrXT';
       case 'mediaServer':
         return mediaServer;
       case 'sonarr':

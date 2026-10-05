@@ -32,7 +32,7 @@
   "arrWarning": {
     "bannerDesc": "Deletion requires Sonarr or Radarr to remove files from disk. Items can be queued but won't be processed until a service is set up.",
     "goToSettings": "Go to Settings",
-    "modalDesc": "Items will be marked as deleted in Prunerr but files won't be removed from disk. Set up Sonarr or Radarr in Settings first.",
+    "modalDesc": "Items will be marked as deleted in PrunerrXT but files won't be removed from disk. Set up Sonarr or Radarr in Settings first.",
     "title": "Sonarr/Radarr not configured"
   },
   "deleteAllModal": {
@@ -43,7 +43,7 @@
   },
   "deleteNowModal": {
     "actionLabel": "Action:",
-    "background": "The deletion runs in the background. Keep using Prunerr; progress shows on this row and in the sidebar, and the outcome lands in the Activity log.",
+    "background": "The deletion runs in the background. Keep using PrunerrXT; progress shows on this row and in the sidebar, and the outcome lands in the Activity log.",
     "title": "Delete Now",
     "warning": "This will immediately and permanently delete this item, bypassing the grace period.",
     "willResetSeerr": "Will reset in Seerr for re-request"

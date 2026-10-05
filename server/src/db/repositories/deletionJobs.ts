@@ -228,7 +228,7 @@ export function requeueInterrupted(): DeletionJob[] {
   db.prepare(
     `UPDATE deletion_jobs
        SET status = 'pending', stage = NULL, step = NULL, step_started_at = NULL,
-           message = 'Resumed after Prunerr restarted', updated_at = ?
+           message = 'Resumed after PrunerrXT restarted', updated_at = ?
      WHERE status IN ('running', 'verifying')`
   ).run(now);
   return rows.map((row) => getById(row.id)!).filter(Boolean);

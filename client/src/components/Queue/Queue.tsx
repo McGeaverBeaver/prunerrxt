@@ -644,7 +644,7 @@ export default function Queue() {
               <AlertTriangle className="w-5 h-5 text-accent-text flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-surface-50">{t('arrWarning.title', 'Sonarr/Radarr not configured')}</p>
-                <p className="text-xs text-surface-400 mt-1">{t('arrWarning.modalDesc', "Items will be marked as deleted in Prunerr but files won't be removed from disk. Set up Sonarr or Radarr in Settings first.")}</p>
+                <p className="text-xs text-surface-400 mt-1">{t('arrWarning.modalDesc', "Items will be marked as deleted in PrunerrXT but files won't be removed from disk. Set up Sonarr or Radarr in Settings first.")}</p>
               </div>
             </div>
           )}
@@ -687,7 +687,7 @@ export default function Queue() {
               <AlertTriangle className="w-5 h-5 text-accent-text flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-surface-50">{t('arrWarning.title', 'Sonarr/Radarr not configured')}</p>
-                <p className="text-xs text-surface-400 mt-1">{t('arrWarning.modalDesc', "Items will be marked as deleted in Prunerr but files won't be removed from disk. Set up Sonarr or Radarr in Settings first.")}</p>
+                <p className="text-xs text-surface-400 mt-1">{t('arrWarning.modalDesc', "Items will be marked as deleted in PrunerrXT but files won't be removed from disk. Set up Sonarr or Radarr in Settings first.")}</p>
               </div>
             </div>
           )}
@@ -794,7 +794,7 @@ export default function Queue() {
           )}
 
           <p className="text-xs text-surface-500">
-            {t('deleteNowModal.background', 'The deletion runs in the background. Keep using Prunerr; progress shows on this row and in the sidebar, and the outcome lands in the Activity log.')}
+            {t('deleteNowModal.background', 'The deletion runs in the background. Keep using PrunerrXT; progress shows on this row and in the sidebar, and the outcome lands in the Activity log.')}
           </p>
 
           <div className="flex justify-end gap-3 pt-4">

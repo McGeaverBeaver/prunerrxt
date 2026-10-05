@@ -1,23 +1,23 @@
 {
   "common": {
     "andMore": "und {{count}} weitere",
-    "brand": "Prunerr"
+    "brand": "PrunerrXT"
   },
   "itemsMarked": {
-    "groupedHeader_one": "[Prunerr] {{count}} Element zum Löschen vorgemerkt",
-    "groupedHeader_other": "[Prunerr] {{count}} Elemente zum Löschen vorgemerkt",
+    "groupedHeader_one": "[PrunerrXT] {{count}} Element zum Löschen vorgemerkt",
+    "groupedHeader_other": "[PrunerrXT] {{count}} Elemente zum Löschen vorgemerkt",
     "groupRule": "Regel: {{name}} ({{days}} Tage Schonfrist)",
     "willDeleteAfter": "Wird gelöscht nach: {{date}}",
     "itemLine": "  - {{title}} ({{type}})",
-    "singleHeader": "[Prunerr] Element zum Löschen markiert",
+    "singleHeader": "[PrunerrXT] Element zum Löschen markiert",
     "fieldTitle": "Titel: {{title}}",
     "fieldType": "Typ: {{type}}",
     "fieldGracePeriod": "Schonfrist: {{days}} Tage",
     "fieldMatchedRule": "Zutreffende Regel: {{name}}",
-    "multiHeader_one": "[Prunerr] {{count}} Element zum Löschen markiert",
-    "multiHeader_other": "[Prunerr] {{count}} Elemente zum Löschen markiert",
+    "multiHeader_one": "[PrunerrXT] {{count}} Element zum Löschen markiert",
+    "multiHeader_other": "[PrunerrXT] {{count}} Elemente zum Löschen markiert",
     "itemsHeading": "Elemente:",
-    "fallback": "[Prunerr] Elemente zum Löschen markiert ({{days}} Tage Schonfrist)",
+    "fallback": "[PrunerrXT] Elemente zum Löschen markiert ({{days}} Tage Schonfrist)",
     "discord": {
       "queuedTitle_one": "📋 {{count}} Element zum Löschen eingereiht",
       "queuedTitle_other": "📋 {{count}} Elemente zum Löschen eingereiht",
@@ -52,19 +52,19 @@
     "urgentPrefix": "⚠️ DRINGEND: ",
     "timeframeHigh": "innerhalb von 24 Stunden",
     "timeframeNormal": "innerhalb von 3 Tagen",
-    "header_one": "[Prunerr] {{count}} Element steht zum Löschen an",
-    "header_other": "[Prunerr] {{count}} Elemente stehen zum Löschen an",
+    "header_one": "[PrunerrXT] {{count}} Element steht zum Löschen an",
+    "header_other": "[PrunerrXT] {{count}} Elemente stehen zum Löschen an",
     "intro": "Die folgenden Elemente werden {{timeframe}} gelöscht:",
     "itemLine_one": "  - {{title}} ({{count}} Tag verbleibend)",
     "itemLine_other": "  - {{title}} ({{count}} Tage verbleibend)",
-    "footer": "Überprüfe die Elemente und hebe die Markierung in Prunerr auf, wenn du sie behalten möchtest.",
+    "footer": "Überprüfe die Elemente und hebe die Markierung in PrunerrXT auf, wenn du sie behalten möchtest.",
     "discord": {
       "titleUrgent_one": "⚠️ Bevorstehende Löschungen — {{count}} Element",
       "titleUrgent_other": "⚠️ Bevorstehende Löschungen — {{count}} Elemente",
       "titleNormal_one": "📅 Anstehende Löschungen — {{count}} Element",
       "titleNormal_other": "📅 Anstehende Löschungen — {{count}} Elemente",
-      "desc_one": "**{{count}} Element** wird {{timeframe}} gelöscht. In Prunerr überprüfen, um abzubrechen.",
-      "desc_other": "**{{count}} Elemente** werden {{timeframe}} gelöscht. In Prunerr überprüfen, um abzubrechen.",
+      "desc_one": "**{{count}} Element** wird {{timeframe}} gelöscht. In PrunerrXT überprüfen, um abzubrechen.",
+      "desc_other": "**{{count}} Elemente** werden {{timeframe}} gelöscht. In PrunerrXT überprüfen, um abzubrechen.",
       "itemBullet_one": "• {{title}} — {{count}} Tag übrig",
       "itemBullet_other": "• {{title}} — {{count}} Tage übrig",
       "fieldItems": "Elemente",
@@ -72,7 +72,7 @@
     }
   },
   "deletionComplete": {
-    "header": "[Prunerr] Löschung abgeschlossen",
+    "header": "[PrunerrXT] Löschung abgeschlossen",
     "itemsDeleted": "Gelöschte Elemente: {{count}}",
     "spaceFreed": "Freigegebener Speicher: {{gb}} GB",
     "errors": "Fehler: {{count}}",
@@ -94,7 +94,7 @@
     }
   },
   "scanComplete": {
-    "header": "[Prunerr] Bibliotheks-Scan abgeschlossen",
+    "header": "[PrunerrXT] Bibliotheks-Scan abgeschlossen",
     "itemsScanned": "Gescannte Elemente: {{count}}",
     "itemsFlagged": "Markierte Elemente: {{count}}",
     "itemsProtected": "Geschützte Elemente: {{count}}",
@@ -112,7 +112,7 @@
     }
   },
   "scanError": {
-    "header": "[Prunerr] Scan fehlgeschlagen",
+    "header": "[PrunerrXT] Scan fehlgeschlagen",
     "errorLine": "Fehler während {{phase}}: {{error}}",
     "itemsBefore": "Vor dem Fehler gescannte Elemente: {{count}}",
     "time": "Zeit: {{date}}",
@@ -125,7 +125,7 @@
     }
   },
   "deletionError": {
-    "header": "[Prunerr] Löschfehler",
+    "header": "[PrunerrXT] Löschfehler",
     "errorLine": "Fehler: {{error}}",
     "failedItem": "Fehlgeschlagenes Element: {{title}}",
     "itemsProcessed": "Vor dem Fehler verarbeitete Elemente: {{count}}",
@@ -141,7 +141,7 @@
   },
   "diskPressure": {
     "criticalPrefix": "⚠️ KRITISCH: ",
-    "header": "[Prunerr] Speicherplatzmangel auf {{path}}",
+    "header": "[PrunerrXT] Speicherplatzmangel auf {{path}}",
     "freeLine": "Frei: {{free}} von {{total}} (Ziel: {{target}}, fehlend {{deficit}})",
     "actionWouldQueue": "würde zum Löschen eingereiht",
     "actionQueued": "zum Löschen eingereiht",
@@ -171,12 +171,12 @@
       "andMoreInline": "\n... und {{count}} weitere",
       "fieldItems": "Elemente",
       "observeName": "👁️ Nur Beobachten",
-      "observeValue": "Nichts wurde gelöscht. Deaktiviere den Nur-Beobachten-Modus, damit Prunerr automatisch Speicher freigeben kann."
+      "observeValue": "Nichts wurde gelöscht. Deaktiviere den Nur-Beobachten-Modus, damit PrunerrXT automatisch Speicher freigeben kann."
     }
   },
   "test": {
     "title": "✅ Test-Benachrichtigung",
-    "desc": "Dein Discord-Webhook ist korrekt konfiguriert. Prunerr sendet hier Benachrichtigungen basierend auf deinen Einstellungen.",
+    "desc": "Dein Discord-Webhook ist korrekt konfiguriert. PrunerrXT sendet hier Benachrichtigungen basierend auf deinen Einstellungen.",
     "scanAlertsName": "Scan-Benachrichtigungen",
     "scanAlertsValue": "Wenn Regeln auf Elemente zutreffen",
     "queueAlertsName": "Warteschlangen-Benachrichtigungen",
@@ -184,6 +184,6 @@
     "deletionAlertsName": "Lösch-Benachrichtigungen",
     "deletionAlertsValue": "Wenn Elemente gelöscht werden"
   },
-  "fallback": "[Prunerr] Benachrichtigung: {{event}}",
-  "fallbackDiscord": "[Prunerr] {{event}}"
+  "fallback": "[PrunerrXT] Benachrichtigung: {{event}}",
+  "fallbackDiscord": "[PrunerrXT] {{event}}"
 }

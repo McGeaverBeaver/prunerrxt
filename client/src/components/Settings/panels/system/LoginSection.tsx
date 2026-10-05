@@ -71,7 +71,7 @@ export function LoginSection({ registerSection }: { registerSection: PanelProps[
       id="login"
       register={registerSection}
       title={t('nav.sub.login', 'Login & access')}
-      description={t('login.description', 'Who can open Prunerr, and what each role may do. Configured by environment variables.')}
+      description={t('login.description', 'Who can open PrunerrXT, and what each role may do. Configured by environment variables.')}
     >
       <SettingsCard className="flex flex-col gap-3.5 px-[18px] py-4">
         {isLoading || !info ? (
@@ -96,7 +96,7 @@ export function LoginSection({ registerSection }: { registerSection: PanelProps[
                       })
                     : t(
                         'login.disabledBody',
-                        'Anyone who can reach this address can use Prunerr, and the MCP connector stays off. Fine on a trusted LAN or behind a reverse proxy that handles login; set AUTH_ENABLED=true to turn on single sign-on or a local account.'
+                        'Anyone who can reach this address can use PrunerrXT, and the MCP connector stays off. Fine on a trusted LAN or behind a reverse proxy that handles login; set AUTH_ENABLED=true to turn on single sign-on or a local account.'
                       )}
                 </p>
               </div>

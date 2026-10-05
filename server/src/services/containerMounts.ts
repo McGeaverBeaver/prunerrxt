@@ -68,7 +68,7 @@ const PSEUDO_FS_TYPES = new Set([
   'tmpfs',
 ]);
 
-/** Mount points (and everything under them) that belong to the system or to Prunerr itself. */
+/** Mount points (and everything under them) that belong to the system or to PrunerrXT itself. */
 const SYSTEM_PREFIXES = ['/proc', '/sys', '/dev', '/run', '/var/run', '/tmp', '/var/tmp', '/etc', '/var/lib/docker'];
 
 const MAX_SUBFOLDERS = 300;
@@ -108,7 +108,7 @@ function underPrefix(p: string, prefix: string): boolean {
   return p === prefix || p.startsWith(`${prefix}/`);
 }
 
-/** Where Prunerr keeps its own files: the app directory and the data directory. */
+/** Where PrunerrXT keeps its own files: the app directory and the data directory. */
 function ownPrefixes(): string[] {
   const prefixes = new Set<string>();
   prefixes.add(path.resolve(process.cwd()));

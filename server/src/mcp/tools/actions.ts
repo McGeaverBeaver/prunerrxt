@@ -40,7 +40,7 @@ export function registerActionTools(server: McpServer): void {
         'Put movies or shows into the deletion queue. Nothing is deleted now: each item waits out a grace period (default from Settings) during which it can be removed from the queue. Protected items and items in protected collections are skipped, never deleted. Already-queued items keep their queued date and take the new options. Confirm with the user before queueing more than a handful of items.',
       group: 'actions',
       inputSchema: {
-        ids: z.array(z.number().int().positive()).min(1).max(200).describe('Prunerr media item ids.'),
+        ids: z.array(z.number().int().positive()).min(1).max(200).describe('PrunerrXT media item ids.'),
         gracePeriodDays: z.number().int().min(0).max(365).optional().describe('Days before the item becomes eligible for deletion. Defaults to the configured grace period.'),
         deletionAction: z.enum(DELETION_ACTIONS).optional().describe('What happens in Sonarr/Radarr when the grace period ends. Defaults to the configured default.'),
         resetOverseerr: z.boolean().optional().describe('Also clear the request in Overseerr/Jellyseerr so it can be re-requested.'),
@@ -104,7 +104,7 @@ export function registerActionTools(server: McpServer): void {
         'Archive: ask Radarr/Sonarr what the indexers can offer for each movie or show right now, and judge it against the file on disk. Returns replaceable (something as good is out there), at_risk (nothing, a downgrade, or too few seeders) or unknown (not linked, indexers down, search failed), with the numbers behind it. Runs the interactive search now, so allow a minute per item; keep to a handful of ids. The verdict is stored on the item.',
       group: 'actions',
       inputSchema: {
-        ids: z.array(z.number().int().positive()).min(1).max(10).describe('Prunerr media item ids.'),
+        ids: z.array(z.number().int().positive()).min(1).max(10).describe('PrunerrXT media item ids.'),
       },
       annotations: EXTERNAL_READ,
     },
@@ -140,7 +140,7 @@ export function registerActionTools(server: McpServer): void {
         'Archive movies or shows: protect them permanently because they could not be downloaded again (or are not worth the risk), and take them out of the deletion queue. An archived item is a protected item with an archive mark; no rule, scan or deletion touches it until unarchive_items. Use this to resolve an Archive hold on an at-risk queued item.',
       group: 'actions',
       inputSchema: {
-        ids: z.array(z.number().int().positive()).max(500).optional().describe('Prunerr media item ids to archive.'),
+        ids: z.array(z.number().int().positive()).max(500).optional().describe('PrunerrXT media item ids to archive.'),
         allAtRisk: z.boolean().optional().describe('Instead of ids: archive every queued movie and show whose verdict is at risk (the Queue page\'s "Protect at-risk" button).'),
         reason: z.string().max(200).optional().describe('Why, shown in the UI. Defaults to the stored verdict.'),
       },
@@ -184,7 +184,7 @@ export function registerActionTools(server: McpServer): void {
         'Archive is holding a queued item because it may not be downloadable again. This records the decision to delete it anyway, so it goes when its grace period ends. Confirm with the user first; the alternative is archive_items.',
       group: 'actions',
       inputSchema: {
-        ids: z.array(z.number().int().positive()).min(1).max(100).describe('Prunerr media item ids of queued items.'),
+        ids: z.array(z.number().int().positive()).min(1).max(100).describe('PrunerrXT media item ids of queued items.'),
       },
       annotations: MUTATING,
     },
@@ -209,7 +209,7 @@ export function registerActionTools(server: McpServer): void {
         'For a show, queue individual episodes or whole seasons for deletion in Sonarr after a grace period (one queue entry per episode, so any can be cancelled). Get episode ids from get_show_episodes. Set immediate=true to delete right away instead; that requires the "allow immediate deletion" setting. Protected shows are refused.',
       group: 'actions',
       inputSchema: {
-        id: z.number().int().positive().describe('Prunerr media item id of the show.'),
+        id: z.number().int().positive().describe('PrunerrXT media item id of the show.'),
         episodeIds: z.array(z.number().int().positive()).optional().describe('Sonarr episode ids.'),
         seasonNumbers: z.array(z.number().int().min(0)).optional().describe('Whole seasons.'),
         deletionAction: z.enum(EPISODE_DELETION_ACTIONS).optional().describe('Default unmonitor_and_delete.'),
@@ -282,7 +282,7 @@ export function registerActionTools(server: McpServer): void {
       description: 'Take episodes of a show back out of the deletion queue, by Sonarr episode id.',
       group: 'actions',
       inputSchema: {
-        id: z.number().int().positive().describe('Prunerr media item id of the show.'),
+        id: z.number().int().positive().describe('PrunerrXT media item id of the show.'),
         episodeIds: z.array(z.number().int().positive()).min(1),
       },
       annotations: MUTATING,

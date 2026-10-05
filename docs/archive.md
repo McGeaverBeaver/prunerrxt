@@ -3,7 +3,7 @@
 Deleting a title you can get back in ten minutes is cheap. Deleting the only
 good copy of a 1998 film that no indexer carries any more is not. **Archive**
 tells the two apart before anything goes: when a movie or show is queued for
-deletion, Prunerr asks Radarr or Sonarr what the indexers can offer for it
+deletion, PrunerrXT asks Radarr or Sonarr what the indexers can offer for it
 right now and compares that with the file on disk.
 
 Nothing is zipped, moved or copied. An archived title stays exactly where it

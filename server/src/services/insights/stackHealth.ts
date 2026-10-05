@@ -1,13 +1,13 @@
 /**
  * Stack health: one list of everything that is wrong (or worth knowing)
- * across Prunerr and the apps it talks to, each with a severity and a next
+ * across PrunerrXT and the apps it talks to, each with a severity and a next
  * step.
  *
  * Sonarr and Radarr already publish their own health checks (indexer down,
  * download client unreachable, root folder missing, update available) and a
- * queue status; Prunerr fetched those for the diagnostics tools but never
+ * queue status; PrunerrXT fetched those for the diagnostics tools but never
  * showed them. They matter to a cleanup tool: a deleted film that nothing
- * can re-grab, an import that silently stalls. On top of them come Prunerr's
+ * can re-grab, an import that silently stalls. On top of them come PrunerrXT's
  * own signals: a stale library sync, a failed scan, a stuck deletion job,
  * a mapping that points nowhere, disk pressure, refused API key attempts.
  *
@@ -173,7 +173,7 @@ async function checkArr(service: DiagnosticsService, items: InsightItem[]): Prom
         severity: 'warning',
         source,
         title: `${label} has downloads stuck with errors`,
-        detail: `${q.totalCount} item${q.totalCount === 1 ? '' : 's'} in the queue, some failing to import. A grab that never imports leaves a gap after Prunerr deletes the old file.`,
+        detail: `${q.totalCount} item${q.totalCount === 1 ? '' : 's'} in the queue, some failing to import. A grab that never imports leaves a gap after PrunerrXT deletes the old file.`,
         href: appUrl ? `${appUrl.replace(/\/$/, '')}/activity/queue` : undefined,
         external: true,
       });
@@ -228,7 +228,7 @@ async function checkArr(service: DiagnosticsService, items: InsightItem[]): Prom
 }
 
 // ----------------------------------------------------------------------------
-// Prunerr's own signals
+// PrunerrXT's own signals
 // ----------------------------------------------------------------------------
 
 function checkConnections(health: Awaited<ReturnType<typeof getSystemHealth>>, items: InsightItem[]): void {
@@ -244,7 +244,7 @@ function checkConnections(health: Awaited<ReturnType<typeof getSystemHealth>>, i
         : s.service === 'tautulli' || s.service === 'tracearr'
           ? 'Watch counts stop updating; rules that look at plays will see stale data.'
           : s.service === 'overseerr'
-            ? 'Requests will not be cleared when Prunerr deletes what they asked for.'
+            ? 'Requests will not be cleared when PrunerrXT deletes what they asked for.'
             : '';
     items.push({
       id: `${s.service}.unreachable`,
@@ -267,7 +267,7 @@ function checkSyncAndScans(health: Awaited<ReturnType<typeof getSystemHealth>>, 
       severity: 'warning',
       source: 'prunerr',
       title: `The last ${mediaServer} library sync failed`,
-      detail: `Finished ${sched.lastSyncAt ? `${daysAgo(sched.lastSyncAt)} day(s) ago` : 'at an unknown time'} without success. Items added since then are missing from Prunerr, and sizes may be stale. Check the ${mediaServer} connection and the activity log.`,
+      detail: `Finished ${sched.lastSyncAt ? `${daysAgo(sched.lastSyncAt)} day(s) ago` : 'at an unknown time'} without success. Items added since then are missing from PrunerrXT, and sizes may be stale. Check the ${mediaServer} connection and the activity log.`,
       href: '/activity',
     });
   } else if (sched.syncSchedule && sched.lastSync && Date.now() - new Date(sched.lastSync).getTime() > STALE_SYNC_MS) {
@@ -285,7 +285,7 @@ function checkSyncAndScans(health: Awaited<ReturnType<typeof getSystemHealth>>, 
       severity: 'info',
       source: 'prunerr',
       title: 'The library has never been synced',
-      detail: `Run a sync from the Library page so Prunerr knows what ${mediaServer} holds.`,
+      detail: `Run a sync from the Library page so PrunerrXT knows what ${mediaServer} holds.`,
       href: '/library',
     });
   }
@@ -450,7 +450,7 @@ async function checkFolderMappings(items: InsightItem[]): Promise<void> {
       id: 'prunerr.permissions.nochown',
       severity: 'info',
       source: 'prunerr',
-      title: 'Prunerr cannot repair file ownership',
+      title: 'PrunerrXT cannot repair file ownership',
       detail: caps.reason ?? 'The Node binary lacks CAP_CHOWN/CAP_FOWNER, so a delete that hits files owned by another user will fail instead of being repaired first.',
       href: SETTINGS_CONNECTIONS,
     });

@@ -184,7 +184,7 @@ export class NotificationService {
   async sendDiscordText(webhookUrl: string, content: string): Promise<boolean> {
     return this.sendDiscord(webhookUrl, {
       content,
-      username: 'Prunerr',
+      username: 'PrunerrXT',
     });
   }
 

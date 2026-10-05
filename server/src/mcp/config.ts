@@ -58,4 +58,4 @@ export function setAllowImmediateDeletion(allowed: boolean): void {
 
 /** The message a refused immediate deletion carries, so the assistant can explain it. */
 export const IMMEDIATE_DELETION_REFUSED =
-  'Immediate deletion is not allowed for the MCP connector. Items can be queued for deletion (they are deleted after the grace period), but "delete now" and processing the queue for real require an admin to enable "Allow immediate deletion" under Settings → System → AI assistant in Prunerr.';
+  'Immediate deletion is not allowed for the MCP connector. Items can be queued for deletion (they are deleted after the grace period), but "delete now" and processing the queue for real require an admin to enable "Allow immediate deletion" under Settings → System → AI assistant in PrunerrXT.';

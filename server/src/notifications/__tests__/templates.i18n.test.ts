@@ -81,7 +81,7 @@ describe('getDiscordMessage localization', () => {
       durationMs: 1234,
     }, 'es');
     expect(msg.embeds?.[0]?.title).toBe('⚡ Análisis de biblioteca — 5 elementos marcados');
-    expect(msg.embeds?.[0]?.footer?.text).toBe('Prunerr');
+    expect(msg.embeds?.[0]?.footer?.text).toBe('PrunerrXT');
   });
 
   it('falls back to English for an unknown language', () => {

@@ -1,6 +1,6 @@
 #!/bin/sh
 # ============================================
-# Prunerr - Docker Entrypoint Script
+# PrunerrXT - Docker Entrypoint Script
 # ============================================
 # Handles PUID/PGID user management for proper file permissions
 # Unraid default: PUID=99, PGID=100
@@ -13,7 +13,7 @@ PUID=${PUID:-99}
 PGID=${PGID:-100}
 
 echo "---------------------------------------------"
-echo "Prunerr Container Startup"
+echo "PrunerrXT Container Startup"
 echo "---------------------------------------------"
 echo "Setting up user with UID=$PUID and GID=$PGID"
 
@@ -67,7 +67,7 @@ chown -R "$PUID:$PGID" /app/data
 chown "$PUID:$PGID" /app
 
 echo "---------------------------------------------"
-echo "Starting Prunerr as UID=$PUID GID=$PGID"
+echo "Starting PrunerrXT as UID=$PUID GID=$PGID"
 echo "---------------------------------------------"
 
 # Exit on error from here

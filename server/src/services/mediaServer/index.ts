@@ -41,7 +41,7 @@ export function getConfiguredServerType(): MediaServerType {
  * Resolve the configured backend's URL and credential.
  *
  * Settings take precedence over environment variables, matching how every
- * other service in Prunerr resolves its config. Returns null when the backend
+ * other service in PrunerrXT resolves its config. Returns null when the backend
  * has not been set up yet.
  */
 export function getMediaServerCredentials(): MediaServerCredentials | null {

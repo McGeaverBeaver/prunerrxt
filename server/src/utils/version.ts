@@ -7,7 +7,7 @@ const FALLBACK_VERSION = '1.0.0';
 let cachedVersion: string | null = null;
 
 /**
- * The running Prunerr version.
+ * The running PrunerrXT version.
  *
  * Docker builds inject APP_VERSION, which is authoritative. Outside Docker
  * (local dev, `npm start` from a checkout) there is no such variable, so fall

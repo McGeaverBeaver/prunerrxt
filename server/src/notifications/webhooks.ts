@@ -81,7 +81,7 @@ export async function sendWebhook(
   const body = JSON.stringify(envelope);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'User-Agent': 'Prunerr-Webhook/1',
+    'User-Agent': 'PrunerrXT-Webhook/1',
     'X-Prunerr-Event': String(envelope.event),
   };
   if (target.secret) {

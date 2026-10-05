@@ -55,7 +55,7 @@ function getEnvBoolean(key: string, defaultValue: boolean): boolean {
   return value.toLowerCase() === 'true' || value === '1';
 }
 
-// Media server selection — which backend Prunerr reads the library from.
+// Media server selection — which backend PrunerrXT reads the library from.
 // Defaults to Plex so existing installs are unaffected by the upgrade.
 const mediaServerConfig: MediaServerConfig = {
   type: getEnv('MEDIA_SERVER_TYPE', 'plex').toLowerCase(),

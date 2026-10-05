@@ -29,7 +29,7 @@ function basename(p: string): string {
 }
 
 /**
- * The Prunerr side of a mapping: a dropdown of the volumes mounted into the
+ * The PrunerrXT side of a mapping: a dropdown of the volumes mounted into the
  * container. Only the mount roots show at first; a chevron on a row unfolds
  * its subfolders (two levels are known), so a volume with hundreds of movie
  * folders stays one line until it is opened. "Type a path…" switches to a
@@ -50,7 +50,7 @@ export function LocalPathPicker({ value, onChange, mounts }: { value: string; on
     return set;
   });
   const rootRef = useRef<HTMLDivElement>(null);
-  const placeholder = t('mediaFolders.localPlaceholder', 'Path as Prunerr sees it, e.g. /media/movies');
+  const placeholder = t('mediaFolders.localPlaceholder', 'Path as PrunerrXT sees it, e.g. /media/movies');
 
   useEffect(() => {
     if (!open) return;

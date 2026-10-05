@@ -9,7 +9,7 @@ export type InsightSeverity = 'ok' | 'info' | 'warning' | 'critical';
 
 export const SEVERITY_RANK: Record<InsightSeverity, number> = { ok: 0, info: 1, warning: 2, critical: 3 };
 
-/** Where a finding came from: Prunerr itself or one of the connected apps. */
+/** Where a finding came from: PrunerrXT itself or one of the connected apps. */
 export type InsightSource = 'prunerr' | 'mediaServer' | 'sonarr' | 'radarr' | 'tautulli' | 'tracearr' | 'overseerr' | 'unraid';
 
 export interface InsightItem {
@@ -23,7 +23,7 @@ export interface InsightItem {
   detail?: string;
   /** An in-app page that fixes or explains it (`/settings?category=connections`) or an external help page. */
   href?: string;
-  /** True when `href` leaves Prunerr (Sonarr's wiki, the app's own UI). */
+  /** True when `href` leaves PrunerrXT (Sonarr's wiki, the app's own UI). */
   external?: boolean;
   /** Set when an admin acknowledged this finding; it then stays out of the counts. */
   acknowledged?: { at: string };

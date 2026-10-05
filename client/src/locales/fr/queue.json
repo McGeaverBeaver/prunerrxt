@@ -35,7 +35,7 @@
   "arrWarning": {
     "bannerDesc": "La suppression nécessite Sonarr ou Radarr pour retirer les fichiers du disque. Les éléments peuvent être mis en file d'attente mais ne seront pas traités tant qu'un service n'est pas configuré.",
     "goToSettings": "Aller aux paramètres",
-    "modalDesc": "Les éléments seront marqués comme supprimés dans Prunerr mais les fichiers ne seront pas retirés du disque. Configurez d'abord Sonarr ou Radarr dans les paramètres.",
+    "modalDesc": "Les éléments seront marqués comme supprimés dans PrunerrXT mais les fichiers ne seront pas retirés du disque. Configurez d'abord Sonarr ou Radarr dans les paramètres.",
     "title": "Sonarr/Radarr non configuré"
   },
   "deleteAllModal": {

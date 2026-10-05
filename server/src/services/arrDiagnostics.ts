@@ -2,7 +2,7 @@
  * Read-only diagnostics shared by the Sonarr and Radarr clients: their logs,
  * health checks, running commands, root folders and media-management config.
  *
- * Prunerr only ever sees the HTTP answer to a delete. When Radarr spends
+ * PrunerrXT only ever sees the HTTP answer to a delete. When Radarr spends
  * minutes copying a file into a recycle bin on another filesystem, or throws
  * a RecycleBinException and leaves the file in place, that story is in
  * Radarr's own log — so the deletion pipeline reads it, and so can the user

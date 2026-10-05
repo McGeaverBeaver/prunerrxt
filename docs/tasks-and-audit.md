@@ -1,6 +1,6 @@
 # Tasks and the audit log
 
-Two pages for the question "what is Prunerr doing, and who did what".
+Two pages for the question "what is PrunerrXT doing, and who did what".
 
 ## Tasks
 
@@ -49,10 +49,10 @@ and unlike Activity it cannot be edited or trimmed.
 | `mcp.` | every MCP tool call that changes something, with its arguments |
 | `task.` | tasks started by hand from the Tasks page |
 | `audit.` | the log being verified or exported |
-| `system.` | Prunerr starting |
+| `system.` | PrunerrXT starting |
 
 Each entry carries the actor (a signed-in user with their role, the API key,
-the MCP assistant, the scheduler, a rule or Prunerr itself), the source (web,
+the MCP assistant, the scheduler, a rule or PrunerrXT itself), the source (web,
 API, MCP, scheduler, system), the client address when there was a request,
 the target, and details.
 

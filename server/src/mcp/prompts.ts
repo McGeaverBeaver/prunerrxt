@@ -19,7 +19,7 @@ export function registerPrompts(server: McpServer): void {
     async () =>
       text(
         [
-          'Review my Prunerr deletion queue.',
+          'Review my PrunerrXT deletion queue.',
           '1. Call list_queue and get_overview.',
           '2. For anything surprising (recently added, high rating, requested by someone, watched recently, inProgress true, part of a collection), call get_media_item and explain why it might be a mistake.',
           '3. Summarise: how many items, how much space, how many are ready for deletion now, and which ones you recommend removing from the queue with remove_from_queue (ask me before removing).',
@@ -54,7 +54,7 @@ export function registerPrompts(server: McpServer): void {
     'build_rule',
     {
       title: 'Build a cleanup rule',
-      description: 'Turn a plain-English cleanup policy into a tested Prunerr rule.',
+      description: 'Turn a plain-English cleanup policy into a tested PrunerrXT rule.',
       argsSchema: {
         policy: z.string().describe('The policy in plain English, e.g. "delete movies nobody has watched in a year that are over 10 GB".'),
       },
@@ -62,7 +62,7 @@ export function registerPrompts(server: McpServer): void {
     async ({ policy }) =>
       text(
         [
-          `Create a Prunerr rule for this policy: "${policy}".`,
+          `Create a PrunerrXT rule for this policy: "${policy}".`,
           '1. Call describe_rule_fields to get the exact fields and operators.',
           '2. Draft a v2 condition tree and call preview_rule to see how many items match and the space it would free. Show me a few sample matches.',
           '3. Adjust until the matches look right, then ask me to confirm the rule name, grace period and deletion action.',
@@ -80,7 +80,7 @@ export function registerPrompts(server: McpServer): void {
     async () =>
       text(
         [
-          'Run a health check on my Prunerr install.',
+          'Run a health check on my PrunerrXT install.',
           'Call get_system_health, list_scheduled_tasks and get_scan_status. Report which services are unreachable, when the last scan and library sync ran and whether they succeeded, and what to look at if something is off.',
         ].join('\n')
       )

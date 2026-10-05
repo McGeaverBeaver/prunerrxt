@@ -1,7 +1,7 @@
 /**
  * Archive: can a queued title be downloaded again?
  *
- * Before Prunerr deletes a movie or show it asks the app that owns it (Radarr
+ * Before PrunerrXT deletes a movie or show it asks the app that owns it (Radarr
  * or Sonarr) what the indexers can offer right now, and turns the answer into
  * one of three verdicts:
  *

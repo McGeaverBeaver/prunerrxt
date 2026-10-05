@@ -218,7 +218,7 @@ export class JellyfinService implements MediaServerService, MediaServerUsersServ
       serverType === 'emby'
         ? { 'X-Emby-Token': apiKey }
         : {
-            Authorization: `MediaBrowser Client="Prunerr", Device="Prunerr", DeviceId="prunerr", Version="1.0", Token="${apiKey}"`,
+            Authorization: `MediaBrowser Client="PrunerrXT", Device="PrunerrXT", DeviceId="prunerr", Version="1.0", Token="${apiKey}"`,
           };
 
     this.client = axios.create({
@@ -599,7 +599,7 @@ export class JellyfinService implements MediaServerService, MediaServerUsersServ
         email: null,
         thumbUrl: dto.PrimaryImageTag ? `${this.url}/Users/${dto.Id}/Images/Primary` : null,
         // Jellyfin has no single "owner"; administrators are the closest
-        // equivalent and are what Prunerr surfaces as the privileged account.
+        // equivalent and are what PrunerrXT surfaces as the privileged account.
         isOwner: dto.Policy?.IsAdministrator === true,
         isHomeUser: false,
       }));

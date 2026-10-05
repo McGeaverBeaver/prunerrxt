@@ -162,7 +162,7 @@ export function PlaybackFrictionBlock() {
               </ul>
             )}
             <p className="mt-2 text-[11px] text-surface-500">
-              {t('playback.caveat', 'Buffering and client errors are not recorded anywhere Prunerr can read, so this is the shape of friction, not a count of failures.')}
+              {t('playback.caveat', 'Buffering and client errors are not recorded anywhere PrunerrXT can read, so this is the shape of friction, not a count of failures.')}
             </p>
           </div>
 

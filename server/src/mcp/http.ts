@@ -1,7 +1,7 @@
 /**
  * The /mcp endpoint: MCP's Streamable HTTP transport on top of Express.
  *
- * Authentication is the Prunerr API key, sent either as `X-Api-Key` or as
+ * Authentication is the PrunerrXT API key, sent either as `X-Api-Key` or as
  * `Authorization: Bearer <key>`. There is no same-origin bypass here — an MCP
  * client is never the web UI, so every request has to carry the key.
  *
@@ -136,7 +136,7 @@ function authenticate(req: Request, res: Response): AuthInfo | null {
       res,
       401,
       -32000,
-      'Authentication required: sign in through OAuth (see the resource_metadata in WWW-Authenticate) or send the Prunerr API key as "Authorization: Bearer <key>" or "X-Api-Key: <key>".'
+      'Authentication required: sign in through OAuth (see the resource_metadata in WWW-Authenticate) or send the PrunerrXT API key as "Authorization: Bearer <key>" or "X-Api-Key: <key>".'
     );
     return null;
   }

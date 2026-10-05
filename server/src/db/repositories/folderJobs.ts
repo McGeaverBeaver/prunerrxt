@@ -145,7 +145,7 @@ export function requeueInterrupted(): FolderJob[] {
   const now = new Date().toISOString();
   const rows = db.prepare(`SELECT * FROM folder_jobs WHERE status = 'running'`).all() as FolderJob[];
   if (rows.length === 0) return [];
-  db.prepare(`UPDATE folder_jobs SET status = 'pending', message = 'Resumed after Prunerr restarted', updated_at = ? WHERE status = 'running'`).run(now);
+  db.prepare(`UPDATE folder_jobs SET status = 'pending', message = 'Resumed after PrunerrXT restarted', updated_at = ? WHERE status = 'running'`).run(now);
   return rows.map((row) => getById(row.id)!).filter(Boolean);
 }
 

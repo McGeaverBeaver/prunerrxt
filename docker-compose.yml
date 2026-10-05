@@ -1,7 +1,7 @@
 # ============================================
-# Prunerr - Docker Compose Configuration
+# PrunerrXT - Docker Compose Configuration
 # ============================================
-# Production-ready Docker Compose file for Prunerr
+# Production-ready Docker Compose file for PrunerrXT
 # Usage: docker compose up -d
 
 version: "3.8"

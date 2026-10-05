@@ -1,7 +1,7 @@
 /**
  * Media server abstraction.
  *
- * Prunerr originally spoke only Plex, so Plex's data shapes (`PlexLibrary`,
+ * PrunerrXT originally spoke only Plex, so Plex's data shapes (`PlexLibrary`,
  * `PlexMediaItem`) had already become the de-facto interchange format for the
  * scanner, the rules engine and the database layer. Rather than re-model
  * thousands of lines of downstream mapping, those shapes are promoted here to
@@ -73,7 +73,7 @@ export interface GetWatchHistoryOptions {
 }
 
 /**
- * The complete surface the rest of Prunerr uses to talk to a media server.
+ * The complete surface the rest of PrunerrXT uses to talk to a media server.
  *
  * Deliberately small — it is exactly what the scanner, the health check and the
  * library routes already needed from `PlexService`. Adding a backend means

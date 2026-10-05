@@ -182,7 +182,7 @@ export function formatActivity(entry: ActivityLogEntry): FormattedActivity {
       }
       if (entry.action === 'reconciled') {
         // Sonarr/Radarr no longer had the item: it was deleted there by hand,
-        // and Prunerr only caught its records up.
+        // and PrunerrXT only caught its records up.
         const service = readString(meta, 'service') ?? 'Sonarr/Radarr';
         const chips: ActivityChip[] = [];
         const action = deletionActionChip(meta);

@@ -364,7 +364,7 @@ const migrations: Migration[] = [
     version: 16,
     name: 'add_media_items_deleted_at',
     up: `
-      -- Timestamp set when Prunerr deletes an item. The row is now kept as a
+      -- Timestamp set when PrunerrXT deletes an item. The row is now kept as a
       -- "tombstone" instead of being hard-removed, so a later Plex sync can
       -- tell a stale leftover entry (added_at older than deleted_at) from a
       -- genuine re-add (added_at newer than deleted_at).
@@ -485,7 +485,7 @@ const migrations: Migration[] = [
     version: 22,
     name: 'remove_telemetry_settings',
     up: `
-      -- Prunerr no longer contacts anything outside the instance. Drop the
+      -- PrunerrXT no longer contacts anything outside the instance. Drop the
       -- install ID and feed cache the old heartbeat and announcements kept.
       DELETE FROM settings WHERE key LIKE 'telemetry_%' OR key LIKE 'announcements_%';
     `,
@@ -494,7 +494,7 @@ const migrations: Migration[] = [
     version: 23,
     name: 'oauth_server',
     up: `
-      -- Prunerr as an OAuth 2.1 authorization server for MCP clients
+      -- PrunerrXT as an OAuth 2.1 authorization server for MCP clients
       -- (claude.ai connectors, Claude Desktop, …). Secrets, codes and tokens
       -- are stored as SHA-256 hashes.
       CREATE TABLE IF NOT EXISTS oauth_clients (

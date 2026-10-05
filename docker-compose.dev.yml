@@ -1,5 +1,5 @@
 # ============================================
-# Prunerr - Development Docker Compose Override
+# PrunerrXT - Development Docker Compose Override
 # ============================================
 # Development override for hot reloading and debugging
 # Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up

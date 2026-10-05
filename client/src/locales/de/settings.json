@@ -105,7 +105,7 @@
       "weekly": "wöchentlich"
     },
     "librarySync": {
-      "description": "Neue Filme und Serien automatisch von {{name}} in Prunerr übernehmen",
+      "description": "Neue Filme und Serien automatisch von {{name}} in PrunerrXT übernehmen",
       "enable": "Automatische {{name}}-Synchronisierung",
       "enableHint": "Aktualisiert die Bibliothek, damit neue Elemente ohne Klick auf „Bibliothek synchronisieren“ erscheinen",
       "title": "{{name}}-Bibliothekssync"
@@ -123,7 +123,7 @@
     "confirmImportBody": "Beim Import werden alle aktuellen Einstellungen mit den Werten aus <strong>{{filename}}</strong> überschrieben. Diese Aktion kann nicht rückgängig gemacht werden.",
     "confirmImportTitle": "Import bestätigen",
     "confirmRestore": "Meine Daten ersetzen",
-    "confirmRestoreBody": "Alles, was derzeit in Prunerr ist — Bibliothek, Regeln, Warteschlange und Verlauf — wird durch <strong>{{filename}}</strong> ersetzt.",
+    "confirmRestoreBody": "Alles, was derzeit in PrunerrXT ist — Bibliothek, Regeln, Warteschlange und Verlauf — wird durch <strong>{{filename}}</strong> ersetzt.",
     "confirmRestoreSafety": "Deine aktuelle Datenbank wird vorher daneben gespeichert, ein Fehler lässt sich also aus dem Datenordner rückgängig machen.",
     "confirmRestoreTitle": "Dieses Backup wiederherstellen?",
     "description": "Einstellungen für ein Backup exportieren oder aus einem früheren Export importieren",
@@ -133,7 +133,7 @@
     "exportHint": "Exporte enthalten alle Einstellungen, einschließlich der Dienst-Zugangsdaten. Bewahre die Datei sicher auf.",
     "fullDownloaded": "Backup heruntergeladen",
     "fullFailed": "Backup fehlgeschlagen",
-    "fullHint": "Die gesamte Datenbank — Bibliothek, Regeln, Warteschlange, Verlauf und Einstellungen. Beim Wiederherstellen wird alles ersetzt, was derzeit in Prunerr ist.",
+    "fullHint": "Die gesamte Datenbank — Bibliothek, Regeln, Warteschlange, Verlauf und Einstellungen. Beim Wiederherstellen wird alles ersetzt, was derzeit in PrunerrXT ist.",
     "fullTitle": "Vollständiges Backup",
     "import": "Einstellungen importieren",
     "importFailed": "Import fehlgeschlagen: {{error}}",
@@ -166,7 +166,7 @@
     "docs": "{{name}}-Dokumentation öffnen",
     "edit": "Bearbeiten",
     "firstRun": {
-      "body": "Verbinde {{name}}, dann kann Prunerr deine Bibliothek lesen. Füge Sonarr oder Radarr hinzu, wenn wirklich etwas gelöscht werden soll — bis dahin bleibt das Scannen aus.",
+      "body": "Verbinde {{name}}, dann kann PrunerrXT deine Bibliothek lesen. Füge Sonarr oder Radarr hinzu, wenn wirklich etwas gelöscht werden soll — bis dahin bleibt das Scannen aus.",
       "connect": "{{name}} verbinden",
       "title": "Noch ist nichts verbunden"
     },
@@ -183,9 +183,9 @@
       "recommended": "Empfohlen"
     },
     "sections": {
-      "overseerrDescription": "Löscht die Anfrage, wenn Prunerr das Angeforderte entfernt",
+      "overseerrDescription": "Löscht die Anfrage, wenn PrunerrXT das Angeforderte entfernt",
       "sonarrRadarr": "Sonarr & Radarr",
-      "sonarrRadarrDescription": "Prunerr löscht über diese Dienste — ohne sie kann es nur berichten",
+      "sonarrRadarrDescription": "PrunerrXT löscht über diese Dienste — ohne sie kann es nur berichten",
       "unraidDescription": "Array- und Datenträgerüberwachung — liefert die Daten für die Speicherdruck-Anzeige"
     },
     "status": {
@@ -496,7 +496,7 @@
     "truncated": ""
   },
   "mediaServer": {
-    "description": "Der Server, von dem Prunerr deine Bibliothek liest",
+    "description": "Der Server, von dem PrunerrXT deine Bibliothek liest",
     "playbackReportingHint": "Tipp: Installiere das Playback-Reporting-Plugin auf deinem Server. Ohne es wird nur die letzte Wiedergabe jedes Elements erfasst, sodass wiederholte Ansichten fehlen und die Wiedergabezähler zu niedrig sind.",
     "title": "Medienserver"
   },
@@ -662,7 +662,7 @@
     "system": "API-Schlüssel und Backups"
   },
   "system": {
-    "productName": "Prunerr"
+    "productName": "PrunerrXT"
   },
   "toasts": {
     "apiKeyDisabled": "",
@@ -703,8 +703,8 @@
       "range": "",
       "title": "Verlaufsrückblick"
     },
-    "mediaServerDirectInfo": "Keine zusätzliche Konfiguration nötig — Prunerr liest den Verlauf von deinem Medienserver über die im obigen Abschnitt „Medienserver“ festgelegte Verbindung. Installiere das Playback-Reporting-Plugin für exakte Wiedergabezähler.",
-    "plexDirectInfo": "Keine zusätzliche Konfiguration nötig — Prunerr liest den Verlauf von deinem Plex-Server über die im obigen Abschnitt „Medienserver“ festgelegte Verbindung. Erfordert das Token des Serverbesitzers.",
+    "mediaServerDirectInfo": "Keine zusätzliche Konfiguration nötig — PrunerrXT liest den Verlauf von deinem Medienserver über die im obigen Abschnitt „Medienserver“ festgelegte Verbindung. Installiere das Playback-Reporting-Plugin für exakte Wiedergabezähler.",
+    "plexDirectInfo": "Keine zusätzliche Konfiguration nötig — PrunerrXT liest den Verlauf von deinem Plex-Server über die im obigen Abschnitt „Medienserver“ festgelegte Verbindung. Erfordert das Token des Serverbesitzers.",
     "providers": {
       "tautulli": {
         "fieldLabel": "API-Schlüssel"
@@ -719,7 +719,7 @@
     "add": "Webhook hinzufügen",
     "delivered": "Zugestellt (HTTP {{status}})",
     "deliveryFailed": "Zustellung fehlgeschlagen",
-    "description": "POST-Ereignisse an eine beliebige URL senden — binde Prunerr in Home Assistant, n8n oder deine eigenen Automatisierungen ein",
+    "description": "POST-Ereignisse an eine beliebige URL senden — binde PrunerrXT in Home Assistant, n8n oder deine eigenen Automatisierungen ein",
     "empty": "Keine Webhooks konfiguriert. Füge einen hinzu, um mit dem Senden von Ereignissen zu beginnen.",
     "enterUrlFirst": "Gib zuerst eine URL ein",
     "events": {

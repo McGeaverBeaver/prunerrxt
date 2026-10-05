@@ -5,7 +5,7 @@ import type { Server } from 'http';
 // Radarr and Sonarr keep deleting after the HTTP client gives up. These tests
 // run a fake of each behind a real socket: the DELETE hangs past the client's
 // timeout while the follow-up GET flips to 404, which is exactly what a slow
-// NAS looks like from Prunerr's side.
+// NAS looks like from PrunerrXT's side.
 
 vi.mock('../../utils/logger', () => ({
   default: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },

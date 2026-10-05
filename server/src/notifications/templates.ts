@@ -1,5 +1,5 @@
 // ============================================================================
-// Notification Templates for Prunerr
+// Notification Templates for PrunerrXT
 // ============================================================================
 
 import type { TFunction } from 'i18next';
@@ -147,9 +147,6 @@ const COLORS = {
   ERROR: 0xe74c3c, // Red
   DELETION: 0x9b59b6, // Purple
 };
-
-// Discord fetches this itself, so it must be public. This repository is private; upstream's copy of the same icon is the only public one. Cosmetic only.
-const AVATAR_URL = 'https://raw.githubusercontent.com/helliott20/prunerr/main/assets/icon.png';
 
 /**
  * Format a duration in milliseconds to a human-readable string (e.g. "2m 15s").
@@ -491,7 +488,6 @@ export function getItemsMarkedDiscord(data: ItemsMarkedData, t: TFunction): Disc
   return {
     embeds: [embed],
     username: t('common.brand'),
-    avatar_url: AVATAR_URL,
   };
 }
 
@@ -532,7 +528,6 @@ export function getDeletionImminentDiscord(data: DeletionImminentData, t: TFunct
     content: isUrgent ? '@here' : undefined,
     embeds: [embed],
     username: t('common.brand'),
-    avatar_url: AVATAR_URL,
   };
 }
 
@@ -583,7 +578,6 @@ export function getDeletionCompleteDiscord(data: DeletionCompleteData, t: TFunct
   return {
     embeds: [embed],
     username: t('common.brand'),
-    avatar_url: AVATAR_URL,
   };
 }
 
@@ -616,7 +610,6 @@ export function getScanCompleteDiscord(data: ScanCompleteData, t: TFunction): Di
   return {
     embeds: [embed],
     username: t('common.brand'),
-    avatar_url: AVATAR_URL,
   };
 }
 
@@ -644,7 +637,7 @@ export function getScanErrorDiscord(data: ScanErrorData, t: TFunction): DiscordM
     });
   }
 
-  return { embeds: [embed], username: t('common.brand'), avatar_url: AVATAR_URL };
+  return { embeds: [embed], username: t('common.brand') };
 }
 
 /**
@@ -672,7 +665,7 @@ export function getDeletionErrorDiscord(data: DeletionErrorData, t: TFunction): 
     });
   }
 
-  return { embeds: [embed], username: t('common.brand'), avatar_url: AVATAR_URL };
+  return { embeds: [embed], username: t('common.brand') };
 }
 
 /**
@@ -740,7 +733,6 @@ export function getDiskPressureDiscord(data: DiskPressureData, t: TFunction): Di
     content: isCritical && !data.observeOnly ? '@here' : undefined,
     embeds: [embed],
     username: t('common.brand'),
-    avatar_url: AVATAR_URL,
   };
 }
 
@@ -780,7 +772,7 @@ export function getPlainTextMessage(event: NotificationEvent, data: Notification
     case 'DISK_PRESSURE_TRIGGERED':
       return getDiskPressureText(data as unknown as DiskPressureData, t);
     case 'AUDIT_LOG_BROKEN':
-      return `Prunerr audit log integrity failure: ${String((data as Record<string, unknown>)['where'] ?? 'the chain does not verify')}. Entries checked: ${String((data as Record<string, unknown>)['entries'] ?? '?')}. Someone or something has altered the audit log; review it before trusting its history.`;
+      return `PrunerrXT audit log integrity failure: ${String((data as Record<string, unknown>)['where'] ?? 'the chain does not verify')}. Entries checked: ${String((data as Record<string, unknown>)['entries'] ?? '?')}. Someone or something has altered the audit log; review it before trusting its history.`;
     default:
       return t('fallback', { event });
   }
@@ -811,9 +803,8 @@ export function getDiscordMessage(event: NotificationEvent, data: NotificationDa
       return {
         content: `**Audit log integrity failure**\n${String((data as Record<string, unknown>)['where'] ?? 'the chain does not verify')}. Review the audit log before trusting its history.`,
         username: t('common.brand'),
-        avatar_url: AVATAR_URL,
       };
     default:
-      return { content: t('fallbackDiscord', { event }), username: t('common.brand'), avatar_url: AVATAR_URL };
+      return { content: t('fallbackDiscord', { event }), username: t('common.brand') };
   }
 }

@@ -121,7 +121,7 @@ export function registerResources(server: McpServer): void {
     }),
     {
       title: 'Media item',
-      description: 'Full details of one movie or show by Prunerr id.',
+      description: 'Full details of one movie or show by PrunerrXT id.',
       mimeType: 'application/json',
     },
     async (uri, variables) => {

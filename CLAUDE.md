@@ -1,7 +1,7 @@
-# Prunerr Development Guide
+# PrunerrXT Development Guide
 
 ## Project Overview
-Prunerr is a media library cleanup tool for Plex/Sonarr/Radarr. It helps users reclaim disk space by identifying and removing unwanted content based on customizable rules.
+PrunerrXT is a media library cleanup tool for Plex/Jellyfin/Emby with Sonarr and Radarr, an extended edition of Prunerr by Harry Elliott (helliott20/prunerr). It helps users reclaim disk space by identifying and removing unwanted content based on customizable rules, and checks whether a title could be downloaded again before deleting it.
 
 ## Tech Stack
 - **Backend**: Node.js + Express + TypeScript
@@ -41,14 +41,14 @@ git push origin v1.x.x
 A plain push to `main` runs `ci.yml` (client and server lint, typecheck,
 build and tests) but builds no image.
 
-**No outbound calls.** Prunerr contacts only the services the user configures.
+**No outbound calls.** PrunerrXT contacts only the services the user configures.
 Do not add telemetry, update checks, remote feeds, CDN assets or any other
 request to a third party.
 
 ## Related Repositories
-- **This fork**: https://github.com/McGeaverBeaver/prunerr
+- **This repository (PrunerrXT)**: https://github.com/McGeaverBeaver/prunerr
 - **Container image**: https://github.com/McGeaverBeaver/prunerr/pkgs/container/prunerr
-- **Upstream**: https://github.com/helliott20/prunerr (its wiki is still the
+- **Upstream (the original Prunerr)**: https://github.com/helliott20/prunerr (its wiki is still the
   user documentation the README links to)
 
 ## Database Migrations
@@ -100,7 +100,7 @@ identity is ever different (`git config user.email`), set it before committing.
   rather than rebuilt (a full rebuild walks every folder on disk).
 - The Insights page (`services/insights/`, `routes/insights.ts`, client
   `components/Insights/`) has four blocks: stack health (Sonarr/Radarr `/health`
-  and queue plus Prunerr's own signals), library quality, watch patterns and
+  and queue plus PrunerrXT's own signals), library quality, watch patterns and
   playback friction (Tautulli only). Each report is cached in memory for one
   to five minutes; `captureInsightSnapshot` stores one row a day in
   `insight_snapshots` for trends. The MCP tools `get_insights` and

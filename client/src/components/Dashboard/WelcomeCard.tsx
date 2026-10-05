@@ -51,7 +51,7 @@ export function WelcomeCard({ services }: WelcomeCardProps) {
           </div>
           <div>
             <h2 className="text-2xl font-display font-bold text-surface-50 mb-1">
-              {t('welcome.title', 'Welcome to Prunerr')}
+              {t('welcome.title', 'Welcome to PrunerrXT')}
             </h2>
             <p className="text-surface-400">
               {t('welcome.subtitle', "Let's get your media library cleanup system configured. Connect your services below to get started.")}

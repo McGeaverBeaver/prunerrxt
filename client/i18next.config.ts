@@ -1,7 +1,7 @@
 import { defineConfig } from 'i18next-cli';
 
 /**
- * i18next-cli config for the Prunerr client.
+ * i18next-cli config for the PrunerrXT client.
  *
  * Workflow (per feature namespace):
  *   1. Wrap strings with `t('ns.key', 'English default')` — the inline default

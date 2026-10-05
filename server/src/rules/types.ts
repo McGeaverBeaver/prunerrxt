@@ -249,7 +249,7 @@ export interface DeletionResult {
   overseerrReset?: boolean;
   /** Error when trying to reset in Overseerr (non-fatal) */
   overseerrError?: string;
-  /** Sonarr/Radarr had already deleted it; Prunerr only caught up its records. */
+  /** Sonarr/Radarr had already deleted it; PrunerrXT only caught up its records. */
   reconciled?: boolean;
   /** On failure: the step and service it failed at, and the HTTP status if any. */
   failedStep?: DeletionStep;

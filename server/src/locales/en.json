@@ -1,23 +1,23 @@
 {
   "common": {
     "andMore": "and {{count}} more",
-    "brand": "Prunerr"
+    "brand": "PrunerrXT"
   },
   "itemsMarked": {
-    "groupedHeader_one": "[Prunerr] {{count}} Item Queued for Deletion",
-    "groupedHeader_other": "[Prunerr] {{count}} Items Queued for Deletion",
+    "groupedHeader_one": "[PrunerrXT] {{count}} Item Queued for Deletion",
+    "groupedHeader_other": "[PrunerrXT] {{count}} Items Queued for Deletion",
     "groupRule": "Rule: {{name}} ({{days}} day grace period)",
     "willDeleteAfter": "Will be deleted after: {{date}}",
     "itemLine": "  - {{title}} ({{type}})",
-    "singleHeader": "[Prunerr] Item Marked for Deletion",
+    "singleHeader": "[PrunerrXT] Item Marked for Deletion",
     "fieldTitle": "Title: {{title}}",
     "fieldType": "Type: {{type}}",
     "fieldGracePeriod": "Grace Period: {{days}} days",
     "fieldMatchedRule": "Matched Rule: {{name}}",
-    "multiHeader_one": "[Prunerr] {{count}} Item Marked for Deletion",
-    "multiHeader_other": "[Prunerr] {{count}} Items Marked for Deletion",
+    "multiHeader_one": "[PrunerrXT] {{count}} Item Marked for Deletion",
+    "multiHeader_other": "[PrunerrXT] {{count}} Items Marked for Deletion",
     "itemsHeading": "Items:",
-    "fallback": "[Prunerr] Items marked for deletion ({{days}} day grace period)",
+    "fallback": "[PrunerrXT] Items marked for deletion ({{days}} day grace period)",
     "discord": {
       "queuedTitle_one": "📋 {{count}} Item Queued for Deletion",
       "queuedTitle_other": "📋 {{count}} Items Queued for Deletion",
@@ -52,19 +52,19 @@
     "urgentPrefix": "⚠️ URGENT: ",
     "timeframeHigh": "within 24 hours",
     "timeframeNormal": "within 3 days",
-    "header_one": "[Prunerr] {{count}} Item Pending Deletion",
-    "header_other": "[Prunerr] {{count}} Items Pending Deletion",
+    "header_one": "[PrunerrXT] {{count}} Item Pending Deletion",
+    "header_other": "[PrunerrXT] {{count}} Items Pending Deletion",
     "intro": "The following items will be deleted {{timeframe}}:",
     "itemLine_one": "  - {{title}} ({{count}} day remaining)",
     "itemLine_other": "  - {{title}} ({{count}} days remaining)",
-    "footer": "Review and unmark items in Prunerr if you wish to keep them.",
+    "footer": "Review and unmark items in PrunerrXT if you wish to keep them.",
     "discord": {
       "titleUrgent_one": "⚠️ Imminent Deletions — {{count}} Item",
       "titleUrgent_other": "⚠️ Imminent Deletions — {{count}} Items",
       "titleNormal_one": "📅 Upcoming Deletions — {{count}} Item",
       "titleNormal_other": "📅 Upcoming Deletions — {{count}} Items",
-      "desc_one": "**{{count}} item** will be deleted {{timeframe}}. Review in Prunerr to cancel.",
-      "desc_other": "**{{count}} items** will be deleted {{timeframe}}. Review in Prunerr to cancel.",
+      "desc_one": "**{{count}} item** will be deleted {{timeframe}}. Review in PrunerrXT to cancel.",
+      "desc_other": "**{{count}} items** will be deleted {{timeframe}}. Review in PrunerrXT to cancel.",
       "itemBullet_one": "• {{title}} — {{count}} day left",
       "itemBullet_other": "• {{title}} — {{count}} days left",
       "fieldItems": "Items",
@@ -72,7 +72,7 @@
     }
   },
   "deletionComplete": {
-    "header": "[Prunerr] Deletion Complete",
+    "header": "[PrunerrXT] Deletion Complete",
     "itemsDeleted": "Items Deleted: {{count}}",
     "spaceFreed": "Space Freed: {{gb}} GB",
     "errors": "Errors: {{count}}",
@@ -94,7 +94,7 @@
     }
   },
   "scanComplete": {
-    "header": "[Prunerr] Library Scan Complete",
+    "header": "[PrunerrXT] Library Scan Complete",
     "itemsScanned": "Items Scanned: {{count}}",
     "itemsFlagged": "Items Flagged: {{count}}",
     "itemsProtected": "Items Protected: {{count}}",
@@ -112,7 +112,7 @@
     }
   },
   "scanError": {
-    "header": "[Prunerr] Scan Failed",
+    "header": "[PrunerrXT] Scan Failed",
     "errorLine": "Error during {{phase}}: {{error}}",
     "itemsBefore": "Items scanned before error: {{count}}",
     "time": "Time: {{date}}",
@@ -125,7 +125,7 @@
     }
   },
   "deletionError": {
-    "header": "[Prunerr] Deletion Error",
+    "header": "[PrunerrXT] Deletion Error",
     "errorLine": "Error: {{error}}",
     "failedItem": "Failed item: {{title}}",
     "itemsProcessed": "Items processed before error: {{count}}",
@@ -141,7 +141,7 @@
   },
   "diskPressure": {
     "criticalPrefix": "⚠️ CRITICAL: ",
-    "header": "[Prunerr] Disk Pressure on {{path}}",
+    "header": "[PrunerrXT] Disk Pressure on {{path}}",
     "freeLine": "Free: {{free}} of {{total}} (target: {{target}}, short by {{deficit}})",
     "actionWouldQueue": "would be queued for deletion",
     "actionQueued": "queued for deletion",
@@ -171,12 +171,12 @@
       "andMoreInline": "\n... and {{count}} more",
       "fieldItems": "Items",
       "observeName": "👁️ Observe-only",
-      "observeValue": "Nothing was deleted. Turn off observe-only to let Prunerr reclaim automatically."
+      "observeValue": "Nothing was deleted. Turn off observe-only to let PrunerrXT reclaim automatically."
     }
   },
   "test": {
     "title": "✅ Test Notification",
-    "desc": "Your Discord webhook is configured correctly. Prunerr will send notifications here based on your preferences.",
+    "desc": "Your Discord webhook is configured correctly. PrunerrXT will send notifications here based on your preferences.",
     "scanAlertsName": "Scan Alerts",
     "scanAlertsValue": "When rules match items",
     "queueAlertsName": "Queue Alerts",
@@ -184,6 +184,6 @@
     "deletionAlertsName": "Deletion Alerts",
     "deletionAlertsValue": "When items are deleted"
   },
-  "fallback": "[Prunerr] Notification: {{event}}",
-  "fallbackDiscord": "[Prunerr] {{event}}"
+  "fallback": "[PrunerrXT] Notification: {{event}}",
+  "fallbackDiscord": "[PrunerrXT] {{event}}"
 }

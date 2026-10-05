@@ -180,7 +180,7 @@ describe('OAuth 2.1 for MCP clients', () => {
     // 3. Signed in → consent page
     const consent = await call(authorizeUrl, { headers: { Cookie: cookie } });
     expect(consent.status).toBe(200);
-    expect(consent.text).toContain('Allow Claude to use Prunerr?');
+    expect(consent.text).toContain('Allow Claude to use PrunerrXT?');
     const requestId = /name="request_id" value="([^"]+)"/.exec(consent.text)?.[1];
     expect(requestId).toBeTruthy();
 

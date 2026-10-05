@@ -1,7 +1,7 @@
 {
   "name": "prunerr-server",
   "version": "1.4.10",
-  "description": "Backend server for Prunerr - Media Library Manager",
+  "description": "Backend server for PrunerrXT - Media Library Manager",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

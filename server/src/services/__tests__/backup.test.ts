@@ -12,7 +12,7 @@ import { snapshotDatabase, validateBackupFile, copyDatabaseContents, REQUIRED_TA
 
 let workDir: string;
 
-/** Build a database that looks like a real Prunerr one. */
+/** Build a database that looks like a real PrunerrXT one. */
 function makePrunerrDb(file: string, opts: { tables?: string[]; rows?: number } = {}): void {
   const tables = opts.tables ?? [...REQUIRED_TABLES];
   const db = new Database(file);

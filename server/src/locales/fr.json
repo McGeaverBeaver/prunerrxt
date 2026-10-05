@@ -1,25 +1,25 @@
 {
   "common": {
     "andMore": "et {{count}} de plus",
-    "brand": "Prunerr"
+    "brand": "PrunerrXT"
   },
   "itemsMarked": {
-    "groupedHeader_one": "[Prunerr] {{count}} élément en file d'attente pour suppression",
-    "groupedHeader_many": "[Prunerr] {{count}} éléments en file d'attente pour suppression",
-    "groupedHeader_other": "[Prunerr] {{count}} éléments en file d'attente pour suppression",
+    "groupedHeader_one": "[PrunerrXT] {{count}} élément en file d'attente pour suppression",
+    "groupedHeader_many": "[PrunerrXT] {{count}} éléments en file d'attente pour suppression",
+    "groupedHeader_other": "[PrunerrXT] {{count}} éléments en file d'attente pour suppression",
     "groupRule": "Règle : {{name}} (délai de grâce de {{days}} jours)",
     "willDeleteAfter": "Sera supprimé après : {{date}}",
     "itemLine": "  - {{title}} ({{type}})",
-    "singleHeader": "[Prunerr] Élément marqué pour suppression",
+    "singleHeader": "[PrunerrXT] Élément marqué pour suppression",
     "fieldTitle": "Titre : {{title}}",
     "fieldType": "Type : {{type}}",
     "fieldGracePeriod": "Délai de grâce : {{days}} jours",
     "fieldMatchedRule": "Règle correspondante : {{name}}",
-    "multiHeader_one": "[Prunerr] {{count}} élément marqué pour suppression",
-    "multiHeader_many": "[Prunerr] {{count}} éléments marqués pour suppression",
-    "multiHeader_other": "[Prunerr] {{count}} éléments marqués pour suppression",
+    "multiHeader_one": "[PrunerrXT] {{count}} élément marqué pour suppression",
+    "multiHeader_many": "[PrunerrXT] {{count}} éléments marqués pour suppression",
+    "multiHeader_other": "[PrunerrXT] {{count}} éléments marqués pour suppression",
     "itemsHeading": "Éléments :",
-    "fallback": "[Prunerr] Éléments marqués pour suppression (délai de grâce de {{days}} jours)",
+    "fallback": "[PrunerrXT] Éléments marqués pour suppression (délai de grâce de {{days}} jours)",
     "discord": {
       "queuedTitle_one": "📋 {{count}} élément en file d'attente pour suppression",
       "queuedTitle_many": "📋 {{count}} éléments en file d'attente pour suppression",
@@ -61,14 +61,14 @@
     "urgentPrefix": "⚠️ URGENT : ",
     "timeframeHigh": "dans les 24 heures",
     "timeframeNormal": "dans les 3 jours",
-    "header_one": "[Prunerr] {{count}} élément en attente de suppression",
-    "header_many": "[Prunerr] {{count}} éléments en attente de suppression",
-    "header_other": "[Prunerr] {{count}} éléments en attente de suppression",
+    "header_one": "[PrunerrXT] {{count}} élément en attente de suppression",
+    "header_many": "[PrunerrXT] {{count}} éléments en attente de suppression",
+    "header_other": "[PrunerrXT] {{count}} éléments en attente de suppression",
     "intro": "Les éléments suivants seront supprimés {{timeframe}} :",
     "itemLine_one": "  - {{title}} ({{count}} jour restant)",
     "itemLine_many": "  - {{title}} ({{count}} jours restants)",
     "itemLine_other": "  - {{title}} ({{count}} jours restants)",
-    "footer": "Vérifiez et retirez le marquage des éléments dans Prunerr si vous souhaitez les conserver.",
+    "footer": "Vérifiez et retirez le marquage des éléments dans PrunerrXT si vous souhaitez les conserver.",
     "discord": {
       "titleUrgent_one": "⚠️ Suppressions imminentes — {{count}} élément",
       "titleUrgent_many": "⚠️ Suppressions imminentes — {{count}} éléments",
@@ -76,9 +76,9 @@
       "titleNormal_one": "📅 Suppressions à venir — {{count}} élément",
       "titleNormal_many": "📅 Suppressions à venir — {{count}} éléments",
       "titleNormal_other": "📅 Suppressions à venir — {{count}} éléments",
-      "desc_one": "**{{count}} élément** sera supprimé {{timeframe}}. Vérifiez dans Prunerr pour annuler.",
-      "desc_many": "**{{count}} éléments** seront supprimés {{timeframe}}. Vérifiez dans Prunerr pour annuler.",
-      "desc_other": "**{{count}} éléments** seront supprimés {{timeframe}}. Vérifiez dans Prunerr pour annuler.",
+      "desc_one": "**{{count}} élément** sera supprimé {{timeframe}}. Vérifiez dans PrunerrXT pour annuler.",
+      "desc_many": "**{{count}} éléments** seront supprimés {{timeframe}}. Vérifiez dans PrunerrXT pour annuler.",
+      "desc_other": "**{{count}} éléments** seront supprimés {{timeframe}}. Vérifiez dans PrunerrXT pour annuler.",
       "itemBullet_one": "• {{title}} — {{count}} jour restant",
       "itemBullet_many": "• {{title}} — {{count}} jours restants",
       "itemBullet_other": "• {{title}} — {{count}} jours restants",
@@ -87,7 +87,7 @@
     }
   },
   "deletionComplete": {
-    "header": "[Prunerr] Suppression terminée",
+    "header": "[PrunerrXT] Suppression terminée",
     "itemsDeleted": "Éléments supprimés : {{count}}",
     "spaceFreed": "Espace libéré : {{gb}} Go",
     "errors": "Erreurs : {{count}}",
@@ -110,7 +110,7 @@
     }
   },
   "scanComplete": {
-    "header": "[Prunerr] Analyse de la bibliothèque terminée",
+    "header": "[PrunerrXT] Analyse de la bibliothèque terminée",
     "itemsScanned": "Éléments analysés : {{count}}",
     "itemsFlagged": "Éléments signalés : {{count}}",
     "itemsProtected": "Éléments protégés : {{count}}",
@@ -130,7 +130,7 @@
     }
   },
   "scanError": {
-    "header": "[Prunerr] Échec de l'analyse",
+    "header": "[PrunerrXT] Échec de l'analyse",
     "errorLine": "Erreur lors de {{phase}} : {{error}}",
     "itemsBefore": "Éléments analysés avant l'erreur : {{count}}",
     "time": "Heure : {{date}}",
@@ -143,7 +143,7 @@
     }
   },
   "deletionError": {
-    "header": "[Prunerr] Erreur de suppression",
+    "header": "[PrunerrXT] Erreur de suppression",
     "errorLine": "Erreur : {{error}}",
     "failedItem": "Élément en échec : {{title}}",
     "itemsProcessed": "Éléments traités avant l'erreur : {{count}}",
@@ -159,7 +159,7 @@
   },
   "diskPressure": {
     "criticalPrefix": "⚠️ CRITIQUE : ",
-    "header": "[Prunerr] Pression disque sur {{path}}",
+    "header": "[PrunerrXT] Pression disque sur {{path}}",
     "freeLine": "Libre : {{free}} sur {{total}} (cible : {{target}}, manque {{deficit}})",
     "actionWouldQueue": "serait mis en file d'attente pour suppression",
     "actionQueued": "mis en file d'attente pour suppression",
@@ -191,12 +191,12 @@
       "andMoreInline": "\n... et {{count}} de plus",
       "fieldItems": "Éléments",
       "observeName": "👁️ Observation seule",
-      "observeValue": "Rien n'a été supprimé. Désactivez le mode observation seule pour laisser Prunerr récupérer automatiquement."
+      "observeValue": "Rien n'a été supprimé. Désactivez le mode observation seule pour laisser PrunerrXT récupérer automatiquement."
     }
   },
   "test": {
     "title": "✅ Notification de test",
-    "desc": "Votre webhook Discord est configuré correctement. Prunerr enverra des notifications ici en fonction de vos préférences.",
+    "desc": "Votre webhook Discord est configuré correctement. PrunerrXT enverra des notifications ici en fonction de vos préférences.",
     "scanAlertsName": "Alertes d'analyse",
     "scanAlertsValue": "Lorsque des règles correspondent à des éléments",
     "queueAlertsName": "Alertes de file d'attente",
@@ -204,6 +204,6 @@
     "deletionAlertsName": "Alertes de suppression",
     "deletionAlertsValue": "Lorsque des éléments sont supprimés"
   },
-  "fallback": "[Prunerr] Notification : {{event}}",
-  "fallbackDiscord": "[Prunerr] {{event}}"
+  "fallback": "[PrunerrXT] Notification : {{event}}",
+  "fallbackDiscord": "[PrunerrXT] {{event}}"
 }

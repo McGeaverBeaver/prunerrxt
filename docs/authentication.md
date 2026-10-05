@@ -1,6 +1,6 @@
 # Login and access control
 
-Prunerr can require a login, with **single sign-on through any OpenID Connect
+PrunerrXT can require a login, with **single sign-on through any OpenID Connect
 provider** (written and tested against [Authentik](https://goauthentik.io)) and
 **roles mapped from the provider's groups**, plus an optional **local account**
 as a fallback. Everything is configured by environment variables, so the whole
@@ -8,7 +8,7 @@ setup lives in your compose file and nothing has to be clicked through in the
 UI.
 
 Login is **off by default** so existing installs are unaffected. While it is
-off, Prunerr behaves exactly as before: anyone who can reach the address can
+off, PrunerrXT behaves exactly as before: anyone who can reach the address can
 use it, the API key still guards external calls, and the
 [MCP connector](mcp.md) stays disabled.
 
@@ -17,13 +17,13 @@ use it, the API key still guards external calls, and the
 1. In Authentik, create an **OAuth2/OpenID Provider**:
    - Client type **Confidential**, note the client ID and secret
    - Redirect URI: `https://prunerr.example.com/api/auth/oidc/callback`
-     (strict match; use whatever URL you open Prunerr at)
+     (strict match; use whatever URL you open PrunerrXT at)
    - Scopes: `openid`, `profile`, `email` (the defaults). Authentik's `profile`
      scope mapping includes the `groups` claim, which is what the roles use.
    - Signing key: any RSA or EC key
 2. Create an **Application** for it and note the slug. The issuer is
    `https://auth.example.com/application/o/<slug>/`.
-3. Add the environment to Prunerr and restart:
+3. Add the environment to PrunerrXT and restart:
 
 ```yaml
 environment:
@@ -40,7 +40,7 @@ environment:
   - AUTH_LOCAL_PASSWORD_HASH=scrypt$$16384$$8$$1$$...   # see below
 ```
 
-Open Prunerr: you get a login page with **Continue with Authentik** and, if
+Open PrunerrXT: you get a login page with **Continue with Authentik** and, if
 enabled, the local form. **Settings → System → Login & access** shows what is
 in force, whether the provider is reachable, and any misconfiguration
 warnings.
@@ -49,7 +49,7 @@ warnings.
 
 A user's groups (from the configured claim) decide their role. The highest
 match wins; users in none of the mapped groups get `OIDC_DEFAULT_ROLE`, which
-is `none` by default — they can sign in at Authentik but Prunerr refuses them.
+is `none` by default — they can sign in at Authentik but PrunerrXT refuses them.
 
 | Role | May |
 |---|---|
@@ -133,8 +133,8 @@ Anything OpenID Connect works. Known-good hints:
 
 ## Reverse proxies
 
-Prunerr reads `X-Forwarded-Proto` and `X-Forwarded-Host` to build the redirect
+PrunerrXT reads `X-Forwarded-Proto` and `X-Forwarded-Host` to build the redirect
 URI and to decide whether cookies are `Secure`. Set `APP_URL` if the proxy does
-not send them. If you already protect Prunerr with the proxy's own login
+not send them. If you already protect PrunerrXT with the proxy's own login
 (Authelia/Authentik forward auth), you can leave `AUTH_ENABLED=false` — but
 then the MCP connector stays off, by design.

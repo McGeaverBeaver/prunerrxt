@@ -104,7 +104,7 @@ export function defineTool<InputShape extends Shape | undefined = undefined>(
     const rawRole = extra?.authInfo?.extra?.['role'];
     const role: Role = isRole(rawRole) ? rawRole : 'admin';
     if (ROLE_RANK[role] < ROLE_RANK[minRole]) {
-      return fail(`Your role (${role}) cannot use ${definition.name}; it needs ${minRole}. Ask a Prunerr admin to change your group mapping.`);
+      return fail(`Your role (${role}) cannot use ${definition.name}; it needs ${minRole}. Ask a PrunerrXT admin to change your group mapping.`);
     }
     if (definition.requiresImmediateDeletion && !allowsImmediateDeletion()) {
       return fail(IMMEDIATE_DELETION_REFUSED);
@@ -185,7 +185,7 @@ export const READ_ONLY: ToolAnnotations = {
   openWorldHint: false,
 };
 
-/** Changes Prunerr's own state but deletes nothing. */
+/** Changes PrunerrXT's own state but deletes nothing. */
 export const MUTATING: ToolAnnotations = {
   readOnlyHint: false,
   destructiveHint: false,
