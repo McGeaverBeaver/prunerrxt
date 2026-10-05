@@ -578,6 +578,10 @@ export type DeleteNowResult =
       deletionActionLabel: string;
       fileSizeFreed: number;
       fileSizeFreedFormatted: string;
+      /** False when Sonarr/Radarr had no file to remove: the title is gone from the catalogue, nothing was freed. */
+      filesDeleted?: boolean;
+      /** The file is still on a mounted path after the delete. */
+      leftOnDisk?: string;
       overseerrReset?: boolean;
       overseerrError?: string;
       /** The item had already been deleted in Sonarr/Radarr; the queue caught up. */
@@ -754,6 +758,8 @@ export async function deleteQueueItemNow(rawId: string, options: DeleteNowOption
     deletionActionLabel: DELETION_ACTION_LABELS[deletionAction] || deletionAction,
     fileSizeFreed: result.fileSizeFreed || 0,
     fileSizeFreedFormatted: `${freedSpaceGB} GB`,
+    filesDeleted: result.filesDeleted,
+    leftOnDisk: result.leftOnDisk,
     overseerrReset: result.overseerrReset,
     overseerrError: result.overseerrError,
     reconciled: result.reconciled,

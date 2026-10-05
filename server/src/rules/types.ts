@@ -243,6 +243,10 @@ export interface DeletionResult {
   title: string;
   action: DeletionAction;
   fileSizeFreed?: number;
+  /** A file was actually removed on this run (false when Sonarr/Radarr had none to remove). */
+  filesDeleted?: boolean;
+  /** The file Plex reported is still on a mounted path after the delete. */
+  leftOnDisk?: string;
   error?: string;
   deletedAt?: Date;
   /** Whether the item was reset in Overseerr */

@@ -63,6 +63,8 @@ interface PlexXmlVideo {
   '@_originallyAvailableAt'?: string;
   '@_addedAt': string;
   '@_updatedAt': string;
+  /** Set by Plex once it has found the file missing (the entry is in its trash). */
+  '@_deletedAt'?: string;
   '@_studio'?: string;
   '@_originalLanguage'?: string;
   '@_audienceRatingImage'?: string;
@@ -509,6 +511,16 @@ export class PlexService implements MediaServerService {
   }
 
   /**
+   * Rescan one folder of a library. After a delete this makes Plex drop the
+   * entry at once instead of whenever its next full scan happens; a server on
+   * another host cannot watch a network mount for changes.
+   */
+  async refreshPath(libraryId: string, folder: string): Promise<void> {
+    await this.client.get(`/library/sections/${libraryId}/refresh`, { params: { path: folder } });
+    logger.info(`Asked Plex to rescan ${folder} in library ${libraryId}`);
+  }
+
+  /**
    * Trigger a library refresh/scan
    */
   async refreshLibrary(libraryId: string): Promise<void> {
@@ -645,6 +657,7 @@ export class PlexService implements MediaServerService {
       originallyAvailableAt: item['@_originallyAvailableAt'],
       addedAt: parseInt(item['@_addedAt']) || 0,
       updatedAt: parseInt(item['@_updatedAt']) || 0,
+      deletedAt: item['@_deletedAt'] ? parseInt(item['@_deletedAt']) || undefined : undefined,
       studio: item['@_studio'],
       childCount: item['@_childCount'] ? parseInt(item['@_childCount']) : undefined,
       leafCount: item['@_leafCount'] ? parseInt(item['@_leafCount']) : undefined,

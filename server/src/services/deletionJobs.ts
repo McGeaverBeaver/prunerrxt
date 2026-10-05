@@ -461,6 +461,19 @@ function pump(): void {
   }
 }
 
+/** One line for the job list: what happened, in terms of files, not of records. */
+export function jobDoneMessage(
+  result: { reconciled?: boolean; filesDeleted?: boolean; leftOnDisk?: string; fileSizeFreedFormatted: string; deletionAction: string },
+  service: string | null | undefined
+): string {
+  const app = service ?? 'Sonarr/Radarr';
+  if (result.reconciled) return `Already deleted in ${app}; removed from the queue`;
+  if (result.leftOnDisk) return `${app} reported the delete but ${result.leftOnDisk} is still on disk; nothing freed`;
+  if (result.deletionAction === 'unmonitor_only') return `Unmonitored in ${app}`;
+  if (result.filesDeleted === false) return `${app} had no file to delete; removed from the catalogue, nothing freed`;
+  return `Deleted, ${result.fileSizeFreedFormatted} freed`;
+}
+
 async function runJob(job: DeletionJob): Promise<void> {
   const id = job.id;
   let currentStep: string | null = null;
@@ -502,9 +515,7 @@ async function runJob(job: DeletionJob): Promise<void> {
         status,
         stage: 'complete',
         step: null,
-        message: result.reconciled
-          ? `Already deleted in ${job.service ?? 'Sonarr/Radarr'}; removed from the queue`
-          : `Deleted, ${result.fileSizeFreedFormatted} freed`,
+        message: jobDoneMessage(result, job.service),
         file_size_freed: result.fileSizeFreed,
         overseerr_reset: result.overseerrReset === undefined ? null : result.overseerrReset ? 1 : 0,
         step_durations: JSON.stringify(result.stepDurationsMs ?? {}),

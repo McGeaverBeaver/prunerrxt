@@ -33,6 +33,8 @@ export type DeletionStage =
 export interface DeletionProgressResult {
   success: boolean;
   fileSizeFreed?: number;
+  filesDeleted?: boolean;
+  leftOnDisk?: string;
   overseerrReset?: boolean;
   overseerrError?: string;
   /** The item was already gone upstream; nothing was deleted by PrunerrXT. */
@@ -138,6 +140,12 @@ export interface DeletionServiceDependencies {
   deletionHistoryRepository?: {
     create(data: Omit<DeletionHistoryEntry, 'id'> & { overseerr_reset?: number }): Promise<DeletionHistoryEntry>;
   };
+  /** Asks the media server to rescan a folder so it drops the entry straight away. */
+  mediaServerService?: {
+    refreshPath(libraryKey: string, folder: string): Promise<void>;
+  };
+  /** Is this path (as the media server reports it) still on a mounted disk? null = not mounted here. */
+  fileOnDisk?: (filePath: string) => boolean | null;
   ruleRepository?: {
     getById(id: number): Promise<{ id: number; name: string; deletion_action?: string; reset_overseerr?: number } | null>;
   };
@@ -507,6 +515,8 @@ export class DeletionService {
     // Only count freed space if we're actually deleting files
     const deletesFiles = action !== DeletionAction.UNMONITOR_ONLY;
     let fileSizeFreed = 0;
+    let filesDeleted = false;
+    let leftOnDisk: string | undefined;
     let overseerrReset = false;
     let overseerrError: string | undefined;
     let reconciled = false;
@@ -547,8 +557,15 @@ export class DeletionService {
       const upstream = await this.runUpstreamSteps(item, action, report);
       reconciled = upstream.reconciled;
       reconciledService = upstream.service;
+      filesDeleted = upstream.filesDeleted;
       if (deletesFiles && upstream.filesDeleted) {
         fileSizeFreed = item.file_size || 0;
+      }
+      if (deletesFiles && !reconciled) {
+        leftOnDisk = this.verifyGone(item);
+        // A file that is still there was not freed, whatever the app said.
+        if (leftOnDisk) fileSizeFreed = 0;
+        else await this.tellMediaServer(item);
       }
 
       // Reset in Overseerr if requested and item has TMDB ID. Runs even when the
@@ -685,7 +702,7 @@ export class DeletionService {
         message: reconciled
           ? `"${item.title}" was already deleted in ${reconciledService}; removed from the queue`
           : `"${item.title}" deleted successfully`,
-        result: { success: true, fileSizeFreed, overseerrReset, reconciled, stepDurationsMs: stepDurations, ...(overseerrError ? { overseerrError } : {}) },
+        result: { success: true, fileSizeFreed, filesDeleted, leftOnDisk, overseerrReset, reconciled, stepDurationsMs: stepDurations, ...(overseerrError ? { overseerrError } : {}) },
       });
 
       return {
@@ -694,6 +711,8 @@ export class DeletionService {
         title: item.title,
         action,
         fileSizeFreed,
+        filesDeleted,
+        leftOnDisk,
         deletedAt: new Date(),
         overseerrReset,
         overseerrError,
@@ -979,6 +998,37 @@ export class DeletionService {
     }
 
     return { reconciled: false, filesDeleted };
+  }
+
+  /**
+   * After Sonarr/Radarr reported the delete: is the file still where the media
+   * server said it was? Only answerable for paths PrunerrXT has mounted.
+   * Returns the path when it is still there, else undefined.
+   */
+  private verifyGone(item: MediaItem): string | undefined {
+    if (!item.file_path || !this.dependencies.fileOnDisk) return undefined;
+    try {
+      if (this.dependencies.fileOnDisk(item.file_path) === true) {
+        logger.warn(`"${item.title}" was reported deleted but ${item.file_path} is still on disk`);
+        return item.file_path;
+      }
+    } catch (error) {
+      logger.debug(`Could not check ${item.file_path} on disk: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    return undefined;
+  }
+
+  /** Best effort: have the media server rescan the folder so it drops the entry now, not next week. */
+  private async tellMediaServer(item: MediaItem): Promise<void> {
+    const refresh = this.dependencies.mediaServerService?.refreshPath;
+    const libraryKey = (item as MediaItem & { library_key?: string | null }).library_key;
+    if (!refresh || !libraryKey || !item.file_path) return;
+    const folder = item.type === 'movie' ? item.file_path.replace(/\/[^/]*$/, '') : item.file_path;
+    try {
+      await refresh(libraryKey, folder);
+    } catch (error) {
+      logger.debug(`Media server refresh of ${folder} failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   // ============================================================================

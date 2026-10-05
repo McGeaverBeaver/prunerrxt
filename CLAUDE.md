@@ -121,6 +121,14 @@ identity is ever different (`git config user.email`), set it before committing.
   the container's own `/` and `/config` never count.
   `computeDiskPressureStats`, the `monitorDiskPressure` task, the dashboard's
   volumes card and `get_overview` all read that merged list.
+- Tombstones (`services/tombstones.ts`): a deleted title keeps its row with
+  `status = 'deleted'`. The sync revives it only on evidence that it is still
+  there (Radarr `hasFile` / Sonarr episode files, the file present on a mapped
+  path, a Plex added date after the deletion, or still listed untrashed 7 days
+  on); Plex merely listing it is not evidence. A deletion result carries
+  `filesDeleted` and `leftOnDisk`; "freed" is counted only for a file that
+  really went, and a confirmed delete asks Plex to rescan the folder
+  (`refreshPath`). See docs/library-sync.md.
 - Matching Plex items to Radarr/Sonarr goes by TMDB/TVDB/IMDb id first; when
   the ids disagree, `services/arrMatch.ts` falls back to the folder the file
   sits in (last path segment, so mount prefixes can differ) and then to a

@@ -2,6 +2,7 @@ import mediaItemsRepo from '../db/repositories/mediaItems';
 import logger from '../utils/logger';
 import settingsRepo from '../db/repositories/settings';
 import { ScannerService } from './scanner';
+import { decideRevive, gatherEvidence } from './tombstones';
 import type { ScanResult, SyncProgressCallback } from './types';
 
 // Shared singleton so the manual button (routes/library.ts) and the scheduled
@@ -70,6 +71,7 @@ function getScanner(): ScannerService {
     scannerService.setDatabaseCallback(async (items) => {
       let added = 0;
       let updated = 0;
+      let revived = 0;
       for (const item of items) {
         const input = scannerService!.convertToMediaItemInput(item);
         const existingItem = input.plex_id ? mediaItemsRepo.getByPlexId(input.plex_id) : null;
@@ -77,28 +79,28 @@ function getScanner(): ScannerService {
           // Strip status so a sync never clobbers queue/protection state.
           const { status: _status, ...plexFields } = input;
 
-          // Revive a deleted item only when it has genuinely been re-added to
-          // Plex. After PrunerrXT deletes something, Plex keeps a stale metadata
-          // entry for a while; that entry keeps its original (pre-deletion)
-          // added date, so it stays a tombstone and rules leave it alone. A
-          // real re-add (re-request → re-download) lands with an added date
-          // later than deleted_at, so it goes back to `monitored`.
-          const isGenuineReadd =
-            existingItem.status === 'deleted' &&
-            !!existingItem.deleted_at &&
-            !!input.added_at &&
-            new Date(input.added_at).getTime() > new Date(existingItem.deleted_at).getTime();
-
-          if (isGenuineReadd) {
-            mediaItemsRepo.update(existingItem.id, {
-              ...plexFields,
-              status: 'monitored',
-              marked_at: null,
-              delete_after: null,
-              deleted_at: null,
-              matched_rule_id: null,
-            });
-            logger.info(`Revived re-added media item "${input.title}" — back in Plex after deletion`);
+          // A tombstone comes back only on evidence that the title is still
+          // there (Sonarr/Radarr has its file, the file is on a mounted path,
+          // a genuine re-add, or Plex still lists it untrashed long after the
+          // deletion); see tombstones.ts. Plex listing a title the night after
+          // PrunerrXT deleted it is not evidence: Plex has not rescanned yet.
+          if (existingItem.status === 'deleted') {
+            const evidence = gatherEvidence(item.plexItem, item.arrData, input.file_path ?? null);
+            const decision = decideRevive(existingItem.deleted_at, evidence);
+            if (decision.revive) {
+              mediaItemsRepo.update(existingItem.id, {
+                ...plexFields,
+                status: 'monitored',
+                marked_at: null,
+                delete_after: null,
+                deleted_at: null,
+                matched_rule_id: null,
+              });
+              revived++;
+              logger.info(`Revived "${input.title}": ${decision.reason}`);
+            } else {
+              mediaItemsRepo.update(existingItem.id, plexFields);
+            }
           } else {
             mediaItemsRepo.update(existingItem.id, plexFields);
           }
@@ -108,6 +110,7 @@ function getScanner(): ScannerService {
           added++;
         }
       }
+      if (revived > 0) logger.info(`Revived ${revived} deleted item(s) that are still in the library`);
       return { added, updated };
     });
     scannerService.setPruneCallback(async (libraryKey, seenPlexIds) => {

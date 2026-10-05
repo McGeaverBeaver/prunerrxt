@@ -101,6 +101,9 @@ export interface MediaServerService {
   /** Ask the server to rescan a library. Best-effort; errors propagate. */
   refreshLibrary(libraryId: string): Promise<void>;
 
+  /** Ask the server to rescan one folder of a library, where the backend can. */
+  refreshPath?(libraryId: string, folder: string): Promise<void>;
+
   /**
    * Turn a poster/art path from `MediaServerItem.thumb` into a fetchable URL,
    * including whatever auth the backend needs. Returns '' for empty input.

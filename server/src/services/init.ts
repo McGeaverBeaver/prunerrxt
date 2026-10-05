@@ -1,3 +1,4 @@
+import fs from 'fs';
 import logger from '../utils/logger';
 import { getDeletionService } from './deletion';
 import { SonarrService } from './sonarr';
@@ -21,6 +22,7 @@ import { setTaskDependencies } from '../scheduler/tasks';
 import { getScheduler } from '../scheduler';
 import type { MediaItem } from '../types';
 import { findRadarrId, findSonarrId } from './arrLink';
+import { getFolderMappings, toLocalPath } from './orphanFolders';
 import taskRunsRepo from '../db/repositories/taskRuns';
 import { recordAudit } from './audit';
 // Registers the background availability pass that queueing kicks (Archive).
@@ -250,6 +252,26 @@ export async function initializeServices(): Promise<void> {
         return await overseerr.notifyRequesterOfDeletion(tmdbId, type, title, reason);
       },
     } : undefined,
+
+    // Media server: rescan the folder a delete just emptied.
+    mediaServerService: {
+      async refreshPath(libraryKey: string, folder: string): Promise<void> {
+        const server = getMediaServerService();
+        if (server?.refreshPath) await server.refreshPath(libraryKey, folder);
+      },
+    },
+
+    // Is the file still on a path PrunerrXT has mounted? null when no mapping
+    // covers it, and null for a folder (a series folder outlives its episodes).
+    fileOnDisk: (filePath: string) => {
+      const local = toLocalPath(filePath, getFolderMappings());
+      if (!local) return null;
+      try {
+        return fs.statSync(local).isFile() ? true : null;
+      } catch (error) {
+        return (error as NodeJS.ErrnoException).code === 'ENOENT' ? false : null;
+      }
+    },
 
     // Notification service
     notificationService: {

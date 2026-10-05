@@ -39,6 +39,8 @@ export interface PlexMediaItem {
   originallyAvailableAt?: string;
   addedAt: number;
   updatedAt: number;
+  /** Unix seconds when Plex trashed the entry because its file went missing. */
+  deletedAt?: number;
   studio?: string;
   // For shows
   childCount?: number;

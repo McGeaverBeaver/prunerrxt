@@ -125,14 +125,14 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const unwatchedMovies =
     db
       .prepare<[], { count: number }>(
-        "SELECT COUNT(*) as count FROM media_items WHERE type = 'movie' AND (play_count = 0 OR play_count IS NULL)"
+        "SELECT COUNT(*) as count FROM media_items WHERE type = 'movie' AND status != 'deleted' AND (play_count = 0 OR play_count IS NULL)"
       )
       .get()?.count ?? 0;
 
   const unwatchedShows =
     db
       .prepare<[], { count: number }>(
-        "SELECT COUNT(*) as count FROM media_items WHERE type = 'show' AND (play_count = 0 OR play_count IS NULL)"
+        "SELECT COUNT(*) as count FROM media_items WHERE type = 'show' AND status != 'deleted' AND (play_count = 0 OR play_count IS NULL)"
       )
       .get()?.count ?? 0;
 
