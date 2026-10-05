@@ -7,6 +7,10 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
+## 2.0.8 (2026-10-05)
+
+- Archive: every check runs to the end of the queue, and the Queue page follows it
+
 ## 2.0.7 (2026-10-05)
 
 - Queue: the Archive hold banner says why items are held, shows the check running, and offers Check now
