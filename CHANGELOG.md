@@ -7,6 +7,10 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
+## 2.0.5 (2026-10-05)
+
+- Disk statistics: bars for disks over 75% full were drawn without a colour
+
 ## 2.0.4 (2026-10-05)
 
 - Sync revives deleted titles that are still there; deletions report what left the disk
