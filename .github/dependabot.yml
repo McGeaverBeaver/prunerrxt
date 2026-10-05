@@ -1,0 +1,18 @@
+# Version updates for the two things the lockfile alerts cannot see: the Node
+# base image in the Dockerfile and the pinned GitHub Actions the workflows use.
+# npm packages are deliberately left out; those are updated in deliberate
+# rounds with the full lint, test and screenshot pass, and Dependabot alerts
+# cover their advisories without this file.
+version: 2
+updates:
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns: ["*"]
