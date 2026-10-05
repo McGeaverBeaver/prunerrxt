@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import logger from '../utils/logger';
-import type { RadarrMovie, RadarrMovieFile, RadarrCollectionResource, ArrRelease, ArrIndexer, ArrIndexerStatus } from './types';
+import type { RadarrMovie, RadarrMovieFile, RadarrCollectionResource, ArrRelease, ArrIndexer } from './types';
 import collectionsRepo from '../db/repositories/collections';
 import { getDatabase } from '../db/index';
 import {
@@ -131,13 +131,13 @@ export class RadarrService {
     return Array.isArray(response.data) ? response.data : [];
   }
 
-  /** Enabled indexers, and which of them Radarr is currently backing off from. */
+  /** Enabled indexers, and which of them Radarr is currently backing off from (read from /health). */
   async getIndexerHealth(): Promise<IndexerHealth> {
-    const [indexers, statuses] = await Promise.all([
+    const [indexers, health] = await Promise.all([
       this.client.get<ArrIndexer[]>('/indexer'),
-      this.client.get<ArrIndexerStatus[]>('/indexerstatus'),
+      this.client.get<Array<{ source?: string; message?: string }>>('/health'),
     ]);
-    return summariseIndexerHealth(indexers.data, statuses.data);
+    return summariseIndexerHealth(indexers.data, health.data);
   }
 
   /**

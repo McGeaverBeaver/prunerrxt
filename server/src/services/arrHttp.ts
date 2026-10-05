@@ -21,28 +21,43 @@ export const ARR_SEARCH_TIMEOUT_MS = 120_000;
 export interface IndexerHealth {
   /** Enabled indexers. */
   total: number;
-  /** Of those, the ones the app has backed off from right now. */
+  /** Of those, the ones the app reports as unavailable due to failures. */
   failing: number;
-  /** The earliest moment one of the failing indexers may be tried again. */
+  /** The earliest moment one of the failing indexers may be tried again; the apps do not expose it, so null. */
   retryAt: string | null;
 }
 
 /**
- * Count enabled indexers and how many the app has backed off from right now
- * (a `disabledTill` in the future). Shared by Sonarr and Radarr.
+ * Count enabled indexers and how many the app has backed off from right now.
+ * Neither app has an indexer-status endpoint; the back-off state surfaces
+ * through /health as the IndexerStatusCheck and IndexerLongTermStatusCheck
+ * items ("All indexers are unavailable due to failures" or "Indexers
+ * unavailable due to failures: A, B"). Shared by Sonarr and Radarr.
  */
 export function summariseIndexerHealth(
-  indexers: Array<{ id: number; enable: boolean }>,
-  statuses: Array<{ indexerId: number; disabledTill?: string | null }>,
-  now: Date = new Date()
+  indexers: Array<{ id: number; name?: string; enable: boolean }>,
+  health: Array<{ source?: string; message?: string }>
 ): IndexerHealth {
   const enabled = Array.isArray(indexers) ? indexers.filter((i) => i.enable !== false) : [];
-  const enabledIds = new Set(enabled.map((i) => i.id));
-  const failing = (Array.isArray(statuses) ? statuses : []).filter(
-    (s) => enabledIds.has(s.indexerId) && s.disabledTill && new Date(s.disabledTill).getTime() > now.getTime()
-  );
-  const retryAt = failing.length > 0 ? failing.map((s) => new Date(s.disabledTill as string).getTime()).sort((a, b) => a - b)[0]! : null;
-  return { total: enabled.length, failing: failing.length, retryAt: retryAt ? new Date(retryAt).toISOString() : null };
+  const names = new Set(enabled.map((i) => (i.name ?? '').trim().toLowerCase()).filter(Boolean));
+  const failingNames = new Set<string>();
+  let allFailing = false;
+  for (const item of Array.isArray(health) ? health : []) {
+    const source = (item.source ?? '').toLowerCase();
+    if (!source.includes('indexerstatus') && !source.includes('indexerlongtermstatus')) continue;
+    const message = item.message ?? '';
+    if (/^all indexers/i.test(message)) {
+      allFailing = true;
+      continue;
+    }
+    const listed = message.split(':').slice(1).join(':');
+    for (const name of listed.split(',')) {
+      const clean = name.trim().toLowerCase();
+      if (clean) failingNames.add(clean);
+    }
+  }
+  const failing = allFailing ? enabled.length : [...failingNames].filter((n) => names.size === 0 || names.has(n)).length;
+  return { total: enabled.length, failing: Math.min(failing, enabled.length), retryAt: null };
 }
 
 /** Progress callback payload for multi-file deletions. */

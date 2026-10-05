@@ -188,6 +188,11 @@ export async function probeService(service: ArrService): Promise<boolean> {
   try {
     health = await client.getIndexerHealth();
   } catch (error) {
+    // A missing endpoint says nothing about the indexers; let the search decide.
+    if (isAxiosError(error) && error.response?.status === 404) {
+      resumeService(service);
+      return true;
+    }
     pauseForError(service, error, 'indexer status');
     return false;
   }
@@ -233,6 +238,8 @@ async function indexersOrPause(service: ArrService, client: { getIndexerHealth()
   try {
     health = await client.getIndexerHealth();
   } catch (error) {
+    // A missing endpoint says nothing about the indexers; the search decides.
+    if (isAxiosError(error) && error.response?.status === 404) return null;
     throw new AvailabilityPausedError(pauseForError(service, error, 'indexer status'));
   }
   if (health.total > 0 && health.failing >= health.total) {

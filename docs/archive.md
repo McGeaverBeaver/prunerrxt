@@ -90,8 +90,9 @@ hammer your indexers. Each interactive search can take up to a minute or two.
 ## When the indexers are down
 
 An outage pauses the checks; it never produces a verdict. Before a pass
-touches Radarr or Sonarr it reads that app's indexer status (the same list the
-app shows under *System → Status*). When every enabled indexer is backed off,
+touches Radarr or Sonarr it reads that app's indexer list and its health
+checks (the *Indexers unavailable due to failures* items the app shows under
+*System → Status*). When every enabled indexer is backed off,
 or the app cannot be reached, or a search fails or comes back rate-limited
 (HTTP 429), that app is **paused**:
 

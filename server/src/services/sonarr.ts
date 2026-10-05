@@ -9,7 +9,6 @@ import type {
   SonarrHistoryRecord,
   ArrRelease,
   ArrIndexer,
-  ArrIndexerStatus,
 } from './types';
 import {
   ARR_REQUEST_TIMEOUT_MS,
@@ -172,13 +171,13 @@ export class SonarrService {
     return Array.isArray(response.data) ? response.data : [];
   }
 
-  /** Enabled indexers, and which of them Sonarr is currently backing off from. */
+  /** Enabled indexers, and which of them Sonarr is currently backing off from (read from /health). */
   async getIndexerHealth(): Promise<IndexerHealth> {
-    const [indexers, statuses] = await Promise.all([
+    const [indexers, health] = await Promise.all([
       this.client.get<ArrIndexer[]>('/indexer'),
-      this.client.get<ArrIndexerStatus[]>('/indexerstatus'),
+      this.client.get<Array<{ source?: string; message?: string }>>('/health'),
     ]);
-    return summariseIndexerHealth(indexers.data, statuses.data);
+    return summariseIndexerHealth(indexers.data, health.data);
   }
 
   async getSeriesById(id: number): Promise<SonarrSeries> {

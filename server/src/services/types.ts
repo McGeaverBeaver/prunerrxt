@@ -743,14 +743,6 @@ export interface ArrRelease {
   seasonNumber?: number;
 }
 
-/** One row of GET /api/v3/indexerstatus: an indexer the app has backed off from. */
-export interface ArrIndexerStatus {
-  indexerId: number;
-  disabledTill?: string | null;
-  mostRecentFailure?: string | null;
-  initialFailure?: string | null;
-}
-
 export interface ArrIndexer {
   id: number;
   name: string;

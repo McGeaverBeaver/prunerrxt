@@ -172,6 +172,25 @@ describe('checkItem', () => {
     expect(getPause('radarr')).toMatchObject({ reason: 'indexers_down', until: retryAt });
   });
 
+  it('pauses for the default window when the app does not say when indexers retry', async () => {
+    state.radarr!['getIndexerHealth'] = async () => ({ total: 2, failing: 2, retryAt: null });
+    await expect(checkItem(movie(4) as never)).rejects.toBeInstanceOf(AvailabilityPausedError);
+    const until = new Date(getPause('radarr')!.until).getTime() - Date.now();
+    expect(until).toBeGreaterThan(14 * 60_000);
+    expect(until).toBeLessThanOrEqual(15 * 60_000);
+  });
+
+  it('treats a 404 from the indexer probe as "no such endpoint" and searches anyway', async () => {
+    state.radarr!['getIndexerHealth'] = async () => {
+      throw httpError(404);
+    };
+    const result = await checkItem(movie(4) as never);
+    expect(result.report.verdict).toBe('replaceable');
+    expect(result.report.indexers).toBeNull();
+    expect(getPause('radarr')).toBeNull();
+    expect(await probeService('radarr')).toBe(true);
+  });
+
   it('reuses a fresh verdict unless forced, and a forced re-check clears "delete anyway"', async () => {
     const searches = vi.fn(async () => [rel()]);
     state.radarr!['getReleases'] = searches;
