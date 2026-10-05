@@ -92,6 +92,8 @@ export interface AvailabilityStatus {
   lastPassAt: string | null;
   /** The pass running right now, if any. */
   pass: PassProgress | null;
+  /** A "check everything" run is chaining passes until nothing is left unchecked. */
+  checkingAll: boolean;
 }
 
 /** Thrown by a check that could not get an answer; the service is paused when it is raised. */
@@ -104,6 +106,7 @@ export class AvailabilityPausedError extends Error {
 
 let lastSearchAt = 0;
 let lastPassAt: string | null = null;
+let checkAllRunning: Promise<CheckQueueResult> | null = null;
 let passProgress: PassProgress | null = null;
 let passRunning: Promise<CheckQueueResult> | null = null;
 let kickTimer: NodeJS.Timeout | null = null;
@@ -436,6 +439,7 @@ export function getAvailabilityStatus(): AvailabilityStatus {
     unchecked: settings.enabled ? itemsNeedingCheck(settings, now).length : 0,
     lastPassAt,
     pass: passProgress ? { ...passProgress, current: passProgress.current ? { ...passProgress.current } : null } : null,
+    checkingAll: checkAllRunning !== null,
   };
 }
 
@@ -526,6 +530,37 @@ export function checkQueue(options: { limit?: number; actorName?: string; trigge
     passRunning = null;
   });
   return passRunning;
+}
+
+/**
+ * Give every queued item a verdict now, not forty at a time: passes run back
+ * to back until nothing needs a check, a pass checks nothing (every remaining
+ * item belongs to a paused app), or the cap of passes is hit. One run at a
+ * time; a second call joins the first. Returns the totals over all passes.
+ */
+export function checkAll(options: { actorName?: string; trigger?: TaskTrigger; maxPasses?: number } = {}): Promise<CheckQueueResult> {
+  if (checkAllRunning) return checkAllRunning;
+  checkAllRunning = (async () => {
+    const total: CheckQueueResult = { checked: 0, replaceable: 0, atRisk: 0, unknown: 0, archived: 0, skipped: 0, paused: 0, pauses: [] };
+    const maxPasses = options.maxPasses ?? 100;
+    for (let pass = 0; pass < maxPasses; pass++) {
+      const result = await checkQueue({ actorName: options.actorName, trigger: options.trigger });
+      total.checked += result.checked;
+      total.replaceable += result.replaceable;
+      total.atRisk += result.atRisk;
+      total.unknown += result.unknown;
+      total.archived += result.archived;
+      total.paused = result.paused;
+      total.skipped = result.skipped;
+      total.pauses = result.pauses;
+      if (result.skipped === 0 || result.checked === 0) break;
+    }
+    if (total.checked > 0) logger.info(`Archive check of everything queued: ${total.checked} checked over the run, ${total.skipped} left`);
+    return total;
+  })().finally(() => {
+    checkAllRunning = null;
+  });
+  return checkAllRunning;
 }
 
 /**

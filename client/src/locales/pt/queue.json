@@ -20,10 +20,30 @@
     "removingProgress": "A remover {{current}}/{{total}}..."
   },
   "archiveHold": {
+    "atRisk_one": "",
+    "atRisk_many": "",
+    "atRisk_other": "",
+    "betweenPasses": "",
+    "checking": "",
+    "checkingStart": "",
+    "checkNow": "",
     "desc": "",
+    "descUnchecked": "",
+    "lastPass": "",
+    "notChecked_one": "",
+    "notChecked_many": "",
+    "notChecked_other": "",
+    "passProgress": "",
+    "pausedHint": "",
+    "remaining_one": "",
+    "remaining_many": "",
+    "remaining_other": "",
     "title_one": "",
     "title_many": "",
-    "title_other": ""
+    "title_other": "",
+    "unknown_one": "",
+    "unknown_many": "",
+    "unknown_other": ""
   },
   "archivePaused": {
     "desc_one": "",

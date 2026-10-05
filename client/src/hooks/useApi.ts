@@ -412,7 +412,20 @@ export function useArchiveStatus() {
   return useQuery({
     queryKey: ['queue', 'archive-status'] as const,
     queryFn: queueApi.archiveStatus,
-    refetchInterval: 60_000,
+    // Every few seconds while a pass is running, so the banner moves; otherwise a minute.
+    refetchInterval: (query) => (query.state.data?.pass || query.state.data?.checkingAll ? 3_000 : 60_000),
+  });
+}
+
+/** Start a check of everything queued; the status poll then follows it. */
+export function useRunArchiveCheck() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => queueApi.runArchiveCheck(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['queue', 'archive-status'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue });
+    },
   });
 }
 

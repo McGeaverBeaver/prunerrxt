@@ -557,7 +557,13 @@ export const queueApi = {
   /** Archive: is the checker paused, and how many queued items still lack a verdict? */
   archiveStatus: async (): Promise<ArchiveStatus> => {
     const { data } = await api.get<ApiResponse<ArchiveStatus>>('/queue/archive-status');
-    return data.data ?? { enabled: true, paused: [], unchecked: 0, lastPassAt: null };
+    return data.data ?? { enabled: true, paused: [], unchecked: 0, lastPassAt: null, pass: null, checkingAll: false };
+  },
+
+  /** Check everything queued that lacks a verdict, in the background. */
+  runArchiveCheck: async (): Promise<{ started: boolean; unchecked: number; message?: string }> => {
+    const { data } = await api.post<ApiResponse<{ started: boolean; unchecked: number }>>('/queue/archive-check');
+    return { ...data.data!, message: data.message };
   },
 
   /** Archive: keep the item for good (protect it, leave the queue). */

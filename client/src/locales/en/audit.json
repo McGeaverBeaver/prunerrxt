@@ -5,6 +5,9 @@
       "enabled": "enabled the API key",
       "regenerated": "regenerated the API key"
     },
+    "archive": {
+      "checkAll": "started an Archive check of everything queued"
+    },
     "audit": {
       "exported": "exported the audit log",
       "verified": "verified the audit chain"

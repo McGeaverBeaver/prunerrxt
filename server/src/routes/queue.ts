@@ -2,8 +2,9 @@ import { Router, Request, Response } from 'express';
 import mediaItemsRepo from '../db/repositories/mediaItems';
 import logger from '../utils/logger';
 import { requestActorName } from '../utils/actor';
+import { auditRequest } from '../services/audit';
 import { enqueueDeleteNow, enqueueReadyItems } from '../services/deletionJobs';
-import { AvailabilityPausedError, checkItem, getAvailabilityStatus } from '../services/availability';
+import { AvailabilityPausedError, checkAll, checkItem, getAvailabilityStatus } from '../services/availability';
 import { describeReasons, holdState, parseAvailability } from '../services/availabilityVerdict';
 import { allowDeletionAnyway, archiveAtRiskQueue, archiveItems, atRiskQueuedItems } from '../services/mediaActions';
 import {
@@ -160,6 +161,32 @@ router.get('/archive-status', (_req: Request, res: Response) => {
   } catch (error) {
     logger.error('Failed to read the Archive status:', error);
     res.status(500).json({ success: false, error: 'Failed to read the Archive status' });
+  }
+});
+
+// POST /api/queue/archive-check - Check everything in the queue that lacks a
+// verdict, now, in the background. Answers at once; the Queue page follows
+// the run through /archive-status.
+router.post('/archive-check', (req: Request, res: Response) => {
+  try {
+    const status = getAvailabilityStatus();
+    if (!status.enabled) {
+      res.status(400).json({ success: false, error: 'Archive is turned off in Settings' });
+      return;
+    }
+    if (status.unchecked === 0 && !status.pass) {
+      res.json({ success: true, data: { started: false, unchecked: 0 }, message: 'Every queued item already has a verdict' });
+      return;
+    }
+    const started = !status.checkingAll;
+    if (started) {
+      auditRequest(req, res, { action: 'archive.check_all', targetType: 'queue', targetId: null, details: { unchecked: status.unchecked, by: requestActorName(req, 'Manual check') } });
+      checkAll({ actorName: requestActorName(req, 'Manual check'), trigger: 'manual' }).catch((error) => logger.warn('Archive check of everything queued failed', error));
+    }
+    res.json({ success: true, data: { started, unchecked: status.unchecked }, message: started ? `Checking ${status.unchecked} queued item(s)` : 'A check of everything queued is already running' });
+  } catch (error) {
+    logger.error('Failed to start the Archive check:', error);
+    res.status(500).json({ success: false, error: 'Failed to start the Archive check' });
   }
 });
 

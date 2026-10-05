@@ -212,6 +212,7 @@ function useActionLabel() {
     'mcp.connection_revoked': t('actions.mcp.connectionRevoked', 'disconnected the assistant client'),
     'mcp.client_forgotten': t('actions.mcp.clientForgotten', 'forgot the assistant client'),
     'task.run': t('actions.task.run', 'ran task'),
+    'archive.check_all': t('actions.archive.checkAll', 'started an Archive check of everything queued'),
     'audit.verified': t('actions.audit.verified', 'verified the audit chain'),
     'audit.exported': t('actions.audit.exported', 'exported the audit log'),
     'system.started': t('actions.system.started', 'started'),

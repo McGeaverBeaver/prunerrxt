@@ -208,11 +208,27 @@ export interface ArchivePause {
   failures: number;
 }
 
+/** A pass in flight: what it set out to check and where it is. */
+export interface ArchivePassProgress {
+  startedAt: string;
+  total: number;
+  done: number;
+  current: { id: number; title: string; service: 'radarr' | 'sonarr' } | null;
+  replaceable: number;
+  atRisk: number;
+  unknown: number;
+  archived: number;
+  paused: number;
+}
+
 export interface ArchiveStatus {
   enabled: boolean;
   paused: ArchivePause[];
   unchecked: number;
   lastPassAt: string | null;
+  pass: ArchivePassProgress | null;
+  /** A "check everything" run is chaining passes until nothing is left unchecked. */
+  checkingAll: boolean;
 }
 
 export interface AvailabilityReport {

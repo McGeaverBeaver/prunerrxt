@@ -98,6 +98,16 @@ Searches run one at a time with a short pause between them, and one background
 pass covers at most forty items, so a rule that queues a whole library does not
 hammer your indexers. Each interactive search can take up to a minute or two.
 
+When the queue holds items Archive has not looked at yet, the Queue page's
+*held by Archive* banner says so ("not checked yet" rather than "may not be
+downloadable again"), shows the pass in flight (the title being checked, the
+position in the pass, how many are still waiting and roughly how long), and
+offers **Check now** when nothing is running. Check now (`POST
+/api/queue/archive-check`, audited as `archive.check_all`) chains passes back
+to back until every queued item has a verdict, so a thousand queued titles do
+not wait for the 15-minute schedule forty at a time. It stops on its own when
+the only app with items left is paused.
+
 ## When the indexers are down
 
 An outage pauses the checks; it never produces a verdict. Before a pass

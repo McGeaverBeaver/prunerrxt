@@ -25,7 +25,7 @@ import { MaybeLink } from '@/components/common/MaybeLink';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Modal } from '@/components/common/Modal';
-import { useArchiveQueueItem, useArchiveStatus, useCheckQueueAvailability, useDeleteAnyway, useDeletionQueue, useRemoveFromQueue, useProcessQueue, useProtectAtRisk, useProtectItem, useSettings } from '@/hooks/useApi';
+import { useArchiveQueueItem, useArchiveStatus, useRunArchiveCheck, useCheckQueueAvailability, useDeleteAnyway, useDeletionQueue, useRemoveFromQueue, useProcessQueue, useProtectAtRisk, useProtectItem, useSettings } from '@/hooks/useApi';
 import { AvailabilityBadge } from '@/components/common/AvailabilityBadge';
 import { useAvailabilityText } from '@/lib/availabilityText';
 import { useToast } from '@/components/common/Toast';
@@ -35,7 +35,7 @@ import { libraryItemPath, rulePath } from '@/lib/links';
 import { usePageScroll } from '@/contexts/PageScrollContext';
 import { ErrorState } from '@/components/common/ErrorState';
 import { EmptyState } from '@/components/common/EmptyState';
-import type { QueueItem, DeletionJob } from '@/types';
+import type { QueueItem, DeletionJob, ArchiveStatus } from '@/types';
 import { queueApi } from '@/services/api';
 import { useDeletionJobs } from '@/contexts/DeletionJobsContext';
 import { isActiveJob } from '@/lib/deletionJobs';
@@ -404,19 +404,15 @@ export default function Queue() {
         </div>
       )}
 
-      {/* Archive holds */}
+      {/* Archive holds: what is held and why, how the check is going, and a way to run it now */}
       {heldItems.length > 0 && (
-        <div className="flex items-start gap-3 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
-          <ShieldAlert className="w-5 h-5 text-accent-text shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-surface-50">
-              {t('archiveHold.title', '{{count}} item(s) held by Archive', { count: heldItems.length })}
-            </p>
-            <p className="text-xs text-surface-400 mt-1">
-              {t('archiveHold.desc', 'These may not be downloadable again, so automatic processing leaves them alone. Archive one to keep it for good, or choose Delete anyway.')}
-            </p>
-          </div>
-        </div>
+        <ArchiveHoldBanner
+          held={heldItems.length}
+          unchecked={uncheckedCount}
+          unknown={unknownCount}
+          atRisk={atRiskItems.length}
+          status={archiveStatus}
+        />
       )}
 
       {/* Stats */}
@@ -830,6 +826,91 @@ interface QueueItemRowProps {
   now: number;
   overseerrUrl?: string;
   hasArrService?: boolean;
+}
+
+/**
+ * The hold banner has to say which kind of hold this is. "Not checked yet" is
+ * a queue waiting for Archive; "may not be downloadable again" is a decision
+ * for the user. While a pass runs it shows where the pass is, and when
+ * nothing is running it offers to check everything now.
+ */
+function ArchiveHoldBanner({
+  held, unchecked, unknown, atRisk, status,
+}: {
+  held: number;
+  unchecked: number;
+  unknown: number;
+  atRisk: number;
+  status: ArchiveStatus | undefined;
+}) {
+  const { t } = useTranslation('queue');
+  const runCheck = useRunArchiveCheck();
+  const pass = status?.pass ?? null;
+  const running = Boolean(pass) || Boolean(status?.checkingAll);
+  const paused = (status?.paused.length ?? 0) > 0;
+  const onlyUnchecked = atRisk === 0 && unknown === 0 && unchecked > 0;
+
+  const parts: string[] = [];
+  if (unchecked > 0) parts.push(t('archiveHold.notChecked', '{{count}} not checked yet', { count: unchecked }));
+  if (unknown > 0) parts.push(t('archiveHold.unknown', '{{count}} could not be decided', { count: unknown }));
+  if (atRisk > 0) parts.push(t('archiveHold.atRisk', '{{count}} may not be downloadable again', { count: atRisk }));
+
+  // Three seconds between searches is the pace the checker keeps.
+  const minutesLeft = Math.max(1, Math.ceil(((status?.unchecked ?? unchecked) * 3) / 60));
+
+  return (
+    <div className="flex items-start gap-3 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
+      {running ? <Loader2 className="w-5 h-5 text-accent-text shrink-0 mt-0.5 animate-spin" /> : <ShieldAlert className="w-5 h-5 text-accent-text shrink-0 mt-0.5" />}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-surface-50">
+          {t('archiveHold.title', '{{count}} item(s) held by Archive', { count: held })}
+          {parts.length > 0 && <span className="font-normal text-surface-400"> · {parts.join(' · ')}</span>}
+        </p>
+        <p className="text-xs text-surface-400 mt-1">
+          {onlyUnchecked
+            ? t('archiveHold.descUnchecked', 'Archive has not asked Radarr or Sonarr about these yet, so automatic processing leaves them alone until it has. Nothing is wrong with them.')
+            : t('archiveHold.desc', 'These may not be downloadable again, so automatic processing leaves them alone. Archive one to keep it for good, or choose Delete anyway.')}
+        </p>
+        {running && pass && (
+          <div className="mt-2">
+            <div className="flex items-center justify-between gap-3 text-xs text-surface-300">
+              <span className="truncate">
+                {pass.current
+                  ? t('archiveHold.checking', 'Checking {{title}} in {{service}}', { title: pass.current.title, service: pass.current.service === 'radarr' ? 'Radarr' : 'Sonarr' })
+                  : t('archiveHold.checkingStart', 'Starting the check')}
+              </span>
+              <span className="shrink-0 tabular-nums text-surface-400">
+                {t('archiveHold.passProgress', '{{done}} of {{total}} in this pass', { done: pass.done, total: pass.total })}
+                {status && status.unchecked > 0 && ` · ${t('archiveHold.remaining', '{{count}} still to check, about {{minutes}} min', { count: status.unchecked, minutes: minutesLeft })}`}
+              </span>
+            </div>
+            <div className="h-1 mt-1.5 rounded-full bg-surface-800/80 overflow-hidden">
+              <div className="h-full bg-amber-400 rounded-full transition-[width] duration-500" style={{ width: `${pass.total > 0 ? (pass.done / pass.total) * 100 : 0}%` }} />
+            </div>
+          </div>
+        )}
+        {running && !pass && (
+          <p className="text-xs text-surface-300 mt-2">{t('archiveHold.betweenPasses', 'Between passes, starting the next one')}</p>
+        )}
+        {!running && status?.lastPassAt && (
+          <p className="text-[11px] text-surface-500 mt-1">{t('archiveHold.lastPass', 'Last check {{time}}', { time: formatRelativeTime(status.lastPassAt) })}</p>
+        )}
+      </div>
+      {!running && unchecked > 0 && status?.enabled && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="shrink-0"
+          disabled={paused || runCheck.isPending}
+          title={paused ? t('archiveHold.pausedHint', 'Checks are paused until the indexers answer again') : undefined}
+          onClick={() => runCheck.mutate()}
+        >
+          <Play className="w-3.5 h-3.5 mr-1.5" />
+          {t('archiveHold.checkNow', 'Check now')}
+        </Button>
+      )}
+    </div>
+  );
 }
 
 const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRemove, onProtect, onArchive, onDeleteAnyway, onCheckAvailability, checking = false, onDeleteNow, onRetryJob, job, now, overseerrUrl, hasArrService = true }: QueueItemRowProps) {

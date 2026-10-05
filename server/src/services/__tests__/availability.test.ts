@@ -42,7 +42,7 @@ vi.mock('../mediaActions', () => ({
   },
 }));
 
-import { AvailabilityPausedError, checkItem, checkQueue, getAvailabilityStatus, getPause, itemsNeedingCheck, pickSeasons, probeService, resetAvailabilityState } from '../availability';
+import { AvailabilityPausedError, checkAll, checkItem, checkQueue, getAvailabilityStatus, getPause, itemsNeedingCheck, pickSeasons, probeService, resetAvailabilityState } from '../availability';
 
 function httpError(status: number | null, headers: Record<string, string> = {}): Error {
   const error = new Error(status ? `Request failed with status code ${status}` : 'connect ECONNREFUSED') as Error & { isAxiosError: boolean; response?: unknown };
@@ -309,5 +309,32 @@ describe('checkQueue', () => {
     state.settings = { archive_enabled: 'false' };
     movie(1);
     expect(await checkQueue()).toMatchObject({ checked: 0 });
+  });
+});
+
+describe('checkAll', () => {
+  it('chains passes past the per-pass cap until every queued item has a verdict', async () => {
+    for (let id = 1; id <= 45; id++) movie(id);
+    expect(getAvailabilityStatus()).toMatchObject({ unchecked: 45, checkingAll: false });
+
+    const run = checkAll();
+    expect(getAvailabilityStatus().checkingAll).toBe(true);
+    // A second call while one runs joins it rather than starting another.
+    expect(checkAll()).toBe(run);
+
+    const result = await run;
+    expect(result).toMatchObject({ checked: 45, replaceable: 45, skipped: 0 });
+    expect(getAvailabilityStatus()).toMatchObject({ unchecked: 0, checkingAll: false, pass: null });
+  });
+
+  it('stops when a pass can check nothing because the only app with items is paused', async () => {
+    for (let id = 1; id <= 42; id++) movie(id);
+    state.radarr!['getReleases'] = async () => {
+      throw httpError(503);
+    };
+    const result = await checkAll();
+    expect(result.checked).toBe(0);
+    expect(result.paused).toBeGreaterThan(0);
+    expect(getAvailabilityStatus().checkingAll).toBe(false);
   });
 });

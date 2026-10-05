@@ -98,6 +98,9 @@ export default interface Resources {
         "enabled": "enabled the API key",
         "regenerated": "regenerated the API key"
       },
+      "archive": {
+        "checkAll": "started an Archive check of everything queued"
+      },
       "audit": {
         "exported": "exported the audit log",
         "verified": "verified the audit chain"
@@ -1473,9 +1476,25 @@ export default interface Resources {
       "removingProgress": "Removing {{current}}/{{total}}..."
     },
     "archiveHold": {
+      "atRisk_one": "{{count}} may not be downloadable again",
+      "atRisk_other": "{{count}} may not be downloadable again",
+      "betweenPasses": "Between passes, starting the next one",
+      "checkNow": "Check now",
+      "checking": "Checking {{title}} in {{service}}",
+      "checkingStart": "Starting the check",
       "desc": "These may not be downloadable again, so automatic processing leaves them alone. Archive one to keep it for good, or choose Delete anyway.",
+      "descUnchecked": "Archive has not asked Radarr or Sonarr about these yet, so automatic processing leaves them alone until it has. Nothing is wrong with them.",
+      "lastPass": "Last check {{time}}",
+      "notChecked_one": "{{count}} not checked yet",
+      "notChecked_other": "{{count}} not checked yet",
+      "passProgress": "{{done}} of {{total}} in this pass",
+      "pausedHint": "Checks are paused until the indexers answer again",
+      "remaining_one": "{{count}} still to check, about {{minutes}} min",
+      "remaining_other": "{{count}} still to check, about {{minutes}} min",
       "title_one": "{{count}} item(s) held by Archive",
-      "title_other": "{{count}} item(s) held by Archive"
+      "title_other": "{{count}} item(s) held by Archive",
+      "unknown_one": "{{count}} could not be decided",
+      "unknown_other": "{{count}} could not be decided"
     },
     "archivePaused": {
       "desc_one": "Queued items without a verdict stay held, so nothing is deleted on a guess. Checks resume on their own once the indexers answer again.",

@@ -19,9 +19,25 @@
     "removingProgress": "Wird entfernt {{current}}/{{total}}..."
   },
   "archiveHold": {
+    "atRisk_one": "",
+    "atRisk_other": "",
+    "betweenPasses": "",
+    "checking": "",
+    "checkingStart": "",
+    "checkNow": "",
     "desc": "",
+    "descUnchecked": "",
+    "lastPass": "",
+    "notChecked_one": "",
+    "notChecked_other": "",
+    "passProgress": "",
+    "pausedHint": "",
+    "remaining_one": "",
+    "remaining_other": "",
     "title_one": "",
-    "title_other": ""
+    "title_other": "",
+    "unknown_one": "",
+    "unknown_other": ""
   },
   "archivePaused": {
     "desc_one": "",
