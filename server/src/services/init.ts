@@ -22,7 +22,7 @@ import { getScheduler } from '../scheduler';
 import type { MediaItem } from '../types';
 import { findRadarrId, findSonarrId } from './arrLink';
 // Registers the background availability pass that queueing kicks (Archive).
-import './availability';
+import { scheduleStartupAvailabilityPass } from './availability';
 
 // Service instances (singletons)
 let sonarrService: SonarrService | null = null;
@@ -156,6 +156,10 @@ export function refreshServices(): void {
  */
 export async function initializeServices(): Promise<void> {
   logger.info('Initializing services...');
+
+  // Archive: give queued items their verdicts a minute after start-up. The
+  // database is open by now; the module itself must not touch it on load.
+  if (process.env['NODE_ENV'] !== 'test') scheduleStartupAvailabilityPass();
 
   // Initialize service instances based on config
   const sonarr = getSonarrService();

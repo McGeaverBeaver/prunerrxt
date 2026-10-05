@@ -484,8 +484,9 @@ export function checkQueue(options: { limit?: number; actorName?: string } = {})
  * items at once starts one pass, not fifty.
  */
 export function kickAvailabilityChecks(delayMs: number = 5_000): void {
-  if (!getArchiveSettings().enabled) return;
   if (kickTimer) clearTimeout(kickTimer);
+  // The enabled check waits for the timer: this can be called before the
+  // database is open (at start-up), and checkQueue reads the setting anyway.
   kickTimer = setTimeout(() => {
     kickTimer = null;
     checkQueue({ actorName: 'Archive' }).catch((error) => logger.warn('Background availability pass failed', error));
@@ -495,9 +496,14 @@ export function kickAvailabilityChecks(delayMs: number = 5_000): void {
 
 registerAvailabilityKick(() => kickAvailabilityChecks());
 
-// A pass shortly after start-up, so items queued while the app was down (or
-// by an older version) get their verdicts without waiting for the schedule.
-if (process.env['NODE_ENV'] !== 'test') kickAvailabilityChecks(60_000);
+/**
+ * A pass shortly after start-up, so items queued while the app was down (or
+ * by an older version) get their verdicts without waiting for the schedule.
+ * Called from service initialisation, once the database is open.
+ */
+export function scheduleStartupAvailabilityPass(delayMs: number = 60_000): void {
+  kickAvailabilityChecks(delayMs);
+}
 
 /** Tests only. */
 export function resetAvailabilityState(options: { searchGapMs?: number } = {}): void {
