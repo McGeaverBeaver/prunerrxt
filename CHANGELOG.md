@@ -7,7 +7,7 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
-## 2.0.0 (unreleased)
+## 2.0.0 (2026-10-05)
 
 The first PrunerrXT release, an extended edition of Prunerr 1.8.2 by Harry
 Elliott. Everything the original does is still here; on top of it:
@@ -39,3 +39,4 @@ Elliott. Everything the original does is still here; on top of it:
 - **No outbound calls.** Telemetry, the remote announcements feed and
   third-party fonts are gone.
 - **Node 24**, Tailwind CSS 4, and a clean dependency audit.
+
