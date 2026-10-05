@@ -31,6 +31,17 @@ function restoreLastSync(): void {
       lastSyncCompletedAt = saved.completedAt ? new Date(saved.completedAt) : null;
       lastSyncFinishedAt = saved.finishedAt ? new Date(saved.finishedAt) : null;
       lastSyncSuccess = typeof saved.success === 'boolean' ? saved.success : null;
+      return;
+    }
+    // Nothing saved yet (a sync has not run since this was added): the
+    // scheduler keeps its own history of the nightly sync job, so a successful
+    // run there is the next best answer to "when did the library last sync".
+    const job = settingsRepo.getJson<{ lastRun?: string | null; lastResult?: { success?: boolean; completedAt?: string } | null } | null>('scheduler_job_syncPlexLibrary', null);
+    if (job && typeof job === 'object' && job.lastRun) {
+      const finished = new Date(job.lastResult?.completedAt ?? job.lastRun);
+      lastSyncFinishedAt = finished;
+      lastSyncSuccess = job.lastResult?.success === true;
+      lastSyncCompletedAt = lastSyncSuccess ? finished : null;
     }
   } catch (error) {
     logger.debug(`Could not restore the last sync result: ${error instanceof Error ? error.message : String(error)}`);

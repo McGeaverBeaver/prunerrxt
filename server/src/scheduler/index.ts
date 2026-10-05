@@ -52,7 +52,9 @@ const DEFAULT_CONFIG: SchedulerConfig = {
     syncPlexUsers: '45 3 * * *', // Daily at 3:45 AM (after scan)
     monitorDiskPressure: '*/20 * * * *', // Every 20 minutes (self-disables via settings)
     captureInsightSnapshot: '50 3 * * *', // Daily at 3:50 AM (after scan and users sync)
-    checkAvailability: '7/15 * * * *', // Every 15 minutes: no-op when every queued item has a fresh verdict, probes a paused app
+    // Every 15 minutes (node-cron rejects the "7/15" step form, so the minutes are spelled out):
+    // a no-op when every queued item has a fresh verdict; probes a paused app.
+    checkAvailability: '7,22,37,52 * * * *',
   },
   timezone: 'UTC',
 };

@@ -202,6 +202,23 @@ describe('checkItem', () => {
   });
 });
 
+describe('lazy linking', () => {
+  it('finds the Radarr movie by folder before calling the item unlinked, and remembers the id', async () => {
+    state.radarr!['getMovies'] = async () => [{ id: 300, title: '300', year: 2007, path: '/movies/300 (2006)' }];
+    const item = movie(30, { radarr_id: null, title: '300', year: 2007, file_path: '/data/movies/300 (2006)/300.mkv' });
+    const result = await checkItem(item as never);
+    expect(result.report.verdict).toBe('replaceable');
+    expect(item['radarr_id']).toBe(300);
+  });
+
+  it('still answers not linked when nothing in Radarr matches', async () => {
+    state.radarr!['getMovies'] = async () => [];
+    const item = movie(31, { radarr_id: null, title: 'Nothing Like It', year: 1999, file_path: null });
+    expect((await checkItem(item as never)).report).toMatchObject({ verdict: 'unknown', reasons: ['not_linked'] });
+    expect(item['radarr_id']).toBeNull();
+  });
+});
+
 describe('pickSeasons', () => {
   it('keeps the first, middle and last season that has files, skipping specials', () => {
     const seasons = [0, 1, 2, 3, 4, 5, 6].map((n) => ({ seasonNumber: n, monitored: true, statistics: { episodeFileCount: n === 3 ? 0 : 2 } }));

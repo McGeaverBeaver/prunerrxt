@@ -27,6 +27,7 @@ import type { ArrRelease, SonarrSeason } from './types';
 import type { IndexerHealth } from './arrHttp';
 import { getRadarrService, getSonarrService } from './init';
 import { archiveItems } from './mediaActions';
+import { linkToArr } from './arrLink';
 import { registerAvailabilityKick } from './availabilityKick';
 import {
   describeReasons,
@@ -338,6 +339,12 @@ export async function checkItem(item: MediaItem, options: { force?: boolean; act
   const pause = getPause(serviceFor(item));
   if (pause && !options.force) throw new AvailabilityPausedError(pause);
 
+  // The sync links by id; when that found nothing, try the folder and title
+  // before calling the item unlinked (the same lookup deletion uses).
+  if ((item.type === 'movie' && !item.radarr_id) || (item.type === 'show' && !item.sonarr_id)) {
+    item = await linkToArr(item, 'availability check');
+  }
+
   const report = item.type === 'movie' ? await checkMovie(item, settings) : await checkShow(item, settings);
   const updated =
     mediaItemsRepo.update(item.id, {
@@ -480,6 +487,10 @@ export function kickAvailabilityChecks(delayMs: number = 5_000): void {
 }
 
 registerAvailabilityKick(() => kickAvailabilityChecks());
+
+// A pass shortly after start-up, so items queued while the app was down (or
+// by an older version) get their verdicts without waiting for the schedule.
+if (process.env['NODE_ENV'] !== 'test') kickAvailabilityChecks(60_000);
 
 /** Tests only. */
 export function resetAvailabilityState(options: { searchGapMs?: number } = {}): void {

@@ -20,7 +20,7 @@ import { getNotificationService } from '../notifications';
 import { setTaskDependencies } from '../scheduler/tasks';
 import { getScheduler } from '../scheduler';
 import type { MediaItem } from '../types';
-import { MovieMatcher, SeriesMatcher } from './arrMatch';
+import { findRadarrId, findSonarrId } from './arrLink';
 // Registers the background availability pass that queueing kicks (Archive).
 import './availability';
 
@@ -207,10 +207,7 @@ export async function initializeServices(): Promise<void> {
       unmonitorSeries: (seriesId) => sonarr.unmonitorSeries(seriesId),
       deleteAllEpisodeFiles: (seriesId, onProgress) => sonarr.deleteAllEpisodeFiles(seriesId, onProgress),
       removeSeries: (seriesId, deleteFiles) => sonarr.removeSeries(seriesId, deleteFiles),
-      findSeries: async (item) => {
-        const hit = new SeriesMatcher(await sonarr.getSeries()).match({ title: item.title, year: item.year, filePath: item.file_path });
-        return hit ? { id: hit.item.id, how: hit.how } : null;
-      },
+      findSeries: (item) => findSonarrId(item),
     } : undefined,
 
     // Radarr service (if configured)
@@ -218,10 +215,7 @@ export async function initializeServices(): Promise<void> {
       unmonitorMovie: (movieId) => radarr.unmonitorMovie(movieId),
       deleteMovieFilesByMovieId: (movieId, onProgress) => radarr.deleteMovieFilesByMovieId(movieId, onProgress),
       removeMovie: (movieId, deleteFiles) => radarr.removeMovie(movieId, deleteFiles),
-      findMovie: async (item) => {
-        const hit = new MovieMatcher(await radarr.getMovies()).match({ title: item.title, year: item.year, filePath: item.file_path });
-        return hit ? { id: hit.item.id, how: hit.how } : null;
-      },
+      findMovie: (item) => findRadarrId(item),
     } : undefined,
 
     // Overseerr service (if configured)
