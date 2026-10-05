@@ -60,11 +60,13 @@ function SectionLabel({
 // the free segment.
 function splitCapacity(stats: UnraidStats) {
   const arrayTotal = stats.totalCapacity ?? 0;
+  // A pool's members carry only their raw device size; the pool row already
+  // counts the filesystem they make up, so they add nothing here.
   const cacheSize = stats.disks
-    .filter((d) => d.type === 'cache')
+    .filter((d) => d.type === 'cache' && d.poolRole !== 'member')
     .reduce((a, d) => a + d.size, 0);
   const cacheUsed = stats.disks
-    .filter((d) => d.type === 'cache')
+    .filter((d) => d.type === 'cache' && d.poolRole !== 'member')
     .reduce((a, d) => a + d.used, 0);
   const arrayUsed = Math.max(0, (stats.usedCapacity ?? 0) - cacheUsed);
   const combinedTotal = arrayTotal + cacheSize;
@@ -418,6 +420,8 @@ function PoolSection({
   iconColor: string;
   disks: UnraidDisk[];
 }) {
+  const { t } = useTranslation('layout');
+  const pools = disks.filter((d) => d.poolRole === 'pool').length;
   if (!disks.length) return null;
   return (
     <div>
@@ -425,7 +429,9 @@ function PoolSection({
         <Icon className={cn('w-3.5 h-3.5', iconColor)} />
         {title}
         <span className="px-1.5 py-px rounded-full bg-surface-800/70 border border-surface-700/40 text-[9.5px] font-semibold normal-case tracking-normal text-surface-500">
-          {disks.length}
+          {pools > 0 && pools < disks.length
+            ? t('diskStats.poolsAndDevices', '{{pools}} pools · {{devices}} devices', { pools, devices: disks.length })
+            : disks.length}
         </span>
       </SectionLabel>
       <div className="flex flex-col gap-1.5">
@@ -434,8 +440,44 @@ function PoolSection({
     </div>
   );
 }
+/** A device inside a multi-device pool: it has a size and a temperature, but the usage belongs to the pool row above it. */
+function PoolMemberRow({ disk }: { disk: UnraidDisk }) {
+  const { t } = useTranslation('layout');
+  return (
+    <div
+      className={cn(
+        'grid items-center gap-2 sm:gap-3.5 px-2.5 sm:px-3.5 py-2 rounded-xl border border-surface-700/20 ml-3 sm:ml-5',
+        'bg-surface-800/25 grid-cols-[10px_minmax(70px,90px)_minmax(0,1fr)_50px_44px]',
+        'sm:grid-cols-[14px_100px_minmax(0,1fr)_130px_70px]',
+      )}
+    >
+      <span className="w-2 h-2 rounded-full border border-violet-400/60" />
+      <div className="flex flex-col min-w-0">
+        <span className="text-[12.5px] font-medium text-surface-200 truncate">{disk.name}</span>
+        {disk.filesystem && (
+          <span className="text-[9.5px] font-mono uppercase tracking-[0.04em] text-surface-500 truncate">{disk.filesystem}</span>
+        )}
+      </div>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-[10px] text-surface-400 tabular-nums truncate">
+          {t('diskStats.poolMember', 'Member of {{pool}} pool', { pool: disk.pool })}
+          <span className="text-surface-600"> · {formatBytes(disk.size)}</span>
+        </span>
+      </div>
+      <div className="text-right text-[11px] text-surface-600">—</div>
+      <div className="text-right">
+        <span className={cn('inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold font-mono', tempClass(disk.temp))}>
+          <Thermometer className="w-2.5 h-2.5 shrink-0" />
+          {disk.temp != null ? `${disk.temp}°` : '—'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function DiskRow({ disk }: { disk: UnraidDisk }) {
   const { t } = useTranslation('layout');
+  if (disk.poolRole === 'member') return <PoolMemberRow disk={disk} />;
   const c = pctColor(disk.usedPercent);
   const heatGradient =
     disk.usedPercent > 90 ? 'rgb(244 63 94 / 0.15)' :

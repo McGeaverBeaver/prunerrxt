@@ -13,6 +13,7 @@ export interface UnraidCapacity {
   };
 }
 
+/** Sizes are kilobytes, as the Unraid API reports them. */
 export interface UnraidDisk {
   id: string;
   name: string;
@@ -22,6 +23,7 @@ export interface UnraidDisk {
   fsUsed: number | null;
   fsFree: number | null;
   fsSize: number | null;
+  fsType?: string | null;
 }
 
 export interface UnraidCache {
@@ -32,6 +34,7 @@ export interface UnraidCache {
   fsUsed: number | null;
   fsFree: number | null;
   fsSize: number | null;
+  fsType?: string | null;
 }
 
 export interface UnraidParity {
@@ -179,6 +182,7 @@ export class UnraidService {
               fsUsed
               fsFree
               fsSize
+              fsType
             }
             caches {
               id
@@ -188,6 +192,7 @@ export class UnraidService {
               fsUsed
               fsFree
               fsSize
+              fsType
             }
             parities {
               id

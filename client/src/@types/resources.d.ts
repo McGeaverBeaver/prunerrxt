@@ -1051,6 +1051,8 @@ export default interface Resources {
       "notConfigured": "Unraid not configured",
       "notConfiguredHint": "Configure your Unraid connection in Settings to view detailed disk statistics.",
       "parity": "Parity",
+      "poolMember": "Member of {{pool}} pool",
+      "poolsAndDevices": "{{pools}} pools · {{devices}} devices",
       "projectedFull": "Projected full",
       "protected": "Protected",
       "smart": "SMART",

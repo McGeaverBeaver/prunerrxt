@@ -824,6 +824,10 @@ export interface UnraidDisk {
   status: 'active' | 'standby' | 'error' | 'unknown';
   type: 'data' | 'parity' | 'cache';
   filesystem?: string;
+  /** Cache devices: the pool this device belongs to. */
+  pool?: string;
+  /** Cache devices: 'pool' carries the filesystem and its usage; 'member' is another device in that pool. */
+  poolRole?: 'pool' | 'member';
 }
 
 export interface UnraidStats {

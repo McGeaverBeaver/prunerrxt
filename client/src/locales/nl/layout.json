@@ -35,6 +35,8 @@
     "notConfigured": "Unraid niet geconfigureerd",
     "notConfiguredHint": "Configureer je Unraid-verbinding in Instellingen om gedetailleerde schijfstatistieken te bekijken.",
     "parity": "Pariteit",
+    "poolMember": "",
+    "poolsAndDevices": "",
     "projectedFull": "Verwacht vol",
     "protected": "Beschermd",
     "smart": "SMART",

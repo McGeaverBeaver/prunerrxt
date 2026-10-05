@@ -35,6 +35,8 @@
     "notConfigured": "Unraid nicht konfiguriert",
     "notConfiguredHint": "Konfigurieren Sie Ihre Unraid-Verbindung in den Einstellungen, um detaillierte Festplattenstatistiken anzuzeigen.",
     "parity": "Parität",
+    "poolMember": "",
+    "poolsAndDevices": "",
     "projectedFull": "Voraussichtlich voll",
     "protected": "Geschützt",
     "smart": "SMART",

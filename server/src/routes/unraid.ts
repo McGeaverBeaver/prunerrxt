@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { UnraidService } from '../services/unraid';
+import { shapeUnraidDisks } from '../services/unraidDisks';
 import settingsRepo from '../db/repositories/settings';
 import unraidSnapshotsRepo from '../db/repositories/unraidSnapshots';
 import logger from '../utils/logger';
@@ -57,15 +58,6 @@ router.get('/test', async (_req: Request, res: Response) => {
   }
 });
 
-// Helper to map status string to expected values
-function mapDiskStatus(status: string): 'active' | 'standby' | 'error' | 'unknown' {
-  const statusLower = status.toLowerCase();
-  if (statusLower.includes('active') || statusLower === 'disk_ok') return 'active';
-  if (statusLower.includes('standby')) return 'standby';
-  if (statusLower.includes('error') || statusLower.includes('fail')) return 'error';
-  return 'unknown';
-}
-
 // Helper to map array state
 function mapArrayState(state: string): 'Started' | 'Stopped' | 'Syncing' | 'Unknown' {
   const stateLower = state.toLowerCase();
@@ -99,58 +91,7 @@ router.get('/stats', async (_req: Request, res: Response) => {
     const freeCapacity = arrayStats.capacity.kilobytes.free * KB_TO_BYTES;
     const usedPercent = totalCapacity > 0 ? (usedCapacity / totalCapacity) * 100 : 0;
 
-    // Combine all disks into a single array with type annotations
-    const allDisks = [
-      // Data disks
-      ...arrayStats.disks.map((disk) => {
-        const size = disk.fsSize !== null ? disk.fsSize * KB_TO_BYTES : disk.size;
-        const used = disk.fsUsed !== null ? disk.fsUsed * KB_TO_BYTES : 0;
-        const free = disk.fsFree !== null ? disk.fsFree * KB_TO_BYTES : 0;
-        return {
-          name: disk.name,
-          device: disk.id || disk.name,
-          size,
-          used,
-          free,
-          usedPercent: size > 0 ? (used / size) * 100 : 0,
-          temp: disk.temp ?? undefined,
-          status: mapDiskStatus(disk.status),
-          type: 'data' as const,
-          filesystem: undefined,
-        };
-      }),
-      // Parity disks
-      ...arrayStats.parities.map((parity) => ({
-        name: parity.name,
-        device: parity.id || parity.name,
-        size: parity.size,
-        used: 0,
-        free: 0,
-        usedPercent: 0,
-        temp: parity.temp ?? undefined,
-        status: mapDiskStatus(parity.status),
-        type: 'parity' as const,
-        filesystem: undefined,
-      })),
-      // Cache disks
-      ...arrayStats.caches.map((cache) => {
-        const size = cache.fsSize !== null ? cache.fsSize * KB_TO_BYTES : cache.size;
-        const used = cache.fsUsed !== null ? cache.fsUsed * KB_TO_BYTES : 0;
-        const free = cache.fsFree !== null ? cache.fsFree * KB_TO_BYTES : 0;
-        return {
-          name: cache.name,
-          device: cache.id || cache.name,
-          size,
-          used,
-          free,
-          usedPercent: size > 0 ? (used / size) * 100 : 0,
-          temp: cache.temp ?? undefined,
-          status: 'active' as const,
-          type: 'cache' as const,
-          filesystem: undefined,
-        };
-      }),
-    ];
+    const allDisks = shapeUnraidDisks(arrayStats);
 
     // Best-effort: capture today's snapshot so the trend builds up over time
     // without waiting for the daily scheduled task. Idempotent per day.
