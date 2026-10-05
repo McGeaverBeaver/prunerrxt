@@ -50,9 +50,9 @@ export function DeletionJobsIndicator() {
         title={t('jobs.indicator.open', 'Show deletion jobs')}
       >
         {current ? (
-          <Loader2 className="mt-0.5 h-4 w-4 flex-shrink-0 animate-spin text-accent-text" aria-hidden />
+          <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-accent-text" aria-hidden />
         ) : (
-          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-ruby-text" aria-hidden />
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-ruby-text" aria-hidden />
         )}
         <span className="min-w-0 flex-1">
           <span className={`block text-sm font-medium ${current ? 'text-surface-50' : 'text-ruby-text'}`}>{headline}</span>

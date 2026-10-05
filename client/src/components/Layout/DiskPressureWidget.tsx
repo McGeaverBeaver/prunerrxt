@@ -39,13 +39,13 @@ export function DiskPressureWidget({ stats }: DiskPressureWidgetProps) {
     <div
       className={cn(
         'w-full p-3.5 rounded-2xl text-left',
-        'bg-gradient-to-b from-surface-800/55 to-surface-800/30',
+        'bg-linear-to-b from-surface-800/55 to-surface-800/30',
         'border border-surface-700/45',
         'shadow-[0_1px_0_rgb(255_255_255/0.02)_inset,0_8px_24px_-16px_rgb(0_0_0/0.4)]',
       )}
     >
       <div className="relative flex items-center gap-3.5">
-        <div className="relative w-[60px] h-[60px] flex-shrink-0">
+        <div className="relative w-[60px] h-[60px] shrink-0">
           <svg className="relative w-[60px] h-[60px] -rotate-90 overflow-visible" viewBox="0 0 56 56">
             <circle cx="28" cy="28" r={r} fill="none" strokeWidth="5" className="text-surface-700/70" stroke="currentColor" />
             {targetUsedPct !== null && (
@@ -85,7 +85,7 @@ export function DiskPressureWidget({ stats }: DiskPressureWidgetProps) {
           <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-surface-500 flex items-center gap-1">
             <Gauge className="w-3 h-3" /> Free Space
           </p>
-          <p className="font-display font-bold text-[22px] leading-none text-surface-50 tabular-nums -tracking-[0.02em] mt-0.5">
+          <p className="font-display font-bold text-[22px] leading-none text-surface-50 tabular-nums tracking-[-0.02em] mt-0.5">
             {formatBytes(free)}
           </p>
           <p className="text-[11px] text-surface-500 mt-0.5 tabular-nums">free of {formatBytes(total)}</p>

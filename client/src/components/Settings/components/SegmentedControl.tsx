@@ -52,7 +52,7 @@ export function SegmentedControl<T extends string>({
               'min-h-[38px] flex-1 rounded-lg px-2 text-xs font-semibold',
               'sm:min-h-0 sm:flex-none sm:px-[13px] sm:py-1.5',
               'transition-colors duration-150',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60',
+              'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60',
               selected
                 ? 'bg-accent-500/[0.14] text-accent-text'
                 : 'text-surface-400 hover:text-surface-200',

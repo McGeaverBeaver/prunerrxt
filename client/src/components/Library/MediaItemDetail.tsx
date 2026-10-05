@@ -328,7 +328,7 @@ export default function MediaItemDetail() {
             loading="eager"
             decoding="async"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-surface-950/20 via-surface-950/45 to-surface-950/70" />
+          <div className="absolute inset-0 bg-linear-to-b from-surface-950/20 via-surface-950/45 to-surface-950/70" />
         </div>
       )}
 
@@ -348,7 +348,7 @@ export default function MediaItemDetail() {
           {/* Full width would cost a phone its whole first screen before the
               title and tabs, so the cover is capped until the grid splits. */}
           <Card className="overflow-hidden max-w-[220px] mx-auto lg:max-w-none lg:mx-0">
-            <div className="aspect-[2/3] relative">
+            <div className="aspect-2/3 relative">
               {item.posterUrl ? (
                 <img
                   src={item.posterUrl}
@@ -365,7 +365,7 @@ export default function MediaItemDetail() {
                   )}
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-surface-800 to-surface-900 flex items-center justify-center">
+                <div className="w-full h-full bg-linear-to-br from-surface-800 to-surface-900 flex items-center justify-center">
                   <div
                     className={cn(
                       'p-8 rounded-2xl',
@@ -398,7 +398,7 @@ export default function MediaItemDetail() {
 
               {/* Protected badge */}
               {item.isProtected && item.status !== 'queued' && item.status !== 'deleted' && (
-                <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-accent-500/90 backdrop-blur-sm text-amber-950 text-xs font-semibold shadow-md shadow-black/30">
+                <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-accent-500/90 backdrop-blur-xs text-amber-950 text-xs font-semibold shadow-md shadow-black/30">
                   {item.archivedAt ? <Archive className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
                   {item.archivedAt
                     ? t('status.archived', 'Archived')
@@ -591,7 +591,7 @@ export default function MediaItemDetail() {
                 )}
                 {item.status !== 'deleted' && (
                   <div className="flex items-start gap-3 sm:col-span-2">
-                    <div className="p-2 rounded-lg bg-surface-800/60 text-surface-400 flex-shrink-0"><Archive className="w-4 h-4" /></div>
+                    <div className="p-2 rounded-lg bg-surface-800/60 text-surface-400 shrink-0"><Archive className="w-4 h-4" /></div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-surface-500 font-medium">{t('detail.availability', 'Can it be downloaded again?')}</p>
                       <div className="flex items-center flex-wrap gap-2 mt-1">
@@ -684,15 +684,15 @@ export default function MediaItemDetail() {
 function DetailSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="h-5 w-32 bg-surface-800/80 rounded animate-pulse" />
+      <div className="h-5 w-32 bg-surface-800/80 rounded-sm animate-pulse" />
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
         <div className="space-y-4">
-          <div className="aspect-[2/3] rounded-2xl bg-surface-800/80 animate-pulse" />
+          <div className="aspect-2/3 rounded-2xl bg-surface-800/80 animate-pulse" />
           <div className="h-10 rounded-xl bg-surface-800/80 animate-pulse" />
         </div>
         <div className="space-y-6">
           <div className="space-y-3">
-            <div className="h-8 w-2/3 bg-surface-800/80 rounded animate-pulse" />
+            <div className="h-8 w-2/3 bg-surface-800/80 rounded-sm animate-pulse" />
             <div className="flex gap-2">
               <div className="h-6 w-20 bg-surface-800/80 rounded-lg animate-pulse" />
               <div className="h-6 w-16 bg-surface-800/80 rounded-lg animate-pulse" />
@@ -704,22 +704,22 @@ function DetailSkeleton() {
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-surface-800/80 animate-pulse" />
                   <div className="space-y-1.5 flex-1">
-                    <div className="h-3 w-16 bg-surface-800/60 rounded animate-pulse" />
-                    <div className="h-4 w-24 bg-surface-800/80 rounded animate-pulse" />
+                    <div className="h-3 w-16 bg-surface-800/60 rounded-sm animate-pulse" />
+                    <div className="h-4 w-24 bg-surface-800/80 rounded-sm animate-pulse" />
                   </div>
                 </div>
               ))}
             </div>
           </div>
           <div className="rounded-2xl bg-surface-900/80 border border-surface-700/50 p-6">
-            <div className="h-5 w-40 bg-surface-800/80 rounded animate-pulse mb-5" />
+            <div className="h-5 w-40 bg-surface-800/80 rounded-sm animate-pulse mb-5" />
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="flex gap-4">
                   <div className="w-10 h-10 rounded-xl bg-surface-800/80 animate-pulse" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-surface-800/80 rounded w-3/4 animate-pulse" />
-                    <div className="h-3 bg-surface-800/50 rounded w-1/2 animate-pulse" />
+                    <div className="h-4 bg-surface-800/80 rounded-sm w-3/4 animate-pulse" />
+                    <div className="h-3 bg-surface-800/50 rounded-sm w-1/2 animate-pulse" />
                   </div>
                 </div>
               ))}

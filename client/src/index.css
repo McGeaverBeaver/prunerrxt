@@ -1,6 +1,592 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-accent-50: #fffbeb;
+  --color-accent-100: #fef3c7;
+  --color-accent-200: #fde68a;
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+  --color-accent-700: #b45309;
+  --color-accent-800: #92400e;
+  --color-accent-900: #78350f;
+
+  --color-surface-50: rgb(var(--surface-50));
+  --color-surface-100: rgb(var(--surface-100));
+  --color-surface-200: rgb(var(--surface-200));
+  --color-surface-300: rgb(var(--surface-300));
+  --color-surface-400: rgb(var(--surface-400));
+  --color-surface-500: rgb(var(--surface-500));
+  --color-surface-600: rgb(var(--surface-600));
+  --color-surface-700: rgb(var(--surface-700));
+  --color-surface-800: rgb(var(--surface-800));
+  --color-surface-900: rgb(var(--surface-900));
+  --color-surface-950: rgb(var(--surface-950));
+
+  --color-accent-text: rgb(var(--accent-text));
+  --color-accent-text-hover: rgb(var(--accent-text-hover));
+
+  --color-ruby-400: #fb7185;
+  --color-ruby-500: #f43f5e;
+  --color-ruby-600: #e11d48;
+  --color-ruby-text: rgb(var(--ruby-text));
+
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-text: rgb(var(--emerald-text));
+
+  --color-violet-400: #a78bfa;
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #7c3aed;
+  --color-violet-text: rgb(var(--violet-text));
+
+  --color-cyan-400: #22d3ee;
+  --color-cyan-500: #06b6d4;
+  --color-cyan-600: #0891b2;
+  --color-cyan-text: rgb(var(--cyan-text));
+
+  --font-display: Outfit Variable, system-ui, sans-serif;
+  --font-sans: DM Sans Variable, system-ui, sans-serif;
+  --font-mono: JetBrains Mono Variable, monospace;
+
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.75rem;
+
+  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+  --background-image-gradient-conic: conic-gradient(
+    from 180deg at 50% 50%,
+    var(--tw-gradient-stops)
+  );
+  --background-image-gradient-mesh: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+
+  --shadow-glow-sm: 0 0 15px -3px var(--tw-shadow-color);
+  --shadow-glow: 0 0 25px -5px var(--tw-shadow-color);
+  --shadow-glow-lg: 0 0 50px -12px var(--tw-shadow-color);
+  --shadow-inner-glow: inset 0 0 20px -5px var(--tw-shadow-color);
+
+  --animate-fade-in: fadeIn 0.5s ease-out;
+  --animate-fade-up: fadeUp 0.5s ease-out;
+  --animate-fade-down: fadeDown 0.3s ease-out;
+  --animate-scale-in: scaleIn 0.2s ease-out;
+  --animate-slide-left: slideLeft 0.3s ease-out;
+  --animate-slide-right: slideRight 0.3s ease-out;
+  --animate-pulse-glow: pulseGlow 2s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  --ease-bounce-in: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes fadeUp {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fadeDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scaleIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes slideLeft {
+    0% {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes slideRight {
+    0% {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes pulseGlow {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility glass {
+  /* Glass card effect */
+  @apply bg-surface-900/60 backdrop-blur-xl border border-surface-700/50 shadow-xs shadow-black/5;
+}
+
+@utility glass-subtle {
+  @apply bg-surface-800/40 backdrop-blur-xs border border-surface-700/30 shadow-xs shadow-black/5;
+}
+
+@utility gradient-border {
+  /* Gradient borders */
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(245, 158, 11, 0.3),
+      rgba(139, 92, 246, 0.1),
+      rgba(245, 158, 11, 0.1)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+@utility glow-accent {
+  /* Glow effects */
+  @apply shadow-glow shadow-accent-500/20;
+}
+
+@utility glow-violet {
+  @apply shadow-glow shadow-violet-500/20;
+}
+
+@utility card {
+  /* Card styles */
+  @apply bg-surface-900/80 border border-surface-700/50 rounded-2xl backdrop-blur-xs shadow-xs shadow-black/5;
+}
+
+@utility card-interactive {
+  @apply card transition-all duration-300 ease-out;
+
+  &:hover {
+    @apply border-surface-600/70 bg-surface-800/80 shadow-lg shadow-black/10;
+    transform: translateY(-2px);
+  }
+}
+
+@utility input {
+  /* Input styles */
+  @apply w-full px-4 py-2.5 bg-surface-800/60 border border-surface-600/50 rounded-xl
+           text-surface-100 placeholder-surface-500
+           focus:outline-hidden focus:border-accent-500/50 focus:bg-surface-800/80
+           transition-all duration-200 min-h-[44px];
+}
+
+@utility input-with-icon {
+  @apply pl-11;
+}
+
+@utility select {
+  /* Select styles */
+  @apply input appearance-none cursor-pointer pr-10 bg-no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-size: 1.25rem;
+  background-position: right 0.75rem center;
+}
+
+@utility btn {
+  /* Button base - with minimum touch target */
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium
+           transition-all duration-200 ease-out
+           focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-900
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none
+           min-h-[44px];
+}
+
+@utility btn-primary {
+  @apply btn bg-linear-to-r from-accent-500 to-accent-600 font-semibold
+           hover:from-accent-400 hover:to-accent-500 hover:shadow-lg hover:shadow-accent-500/25
+           focus:ring-accent-500/50 active:scale-[0.98];
+  color: #78350f;
+}
+
+@utility btn-secondary {
+  @apply btn bg-surface-700/80 border border-surface-600/50 text-surface-200
+           hover:bg-surface-600/80 hover:border-surface-500/50
+           focus:ring-surface-500/30 active:scale-[0.98];
+}
+
+@utility btn-ghost {
+  @apply btn bg-transparent text-surface-400 hover:text-surface-200 hover:bg-surface-800/60;
+}
+
+@utility btn-danger {
+  @apply btn bg-ruby-500/10 border border-ruby-500/30 text-ruby-400
+           hover:bg-ruby-500/20 hover:border-ruby-500/50
+           focus:ring-ruby-500/30;
+}
+
+@utility badge {
+  /* Badge styles */
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium tracking-wide;
+}
+
+@utility badge-accent {
+  @apply badge bg-accent-500/15 border border-accent-500/20;
+  color: rgb(var(--accent-text));
+}
+
+@utility badge-violet {
+  @apply badge bg-violet-500/15 text-violet-400 border border-violet-500/20;
+}
+
+@utility badge-emerald {
+  @apply badge bg-emerald-500/15 text-emerald-400 border border-emerald-500/20;
+}
+
+@utility badge-ruby {
+  @apply badge bg-ruby-500/15 text-ruby-400 border border-ruby-500/20;
+}
+
+@utility badge-cyan {
+  @apply badge bg-cyan-500/15 text-cyan-400 border border-cyan-500/20;
+}
+
+@utility badge-muted {
+  @apply badge bg-surface-700/50 text-surface-400 border border-surface-600/30;
+}
+
+@utility stat-card {
+  /* Stat card */
+  @apply card p-5 relative overflow-hidden;
+
+  &::before {
+    content: '';
+    @apply absolute inset-0 opacity-50;
+    background: radial-gradient(
+      ellipse at top right,
+      var(--stat-color, rgba(245, 158, 11, 0.1)),
+      transparent 70%
+    );
+  }
+}
+
+@utility table-container {
+  /* Table styles */
+  @apply card overflow-hidden;
+}
+
+@utility table {
+  @apply w-full;
+
+  & th {
+    @apply px-3 py-3 sm:px-5 sm:py-4 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider
+           bg-surface-800/50 border-b border-surface-700/50;
+  }
+
+  & td {
+    @apply px-3 py-3 sm:px-5 sm:py-4 text-sm text-surface-300;
+  }
+
+  & tbody tr {
+    @apply border-b border-surface-800/50 transition-colors duration-150;
+  }
+
+  & tbody tr:hover {
+    @apply bg-surface-800/30;
+  }
+
+  & tbody tr:last-child {
+    @apply border-b-0;
+  }
+}
+
+@utility nav-item {
+  /* Navigation */
+  @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           text-surface-400 transition-all duration-200;
+
+  &:hover {
+    @apply text-surface-200 bg-surface-800/50;
+  }
+
+  &.active {
+    @apply bg-accent-500/10 border border-accent-500/20;
+    color: rgb(var(--accent-text));
+  }
+
+  &.active .nav-icon {
+    color: rgb(var(--accent-text));
+  }
+}
+
+@utility active {
+  &.nav-item {
+    @apply bg-accent-500/10 border border-accent-500/20;
+    color: rgb(var(--accent-text));
+  }
+
+  &.nav-item .nav-icon {
+    color: rgb(var(--accent-text));
+  }
+}
+
+@utility nav-icon {
+  .nav-item.active & {
+    color: rgb(var(--accent-text));
+  }
+}
+
+@utility poster-card {
+  /* Media poster card */
+  @apply relative rounded-xl overflow-hidden bg-surface-800
+           transition-all duration-300 ease-out cursor-pointer;
+
+  &:hover {
+    @apply shadow-2xl shadow-black/20;
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  .dark &:hover {
+    @apply shadow-black/40;
+  }
+
+  &::after {
+    content: '';
+    @apply absolute inset-0 bg-linear-to-t from-surface-950 via-transparent to-transparent
+           opacity-60 transition-opacity duration-300;
+  }
+
+  &:hover::after {
+    @apply opacity-80;
+  }
+}
+
+@utility dark {
+  & .poster-card:hover {
+    @apply shadow-black/40;
+  }
+}
+
+@utility progress-bar {
+  /* Progress bar */
+  @apply h-2 bg-surface-800 rounded-full overflow-hidden;
+}
+
+@utility progress-fill {
+  @apply h-full bg-linear-to-r from-accent-500 to-accent-400 rounded-full
+           transition-all duration-500 ease-out;
+}
+
+@utility skeleton {
+  /* Skeleton loading */
+  @apply bg-surface-800 rounded-lg animate-pulse;
+}
+
+@utility skeleton-shimmer {
+  @apply relative overflow-hidden bg-surface-800 rounded-lg;
+
+  &::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--surface-50) / 0.04),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@utility divider {
+  /* Divider */
+  @apply h-px bg-linear-to-r from-transparent via-surface-700/50 to-transparent;
+}
+
+@utility empty-state {
+  /* Empty state */
+  @apply text-center py-16 px-6;
+}
+
+@utility empty-state-icon {
+  @apply w-16 h-16 mx-auto mb-4 text-surface-600 opacity-50;
+}
+
+@utility tooltip {
+  /* Tooltip */
+  @apply absolute z-50 px-3 py-2 text-sm text-surface-200 bg-surface-800
+           border border-surface-700/50 rounded-lg shadow-xl
+           opacity-0 invisible transition-all duration-200;
+
+  &.visible {
+    @apply opacity-100;
+    visibility: visible;
+  }
+}
+
+@utility visible {
+  &.tooltip {
+    @apply opacity-100;
+    visibility: visible;
+  }
+}
+
+@utility text-gradient {
+  /* Text utilities */
+  @apply bg-linear-to-r from-accent-400 via-accent-300 to-accent-400 bg-clip-text text-transparent;
+}
+
+@utility text-gradient-violet {
+  @apply bg-linear-to-r from-violet-400 to-violet-300 bg-clip-text text-transparent;
+}
+
+@utility line-clamp-1 {
+  /* Line clamp */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@utility line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@utility line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@utility noise {
+  /* Noise texture overlay */
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.02;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+}
+
+@utility stagger-1 {
+  /* Animations with stagger support */
+  animation-delay: 0.05s;
+}
+
+@utility stagger-2 {
+  animation-delay: 0.1s;
+}
+
+@utility stagger-3 {
+  animation-delay: 0.15s;
+}
+
+@utility stagger-4 {
+  animation-delay: 0.2s;
+}
+
+@utility stagger-5 {
+  animation-delay: 0.25s;
+}
+
+@utility stagger-6 {
+  animation-delay: 0.3s;
+}
+
+@utility no-scrollbar {
+  /* Hide scrollbar */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility touch-target {
+  /* Touch target utility - minimum 44x44px for accessibility */
+  @apply min-w-[44px] min-h-[44px];
+}
 
 @layer base {
   /* Light mode surface palette — inverted so low=dark (text), high=light (bg) */
@@ -126,26 +712,27 @@
 
   /* Focus styles */
   :focus-visible {
-    @apply outline-none ring-2 ring-accent-500/50 ring-offset-2 ring-offset-surface-950;
+    @apply outline-hidden ring-2 ring-accent-500/50 ring-offset-2 ring-offset-surface-950;
   }
 
 }
 
-/* View Transition: prevent flash at end of blur circle animation */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-fill-mode: forwards !important;
-}
+@layer utilities {
+  /* View Transition: prevent flash at end of blur circle animation */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-fill-mode: forwards !important;
+  }
 
-::view-transition-old(root) {
-  z-index: 1;
-}
+  ::view-transition-old(root) {
+    z-index: 1;
+  }
 
-::view-transition-new(root) {
-  z-index: 9999;
-}
+  ::view-transition-new(root) {
+    z-index: 9999;
+  }
 
-/*
+  /*
  * Perf: while a page route transition or the mobile sidebar is mid-animation,
  * an ancestor's transform/opacity changes every frame. `backdrop-filter` has
  * to re-sample its backdrop on each of those frames, which drops frames on
@@ -155,13 +742,13 @@
  * added/removed by App.tsx (page transitions) and Layout.tsx (sidebar), and
  * the filter is restored the instant the animation settles.
  */
-.page-animating *,
-.nav-animating * {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
+  .page-animating *,
+  .nav-animating * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 
-/*
+  /*
  * `backdrop-filter` should never animate via `transition-all`: interpolating a
  * blur is expensive and would "focus-pull" the frosting when it's restored
  * after a transition. Re-declare the transition set as Tailwind's default list
@@ -169,15 +756,16 @@
  * the blur snaps instantly (invisible over the flat background, no pull over
  * poster art). Unlayered, so it overrides the layered `transition-all` utility.
  */
-.card,
-.glass,
-.glass-subtle,
-[class*='backdrop-blur'] {
-  transition-property: color, background-color, border-color, text-decoration-color,
-    fill, stroke, opacity, box-shadow, transform, filter;
-}
+  .card,
+  .glass,
+  .glass-subtle,
+  [class*='backdrop-blur'] {
+    transition-property:
+      color, background-color, border-color, text-decoration-color, fill,
+      stroke, opacity, box-shadow, transform, filter;
+  }
 
-/*
+  /*
  * The sidebar is a fixed column — logo, menu, storage, footer — where only the
  * menu scrolls. So on a short window the nav is what gets a scrollbar while the
  * blocks above and below it keep their full size, and eight items plus the
@@ -192,443 +780,90 @@
  * Unlayered on purpose — Tailwind's utilities sit in a layer, so these win
  * without needing to out-specify them (see the `transition-all` note above).
  */
-@media (max-height: 860px) {
-  .sidebar-head {
-    height: 4rem; /* h-20 -> h-16 */
+  @media (max-height: 860px) {
+    .sidebar-head {
+      height: 4rem; /* h-20 -> h-16 */
+    }
+
+    .sidebar-logo {
+      width: 2.5rem; /* w-12 -> w-10 */
+      height: 2.5rem;
+    }
+
+    .sidebar-nav {
+      padding: 0.75rem; /* p-4 -> p-3 */
+    }
+
+    /* space-y-1.5 -> space-y-1 */
+    .sidebar-nav > * + * {
+      margin-top: 0.25rem;
+    }
+
+    .sidebar-nav-label {
+      padding-top: 0.25rem; /* py-2 -> py-1 */
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.25rem; /* mb-4 -> mb-1 */
+    }
+
+    .sidebar-link {
+      padding-top: 0.5rem; /* py-3 -> py-2 */
+      padding-bottom: 0.5rem;
+    }
+
+    .sidebar-storage {
+      padding: 0.75rem; /* p-4 -> p-3 */
+    }
+
+    .sidebar-foot {
+      padding-top: 0.5rem; /* py-3 -> py-2 */
+      padding-bottom: 0.5rem;
+    }
+
+    .sidebar-foot-link {
+      padding: 0.5rem; /* p-2.5 -> p-2 */
+    }
   }
 
-  .sidebar-logo {
-    width: 2.5rem; /* w-12 -> w-10 */
-    height: 2.5rem;
-  }
-
-  .sidebar-nav {
-    padding: 0.75rem; /* p-4 -> p-3 */
-  }
-
-  /* space-y-1.5 -> space-y-1 */
-  .sidebar-nav > * + * {
-    margin-top: 0.25rem;
-  }
-
-  .sidebar-nav-label {
-    padding-top: 0.25rem; /* py-2 -> py-1 */
-    padding-bottom: 0.25rem;
-    margin-bottom: 0.25rem; /* mb-4 -> mb-1 */
-  }
-
-  .sidebar-link {
-    padding-top: 0.5rem; /* py-3 -> py-2 */
-    padding-bottom: 0.5rem;
-  }
-
-  .sidebar-storage {
-    padding: 0.75rem; /* p-4 -> p-3 */
-  }
-
-  .sidebar-foot {
-    padding-top: 0.5rem; /* py-3 -> py-2 */
-    padding-bottom: 0.5rem;
-  }
-
-  .sidebar-foot-link {
-    padding: 0.5rem; /* p-2.5 -> p-2 */
-  }
-}
-
-/*
+  /*
  * Shorter still — a high-DPI laptop at 250% scaling leaves around 650px once
  * the browser's chrome and bookmarks bar are gone. The "Menu" heading goes
  * here: with the whole list visible in one glance it is labelling the obvious,
  * and it is the last thing worth 26px.
  */
-@media (max-height: 700px) {
-  .sidebar-head {
-    height: 3.5rem; /* h-16 -> h-14 */
-  }
-
-  .sidebar-nav-label {
-    display: none;
-  }
-
-  .sidebar-link {
-    padding-top: 0.375rem; /* py-2 -> py-1.5 */
-    padding-bottom: 0.375rem;
-  }
-
-  .sidebar-nav {
-    padding: 0.5rem; /* p-3 -> p-2 */
-  }
-
-  .sidebar-storage {
-    padding: 0.5rem; /* p-3 -> p-2 */
-  }
-
-  /* The storage and disk-pressure cards themselves, which stack here. */
-  .sidebar-storage > * {
-    padding: 0.625rem; /* p-3.5 -> p-2.5 */
-  }
-
-  .sidebar-storage > * + * {
-    margin-top: 0.5rem; /* space-y-3 -> space-y-2 */
-  }
-
-  .sidebar-foot > div {
-    margin-bottom: 0.25rem; /* mb-2 -> mb-1 */
-  }
-}
-
-@layer components {
-  /* Glass card effect */
-  .glass {
-    @apply bg-surface-900/60 backdrop-blur-xl border border-surface-700/50 shadow-sm shadow-black/5;
-  }
-
-  .glass-subtle {
-    @apply bg-surface-800/40 backdrop-blur-sm border border-surface-700/30 shadow-sm shadow-black/5;
-  }
-
-  /* Gradient borders */
-  .gradient-border {
-    position: relative;
-  }
-
-  .gradient-border::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      135deg,
-      rgba(245, 158, 11, 0.3),
-      rgba(139, 92, 246, 0.1),
-      rgba(245, 158, 11, 0.1)
-    );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-
-  /* Glow effects */
-  .glow-accent {
-    @apply shadow-glow shadow-accent-500/20;
-  }
-
-  .glow-violet {
-    @apply shadow-glow shadow-violet-500/20;
-  }
-
-  /* Card styles */
-  .card {
-    @apply bg-surface-900/80 border border-surface-700/50 rounded-2xl backdrop-blur-sm shadow-sm shadow-black/5;
-  }
-
-  .card-interactive {
-    @apply card transition-all duration-300 ease-out;
-  }
-
-  .card-interactive:hover {
-    @apply border-surface-600/70 bg-surface-800/80 shadow-lg shadow-black/10;
-    transform: translateY(-2px);
-  }
-
-  /* Input styles */
-  .input {
-    @apply w-full px-4 py-2.5 bg-surface-800/60 border border-surface-600/50 rounded-xl
-           text-surface-100 placeholder-surface-500
-           focus:outline-none focus:border-accent-500/50 focus:bg-surface-800/80
-           transition-all duration-200 min-h-[44px];
-  }
-
-  .input-with-icon {
-    @apply pl-11;
-  }
-
-  /* Select styles */
-  .select {
-    @apply input appearance-none cursor-pointer pr-10 bg-no-repeat;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-    background-size: 1.25rem;
-    background-position: right 0.75rem center;
-  }
-
-  /* Button base - with minimum touch target */
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium
-           transition-all duration-200 ease-out
-           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-900
-           disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none
-           min-h-[44px];
-  }
-
-  .btn-primary {
-    @apply btn bg-gradient-to-r from-accent-500 to-accent-600 font-semibold
-           hover:from-accent-400 hover:to-accent-500 hover:shadow-lg hover:shadow-accent-500/25
-           focus:ring-accent-500/50 active:scale-[0.98];
-    color: #78350f;
-  }
-
-  .btn-secondary {
-    @apply btn bg-surface-700/80 border border-surface-600/50 text-surface-200
-           hover:bg-surface-600/80 hover:border-surface-500/50
-           focus:ring-surface-500/30 active:scale-[0.98];
-  }
-
-  .btn-ghost {
-    @apply btn bg-transparent text-surface-400 hover:text-surface-200 hover:bg-surface-800/60;
-  }
-
-  .btn-danger {
-    @apply btn bg-ruby-500/10 border border-ruby-500/30 text-ruby-400
-           hover:bg-ruby-500/20 hover:border-ruby-500/50
-           focus:ring-ruby-500/30;
-  }
-
-  /* Badge styles */
-  .badge {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium tracking-wide;
-  }
-
-  .badge-accent {
-    @apply badge bg-accent-500/15 border border-accent-500/20;
-    color: rgb(var(--accent-text));
-  }
-
-  .badge-violet {
-    @apply badge bg-violet-500/15 text-violet-400 border border-violet-500/20;
-  }
-
-  .badge-emerald {
-    @apply badge bg-emerald-500/15 text-emerald-400 border border-emerald-500/20;
-  }
-
-  .badge-ruby {
-    @apply badge bg-ruby-500/15 text-ruby-400 border border-ruby-500/20;
-  }
-
-  .badge-cyan {
-    @apply badge bg-cyan-500/15 text-cyan-400 border border-cyan-500/20;
-  }
-
-  .badge-muted {
-    @apply badge bg-surface-700/50 text-surface-400 border border-surface-600/30;
-  }
-
-  /* Stat card */
-  .stat-card {
-    @apply card p-5 relative overflow-hidden;
-  }
-
-  .stat-card::before {
-    content: '';
-    @apply absolute inset-0 opacity-50;
-    background: radial-gradient(ellipse at top right, var(--stat-color, rgba(245, 158, 11, 0.1)), transparent 70%);
-  }
-
-  /* Table styles */
-  .table-container {
-    @apply card overflow-hidden;
-  }
-
-  .table {
-    @apply w-full;
-  }
-
-  .table th {
-    @apply px-3 py-3 sm:px-5 sm:py-4 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider
-           bg-surface-800/50 border-b border-surface-700/50;
-  }
-
-  .table td {
-    @apply px-3 py-3 sm:px-5 sm:py-4 text-sm text-surface-300;
-  }
-
-  .table tbody tr {
-    @apply border-b border-surface-800/50 transition-colors duration-150;
-  }
-
-  .table tbody tr:hover {
-    @apply bg-surface-800/30;
-  }
-
-  .table tbody tr:last-child {
-    @apply border-b-0;
-  }
-
-  /* Navigation */
-  .nav-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
-           text-surface-400 transition-all duration-200;
-  }
-
-  .nav-item:hover {
-    @apply text-surface-200 bg-surface-800/50;
-  }
-
-  .nav-item.active {
-    @apply bg-accent-500/10 border border-accent-500/20;
-    color: rgb(var(--accent-text));
-  }
-
-  .nav-item.active .nav-icon {
-    color: rgb(var(--accent-text));
-  }
-
-  /* Media poster card */
-  .poster-card {
-    @apply relative rounded-xl overflow-hidden bg-surface-800
-           transition-all duration-300 ease-out cursor-pointer;
-  }
-
-  .poster-card:hover {
-    @apply shadow-2xl shadow-black/20;
-    transform: translateY(-4px) scale(1.02);
-  }
-
-  .dark .poster-card:hover {
-    @apply shadow-black/40;
-  }
-
-  .poster-card::after {
-    content: '';
-    @apply absolute inset-0 bg-gradient-to-t from-surface-950 via-transparent to-transparent
-           opacity-60 transition-opacity duration-300;
-  }
-
-  .poster-card:hover::after {
-    @apply opacity-80;
-  }
-
-  /* Progress bar */
-  .progress-bar {
-    @apply h-2 bg-surface-800 rounded-full overflow-hidden;
-  }
-
-  .progress-fill {
-    @apply h-full bg-gradient-to-r from-accent-500 to-accent-400 rounded-full
-           transition-all duration-500 ease-out;
-  }
-
-  /* Skeleton loading */
-  .skeleton {
-    @apply bg-surface-800 rounded-lg animate-pulse;
-  }
-
-  .skeleton-shimmer {
-    @apply relative overflow-hidden bg-surface-800 rounded-lg;
-  }
-
-  .skeleton-shimmer::after {
-    content: '';
-    @apply absolute inset-0;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgb(var(--surface-50) / 0.04),
-      transparent
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-
-  /* Divider */
-  .divider {
-    @apply h-px bg-gradient-to-r from-transparent via-surface-700/50 to-transparent;
-  }
-
-  /* Empty state */
-  .empty-state {
-    @apply text-center py-16 px-6;
-  }
-
-  .empty-state-icon {
-    @apply w-16 h-16 mx-auto mb-4 text-surface-600 opacity-50;
-  }
-
-  /* Tooltip */
-  .tooltip {
-    @apply absolute z-50 px-3 py-2 text-sm text-surface-200 bg-surface-800
-           border border-surface-700/50 rounded-lg shadow-xl
-           opacity-0 invisible transition-all duration-200;
-  }
-
-  .tooltip.visible {
-    @apply opacity-100;
-    visibility: visible;
-  }
-}
-
-@layer utilities {
-  /* Text utilities */
-  .text-gradient {
-    @apply bg-gradient-to-r from-accent-400 via-accent-300 to-accent-400 bg-clip-text text-transparent;
-  }
-
-  .text-gradient-violet {
-    @apply bg-gradient-to-r from-violet-400 to-violet-300 bg-clip-text text-transparent;
-  }
-
-  /* Line clamp */
-  .line-clamp-1 {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* Noise texture overlay */
-  .noise {
-    position: relative;
-  }
-
-  .noise::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    opacity: 0.02;
-    pointer-events: none;
-    mix-blend-mode: overlay;
-  }
-
-  /* Animations with stagger support */
-  .stagger-1 { animation-delay: 0.05s; }
-  .stagger-2 { animation-delay: 0.1s; }
-  .stagger-3 { animation-delay: 0.15s; }
-  .stagger-4 { animation-delay: 0.2s; }
-  .stagger-5 { animation-delay: 0.25s; }
-  .stagger-6 { animation-delay: 0.3s; }
-
-  /* Hide scrollbar */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  /* Touch target utility - minimum 44x44px for accessibility */
-  .touch-target {
-    @apply min-w-[44px] min-h-[44px];
+  @media (max-height: 700px) {
+    .sidebar-head {
+      height: 3.5rem; /* h-16 -> h-14 */
+    }
+
+    .sidebar-nav-label {
+      display: none;
+    }
+
+    .sidebar-link {
+      padding-top: 0.375rem; /* py-2 -> py-1.5 */
+      padding-bottom: 0.375rem;
+    }
+
+    .sidebar-nav {
+      padding: 0.5rem; /* p-3 -> p-2 */
+    }
+
+    .sidebar-storage {
+      padding: 0.5rem; /* p-3 -> p-2 */
+    }
+
+    /* The storage and disk-pressure cards themselves, which stack here. */
+    .sidebar-storage > * {
+      padding: 0.625rem; /* p-3.5 -> p-2.5 */
+    }
+
+    .sidebar-storage > * + * {
+      margin-top: 0.5rem; /* space-y-3 -> space-y-2 */
+    }
+
+    .sidebar-foot > div {
+      margin-bottom: 0.25rem; /* mb-2 -> mb-1 */
+    }
   }
 }
 

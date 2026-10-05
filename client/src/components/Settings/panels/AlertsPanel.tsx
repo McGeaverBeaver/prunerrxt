@@ -88,9 +88,9 @@ function EventChip({
       className={cn(
         'inline-flex min-h-11 items-center rounded-full border px-3 py-1.5 text-xs font-medium lg:min-h-[30px]',
         'transition-colors duration-150 motion-reduce:transition-none',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60',
+        'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60',
         selected
-          ? 'border-accent-500/25 bg-accent-500/[0.13] text-accent-text'
+          ? 'border-accent-500/25 bg-accent-500/13 text-accent-text'
           : 'border-surface-600/60 bg-surface-800/70 text-surface-400 hover:text-surface-200'
       )}
     >
@@ -540,7 +540,7 @@ function WebhookRow({
     <div
       className={cn(
         'rounded-xl border px-3.5 py-3 transition-colors duration-200 motion-reduce:transition-none',
-        failing ? 'border-ruby-500/25 bg-ruby-500/[0.05]' : 'border-surface-700/90 bg-surface-800/50'
+        failing ? 'border-ruby-500/25 bg-ruby-500/5' : 'border-surface-700/90 bg-surface-800/50'
       )}
     >
       <button

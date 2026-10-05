@@ -24,7 +24,7 @@ function CollectionCardSkeleton() {
   return (
     <Card className="animate-pulse overflow-hidden">
       <div className="flex gap-4 p-4">
-        <div className="w-20 h-28 rounded-xl bg-surface-700/50 flex-shrink-0" />
+        <div className="w-20 h-28 rounded-xl bg-surface-700/50 shrink-0" />
         <div className="flex-1 space-y-3 py-1">
           <div className="h-5 bg-surface-700/50 rounded-lg w-3/4" />
           <div className="h-3 bg-surface-700/30 rounded-lg w-1/2" />
@@ -42,7 +42,7 @@ function CollectionCard({ collection }: { collection: CollectionSummary }) {
     // a new tab and reads as a link to assistive tech.
     <Link
       to={collectionPath(collection.id) ?? ''}
-      className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/40"
+      className="block rounded-2xl focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/40"
     >
       <Card
         variant="interactive"
@@ -50,7 +50,7 @@ function CollectionCard({ collection }: { collection: CollectionSummary }) {
       >
         <div className="flex gap-4 p-4">
           {/* Poster */}
-          <div className="w-20 h-28 rounded-xl overflow-hidden flex-shrink-0 bg-surface-800/50">
+          <div className="w-20 h-28 rounded-xl overflow-hidden shrink-0 bg-surface-800/50">
             {collection.posterUrl ? (
               <img
                 src={collection.posterUrl}
@@ -140,7 +140,7 @@ export default function Collections() {
     <div className="space-y-6 pb-8">
       {/* Header */}
       <header className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-accent-500/5 via-transparent to-violet-500/5 rounded-3xl" />
+        <div className="absolute inset-0 bg-linear-to-r from-accent-500/5 via-transparent to-violet-500/5 rounded-3xl" />
         <div className="relative px-8 py-10">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
@@ -183,7 +183,7 @@ export default function Collections() {
               'w-full sm:w-80 pl-10 pr-4 py-2.5 text-sm rounded-xl',
               'bg-surface-800/60 border border-surface-700/50 text-surface-200',
               'placeholder:text-surface-500',
-              'focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500/40',
+              'focus:outline-hidden focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500/40',
               'transition-colors'
             )}
           />

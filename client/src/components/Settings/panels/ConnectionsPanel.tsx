@@ -302,7 +302,7 @@ export default function ConnectionsPanel({
         'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-[10px] border border-surface-600/80 px-3 py-1.5',
         'font-sans text-[12px] font-semibold text-surface-200 transition-colors',
         'hover:bg-surface-700/60 hover:text-surface-50',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60',
+        'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60',
         'disabled:cursor-not-allowed disabled:opacity-40 lg:min-h-[32px]'
       )}
     >
@@ -326,7 +326,7 @@ export default function ConnectionsPanel({
         action={testAllAction}
       >
         {fresh && (
-          <div className="flex flex-col gap-3 rounded-[14px] border border-accent-500/[0.22] bg-accent-500/[0.08] px-[18px] py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-[14px] border border-accent-500/22 bg-accent-500/8 px-[18px] py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
               <p className="font-display text-[14px] font-semibold text-accent-text">
                 {t('connections.firstRun.title', 'Nothing is connected yet')}
@@ -531,7 +531,7 @@ function MediaServerPicker({
               'inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg px-2 text-xs font-semibold',
               'sm:flex-none sm:px-[13px] sm:py-1.5 lg:min-h-[30px]',
               'transition-colors duration-150 motion-reduce:transition-none',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60',
+              'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60',
               selected
                 ? 'bg-accent-500/[0.14] text-accent-text'
                 : 'text-surface-400 hover:text-surface-200'
@@ -725,7 +725,7 @@ function ConnectionCard({
               className={cn(
                 'inline-flex min-h-[44px] items-center gap-1.5 rounded-[9px] border px-[11px] py-[5px]',
                 'text-[11.5px] font-semibold transition-colors lg:min-h-[30px]',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60',
+                'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60',
                 role === 'required' && !configured
                   ? 'border-accent-500/30 bg-accent-500/[0.14] text-accent-text'
                   : 'border-surface-600/80 text-surface-200 hover:bg-surface-700/60 hover:text-surface-50'
@@ -977,7 +977,7 @@ function WatchHistoryCard({
       </div>
 
       {mismatched && (
-        <p className="rounded-xl border border-ruby-500/25 bg-ruby-500/[0.06] px-3.5 py-3 text-[12px] text-ruby-text">
+        <p className="rounded-xl border border-ruby-500/25 bg-ruby-500/6 px-3.5 py-3 text-[12px] text-ruby-text">
           {t(
             'connections.watchHistory.mismatch',
             '{{provider}} only resolves Plex item ids, so on {{name}} every item reports zero plays — and zero-play items are exactly what the rules engine deletes. Switch to “{{name}} direct”.',
@@ -1112,7 +1112,7 @@ function LookbackInput({ value, onChange }: { value: number; onChange: (days: nu
           event.currentTarget.blur();
         }
       }}
-      className="min-h-[44px] w-24 rounded-[11px] border border-surface-600/60 bg-surface-800/70 px-3 py-2 text-center font-mono text-[13px] text-surface-50 focus:border-accent-500/50 focus:outline-none lg:min-h-0"
+      className="min-h-[44px] w-24 rounded-[11px] border border-surface-600/60 bg-surface-800/70 px-3 py-2 text-center font-mono text-[13px] text-surface-50 focus:border-accent-500/50 focus:outline-hidden lg:min-h-0"
     />
   );
 }

@@ -39,7 +39,7 @@ export function LibraryQualityBlock() {
     <Card className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="rounded-lg border border-violet-500/25 bg-violet-500/[0.08] p-1.5">
+          <div className="rounded-lg border border-violet-500/25 bg-violet-500/8 p-1.5">
             <Gauge className="h-4 w-4 text-violet-text" aria-hidden />
           </div>
           <div>
@@ -59,7 +59,7 @@ export function LibraryQualityBlock() {
             type="button"
             onClick={() => void query.refetch()}
             disabled={query.isFetching}
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5 text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60"
+            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5 text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:opacity-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60"
           >
             <RefreshCw className={cn('h-3.5 w-3.5', query.isFetching && 'animate-spin motion-reduce:animate-none')} aria-hidden />
             {t('refresh', 'Refresh')}
@@ -174,7 +174,7 @@ export function LibraryQualityBlock() {
                         {item.title}
                         {item.year && <span className="text-surface-500"> ({item.year})</span>}
                       </span>
-                      <span className="rounded bg-surface-700/50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface-400">
+                      <span className="rounded-sm bg-surface-700/50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface-400">
                         {item.type === 'movie' ? t('library.movie', 'Movie') : t('library.show', 'Show')}
                       </span>
                       <span className="font-mono text-[11px] text-ruby-text">{item.resolution}</span>

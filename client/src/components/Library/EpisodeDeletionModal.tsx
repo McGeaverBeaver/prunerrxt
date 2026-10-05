@@ -104,7 +104,7 @@ export function EpisodeDeletionModal({
 
         {mode === 'now' ? (
           <div className="flex items-start gap-3 p-4 bg-ruby-500/10 rounded-lg border border-ruby-500/20">
-            <AlertTriangle className="w-5 h-5 text-ruby-text flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-ruby-text shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-surface-50">
                 {t('episodeDeletion.immediateTitle', 'This runs immediately')}
@@ -127,7 +127,7 @@ export function EpisodeDeletionModal({
                 max={365}
                 value={gracePeriodDays}
                 onChange={(e) => setGracePeriodDays(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-20 px-3 py-2 bg-surface-800 border border-surface-600 rounded-lg text-surface-50 text-center focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500"
+                className="w-20 px-3 py-2 bg-surface-800 border border-surface-600 rounded-lg text-surface-50 text-center focus:outline-hidden focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500"
               />
               <span className="text-surface-400">{t('deletionModal.daysBeforeDeletion', 'days before deletion')}</span>
             </div>
@@ -194,7 +194,7 @@ export function EpisodeDeletionModal({
               'px-5 py-2.5 text-sm font-semibold rounded-xl',
               'bg-surface-700/80 hover:bg-surface-600/80 border border-surface-600/50 hover:border-surface-500/50',
               'text-surface-200 hover:text-surface-50',
-              'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-surface-500/30 focus:ring-offset-2 focus:ring-offset-surface-900'
+              'transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-surface-500/30 focus:ring-offset-2 focus:ring-offset-surface-900'
             )}
           >
             {t('deletionModal.cancel', 'Cancel')}
@@ -208,7 +208,7 @@ export function EpisodeDeletionModal({
             className={cn(
               'px-5 py-2.5 text-sm font-semibold rounded-xl border',
               'bg-ruby-500/20 hover:bg-ruby-500/30 border-ruby-500/30 hover:border-ruby-500/50 text-ruby-text hover:text-ruby-300',
-              'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ruby-500/30 focus:ring-offset-2 focus:ring-offset-surface-900',
+              'transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-ruby-500/30 focus:ring-offset-2 focus:ring-offset-surface-900',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >

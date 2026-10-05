@@ -233,9 +233,9 @@ function EmptyPreview() {
 function LoadingSkeleton() {
   return (
     <div className="space-y-3">
-      <div className="h-20 bg-surface-700 rounded animate-pulse" />
-      <div className="h-8 bg-surface-700 rounded animate-pulse" />
-      <div className="h-32 bg-surface-700 rounded animate-pulse" />
+      <div className="h-20 bg-surface-700 rounded-sm animate-pulse" />
+      <div className="h-8 bg-surface-700 rounded-sm animate-pulse" />
+      <div className="h-32 bg-surface-700 rounded-sm animate-pulse" />
     </div>
   );
 }
@@ -348,16 +348,16 @@ function PreviewStats({
                 target="_blank"
                 rel="noopener noreferrer"
                 title={t('preview.openItem', 'Open in a new tab')}
-                className="flex items-center gap-2 p-2 bg-surface-700/50 rounded text-sm hover:bg-surface-700 transition-colors"
+                className="flex items-center gap-2 p-2 bg-surface-700/50 rounded-sm text-sm hover:bg-surface-700 transition-colors"
               >
                 {item.posterUrl ? (
                   <img
                     src={item.posterUrl}
                     alt=""
-                    className="w-8 h-11 rounded object-cover flex-shrink-0"
+                    className="w-8 h-11 rounded-sm object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-8 h-11 bg-surface-600 rounded flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-11 bg-surface-600 rounded-sm flex items-center justify-center shrink-0">
                     <Film className="w-4 h-4 text-surface-400" />
                   </div>
                 )}
@@ -365,7 +365,7 @@ function PreviewStats({
                   <p className="text-surface-200 truncate flex items-center gap-1.5">
                     {item.isProtected && (
                       <Shield
-                        className="w-3.5 h-3.5 text-accent-text flex-shrink-0"
+                        className="w-3.5 h-3.5 text-accent-text shrink-0"
                         aria-label={t('preview.protected', 'Protected')}
                       />
                     )}

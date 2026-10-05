@@ -54,11 +54,11 @@ function ItemRow({ item }: { item: CollectionItem }) {
       className={cn(
         'w-full flex items-center gap-4 px-4 py-3 text-left',
         'hover:bg-surface-800/60 transition-colors rounded-xl',
-        'focus:outline-none focus:ring-2 focus:ring-accent-500/30'
+        'focus:outline-hidden focus:ring-2 focus:ring-accent-500/30'
       )}
     >
       {/* Poster */}
-      <div className="w-10 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-surface-800/50">
+      <div className="w-10 h-14 rounded-lg overflow-hidden shrink-0 bg-surface-800/50">
         {item.posterUrl ? (
           <img
             src={item.posterUrl}
@@ -252,7 +252,7 @@ export default function CollectionDetail() {
     <div className="space-y-6 pb-8">
       {/* Header */}
       <header className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-accent-500/5 via-transparent to-violet-500/5 rounded-3xl" />
+        <div className="absolute inset-0 bg-linear-to-r from-accent-500/5 via-transparent to-violet-500/5 rounded-3xl" />
         <div className="relative px-8 py-10">
           <button
             type="button"
@@ -341,7 +341,7 @@ export default function CollectionDetail() {
                       'w-48 px-3 py-2 text-sm rounded-xl',
                       'bg-surface-800/60 border border-surface-700/50 text-surface-200',
                       'placeholder:text-surface-500',
-                      'focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500/40',
+                      'focus:outline-hidden focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500/40',
                       'transition-colors'
                     )}
                   />
@@ -428,7 +428,7 @@ export default function CollectionDetail() {
                   className={cn(
                     'w-full px-3 py-2 text-sm rounded-xl',
                     'bg-surface-800/60 border border-surface-700/50 text-surface-200',
-                    'focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500/40',
+                    'focus:outline-hidden focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500/40',
                     'transition-colors'
                   )}
                 />
@@ -444,7 +444,7 @@ export default function CollectionDetail() {
                     type="checkbox"
                     checked={resetOverseerr}
                     onChange={(e) => setResetOverseerr(e.target.checked)}
-                    className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-accent-500 focus:ring-accent-500/30"
+                    className="w-4 h-4 rounded-sm border-surface-600 bg-surface-800 text-accent-500 focus:ring-accent-500/30"
                   />
                   <span className="text-sm text-surface-300">{t('queue.resetSeerr', 'Reset in Seerr')}</span>
                 </label>
@@ -454,7 +454,7 @@ export default function CollectionDetail() {
             {/* Action Button / Confirmation */}
             {confirmingQueue ? (
               <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/20">
-                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
                 <p className="text-sm text-red-300 flex-1">
                   <Trans
                     i18nKey="queue.confirmPrompt"

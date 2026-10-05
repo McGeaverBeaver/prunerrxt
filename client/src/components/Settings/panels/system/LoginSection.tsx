@@ -24,7 +24,7 @@ function GroupList({ groups }: { groups: string[] }) {
   return (
     <span className="flex flex-wrap gap-1.5">
       {groups.map((g) => (
-        <code key={g} className="rounded bg-surface-700/50 px-1.5 py-0.5 font-mono text-[11px] text-surface-200">
+        <code key={g} className="rounded-sm bg-surface-700/50 px-1.5 py-0.5 font-mono text-[11px] text-surface-200">
           {g}
         </code>
       ))}

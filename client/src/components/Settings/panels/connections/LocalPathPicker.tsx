@@ -152,7 +152,7 @@ export function LocalPathPicker({ value, onChange, mounts }: { value: string; on
         aria-label={placeholder}
         className={cn(
           'flex w-full items-center gap-2 rounded-xl border border-surface-600/50 bg-surface-800/60 px-3 py-2.5 text-left font-mono text-sm',
-          'focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500/50',
+          'focus:outline-hidden focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500/50',
           value ? 'text-surface-50' : 'text-surface-500'
         )}
       >

@@ -475,7 +475,7 @@ export function SmartRuleBuilder({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex flex-col bg-surface-950/95 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex flex-col bg-surface-950/95 backdrop-blur-xs animate-fade-in">
       {/* Top bar */}
       <div className="flex items-center justify-between gap-2 px-3 sm:px-6 py-3 sm:py-4 border-b border-surface-700/50 bg-surface-900/95 backdrop-blur-xl shrink-0">
         {/* Mobile: compact close icon on the left so the action sits primarily at the bottom */}
@@ -521,7 +521,7 @@ export function SmartRuleBuilder({
               <button
                 type="button"
                 onClick={() => setMode('templates')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                   mode === 'templates'
                     ? 'bg-accent-500/20 text-surface-50 ring-1 ring-inset ring-accent-500/50'
                     : 'bg-surface-700 text-surface-300 hover:bg-surface-600'
@@ -533,7 +533,7 @@ export function SmartRuleBuilder({
               <button
                 type="button"
                 onClick={() => setMode('easy')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                   mode === 'easy'
                     ? 'bg-accent-500/20 text-surface-50 ring-1 ring-inset ring-accent-500/50'
                     : 'bg-surface-700 text-surface-300 hover:bg-surface-600'
@@ -545,7 +545,7 @@ export function SmartRuleBuilder({
               <button
                 type="button"
                 onClick={() => setMode('custom')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                   mode === 'custom'
                     ? 'bg-accent-500/20 text-surface-50 ring-1 ring-inset ring-accent-500/50'
                     : 'bg-surface-700 text-surface-300 hover:bg-surface-600'
@@ -707,7 +707,7 @@ export function SmartRuleBuilder({
                                     : Number(e.target.value) || 0;
                                 updateEasyConditionValue(ac.defId, v);
                               }}
-                              className="inline-block w-20 sm:w-20 mx-1 px-2 py-1 bg-surface-700 border border-surface-600 rounded text-surface-50 text-base font-medium text-center focus:outline-none focus:ring-2 focus:ring-accent-500"
+                              className="inline-block w-20 sm:w-20 mx-1 px-2 py-1 bg-surface-700 border border-surface-600 rounded-sm text-surface-50 text-base font-medium text-center focus:outline-hidden focus:ring-2 focus:ring-accent-500"
                               inputMode={typeof ac.value === 'string' ? undefined : 'numeric'}
                             />
                             {def.inputSuffix && (
@@ -718,7 +718,7 @@ export function SmartRuleBuilder({
                         <button
                           type="button"
                           onClick={() => removeEasyCondition(ac.defId)}
-                          className="inline-flex items-center justify-center ml-1 w-7 h-7 rounded text-surface-500 hover:text-ruby-text hover:bg-ruby-500/10 active:bg-ruby-500/15 transition-colors"
+                          className="inline-flex items-center justify-center ml-1 w-7 h-7 rounded-sm text-surface-500 hover:text-ruby-text hover:bg-ruby-500/10 active:bg-ruby-500/15 transition-colors"
                           title={t('leaf.removeCondition', 'Remove condition')}
                           aria-label={t('leaf.removeCondition', 'Remove condition')}
                         >
@@ -797,7 +797,7 @@ export function SmartRuleBuilder({
                         type="checkbox"
                         checked={easyResetOverseerr}
                         onChange={(e) => setEasyResetOverseerr(e.target.checked)}
-                        className="w-4 h-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
+                        className="w-4 h-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
                       />
                       <span className="text-sm font-medium text-surface-100">{t('fields.resetSeerr', 'Reset in Seerr')}</span>
                     </label>
@@ -814,7 +814,7 @@ export function SmartRuleBuilder({
           {mode === 'custom' && (
             <div className="space-y-5">
               {/* Metadata row */}
-              <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,auto] gap-3 items-end">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3 items-end">
                 <div>
                   <label className="block text-sm font-medium text-surface-200 mb-1">
                     {t('fields.ruleName', 'Rule Name')}
@@ -835,7 +835,7 @@ export function SmartRuleBuilder({
                     max={100}
                     value={priority}
                     onChange={(e) => setPriority(Number(e.target.value) || 0)}
-                    className="w-24 px-3 py-2 bg-surface-800 border border-surface-700 rounded-lg text-surface-100 focus:outline-none focus:ring-2 focus:ring-accent-500"
+                    className="w-24 px-3 py-2 bg-surface-800 border border-surface-700 rounded-lg text-surface-100 focus:outline-hidden focus:ring-2 focus:ring-accent-500"
                   />
                 </div>
                 <div>
@@ -956,7 +956,7 @@ export function SmartRuleBuilder({
                         type="checkbox"
                         checked={resetOverseerr}
                         onChange={(e) => setResetOverseerr(e.target.checked)}
-                        className="w-4 h-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
+                        className="w-4 h-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
                       />
                       <span className="text-sm font-medium text-surface-100">{t('fields.resetSeerr', 'Reset in Seerr')}</span>
                     </label>
@@ -974,7 +974,7 @@ export function SmartRuleBuilder({
         {/* Preview Panel — side panel on desktop only. On mobile/tablet we
             swap in the floating chip + bottom sheet (see below) for a more
             thumb-friendly layout that doesn't steal half the screen. */}
-        <div className="hidden lg:flex lg:w-96 lg:flex-shrink-0 lg:border-l border-surface-700/50 p-6 flex-col overflow-y-auto">
+        <div className="hidden lg:flex lg:w-96 lg:shrink-0 lg:border-l border-surface-700/50 p-6 flex-col overflow-y-auto">
           <LivePreview
             root={mode === 'easy' ? easyRoot : root}
             mediaType={mode === 'easy' ? easySubject : mediaType}

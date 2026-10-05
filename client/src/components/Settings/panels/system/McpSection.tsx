@@ -38,7 +38,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
       className={cn(
         'inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5',
         'text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60'
+        'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60'
       )}
     >
       {copied ? <Check className="h-3.5 w-3.5 text-emerald-text" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
@@ -250,7 +250,7 @@ export function McpSection({
             </div>
 
             {!apiKeyEnabled && (
-              <p className="rounded-xl border border-ruby-500/25 bg-ruby-500/[0.06] px-3.5 py-3 text-xs text-ruby-text">
+              <p className="rounded-xl border border-ruby-500/25 bg-ruby-500/6 px-3.5 py-3 text-xs text-ruby-text">
                 {t(
                   'mcp.apiKeyOff',
                   'External API access is off (see the API key card above), so the key-based snippets below will be refused. Hosted clients that sign in through OAuth keep working.'
@@ -268,7 +268,7 @@ export function McpSection({
               </code>
               <p className="text-[11.5px] text-surface-400">
                 <Trans i18nKey="mcp.endpointHint" ns="settings">
-                  Streamable HTTP transport. Send your API key as <code className="rounded bg-surface-700/50 px-1.5 py-0.5 font-mono text-[11px] text-accent-text">Authorization: Bearer</code> or <code className="rounded bg-surface-700/50 px-1.5 py-0.5 font-mono text-[11px] text-accent-text">X-Api-Key</code>. Reveal the key above to have it filled into the snippets.
+                  Streamable HTTP transport. Send your API key as <code className="rounded-sm bg-surface-700/50 px-1.5 py-0.5 font-mono text-[11px] text-accent-text">Authorization: Bearer</code> or <code className="rounded-sm bg-surface-700/50 px-1.5 py-0.5 font-mono text-[11px] text-accent-text">X-Api-Key</code>. Reveal the key above to have it filled into the snippets.
                 </Trans>
               </p>
             </div>
@@ -324,12 +324,12 @@ export function McpSection({
                             <li key={tool.name} className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[12px]">
                               <code className="font-mono text-[11px] text-accent-text">{tool.name}</code>
                               {tool.destructive && (
-                                <span className="rounded bg-ruby-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ruby-text">
+                                <span className="rounded-sm bg-ruby-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ruby-text">
                                   {tool.requiresImmediateDeletion ? t('mcp.badgeImmediate', 'needs opt-in') : t('mcp.badgeDestructive', 'destructive')}
                                 </span>
                               )}
                               {tool.readOnly && (
-                                <span className="rounded bg-surface-700/60 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface-400">
+                                <span className="rounded-sm bg-surface-700/60 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface-400">
                                   {t('mcp.badgeReadOnly', 'read-only')}
                                 </span>
                               )}

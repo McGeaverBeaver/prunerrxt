@@ -107,7 +107,7 @@ export default function ActivityLog() {
           {/* Scan filter notice */}
           {selectedEventTypes.length > 0 && !selectedEventTypes.includes('scan') && (
             <div className="flex items-center gap-2 text-xs text-surface-400 bg-surface-800/50 rounded-lg px-3 py-2">
-              <PlayCircle className="w-3.5 h-3.5 text-surface-500 flex-shrink-0" />
+              <PlayCircle className="w-3.5 h-3.5 text-surface-500 shrink-0" />
               <span>{t('filters.scanHiddenNotice', 'Scan events are hidden by default.')}</span>
               <button
                 onClick={() => setSelectedEventTypes([])}
@@ -153,7 +153,7 @@ export default function ActivityLog() {
 
           {/* Event Type Filters */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span className="text-sm text-surface-400 mr-2 flex-shrink-0">{t('filters.eventLabel', 'Event:')}</span>
+            <span className="text-sm text-surface-400 mr-2 shrink-0">{t('filters.eventLabel', 'Event:')}</span>
             {EVENT_TYPES.map((type) => {
               const config = EVENT_CONFIG[type];
               const isSelected = selectedEventTypes.includes(type);
@@ -162,7 +162,7 @@ export default function ActivityLog() {
                   key={type}
                   onClick={() => toggleEventType(type)}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 whitespace-nowrap',
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap',
                     'border flex items-center gap-1.5',
                     isSelected
                       ? 'bg-surface-700 border-surface-600 text-surface-50'
@@ -178,7 +178,7 @@ export default function ActivityLog() {
 
           {/* Actor Type Filters */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span className="text-sm text-surface-400 mr-2 flex-shrink-0">{t('filters.actorLabel', 'Actor:')}</span>
+            <span className="text-sm text-surface-400 mr-2 shrink-0">{t('filters.actorLabel', 'Actor:')}</span>
             {ACTOR_TYPES.map((type) => {
               const config = ACTOR_CONFIG[type];
               const isSelected = selectedActorTypes.includes(type);
@@ -187,7 +187,7 @@ export default function ActivityLog() {
                   key={type}
                   onClick={() => toggleActorType(type)}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 whitespace-nowrap',
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap',
                     'border flex items-center gap-1.5',
                     isSelected
                       ? 'bg-surface-700 border-surface-600 text-surface-50'
@@ -327,7 +327,7 @@ function ActivityCard({ item }: { item: ActivityLogEntry }) {
   return (
     <div className="px-4 py-3 space-y-2">
       <div className="flex items-start gap-3">
-        <div className={cn('p-2 rounded-lg bg-surface-800/50 flex-shrink-0')}>
+        <div className={cn('p-2 rounded-lg bg-surface-800/50 shrink-0')}>
           <EventIcon className={cn('w-4 h-4', eventColorClass)} />
         </div>
         <div className="min-w-0 flex-1">
@@ -384,7 +384,7 @@ function ActivityRow({ item }: { item: ActivityLogEntry }) {
       {/* Event */}
       <td className="px-4 py-3">
         <div className="flex items-start gap-3">
-          <div className={cn('p-2 rounded-lg bg-surface-800/50 flex-shrink-0')}>
+          <div className={cn('p-2 rounded-lg bg-surface-800/50 shrink-0')}>
             <EventIcon className={cn('w-4 h-4', eventColorClass)} />
           </div>
           <div className="min-w-0">
@@ -436,7 +436,7 @@ function ActivityRow({ item }: { item: ActivityLogEntry }) {
       {/* Time */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-surface-500 flex-shrink-0" />
+          <Clock className="w-4 h-4 text-surface-500 shrink-0" />
           <div>
             <p className="text-sm text-surface-300">{formatRelativeTime(item.createdAt)}</p>
             <p className="text-xs text-surface-500">{formatDate(item.createdAt)}</p>

@@ -32,7 +32,7 @@ function OutcomeBadge({ outcome }: { outcome: ApiKeyUseOutcome }) {
   return (
     <span
       className={cn(
-        'rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+        'rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
         outcome === 'ok' ? 'bg-emerald-500/15 text-emerald-text' : 'bg-ruby-500/15 text-ruby-text'
       )}
     >
@@ -83,7 +83,7 @@ export function ApiKeyUsage({
             type="button"
             onClick={onRefresh}
             disabled={refreshing}
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5 text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60"
+            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5 text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:opacity-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60"
           >
             <RefreshCw className={cn('h-3.5 w-3.5', refreshing && 'animate-spin motion-reduce:animate-none')} aria-hidden />
             {t('apiKey.usage.refresh', 'Refresh')}
@@ -92,7 +92,7 @@ export function ApiKeyUsage({
             type="button"
             onClick={onClear}
             disabled={!hasAny}
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5 text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60"
+            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5 text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60"
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
             {t('apiKey.usage.clear', 'Clear')}
@@ -116,7 +116,7 @@ export function ApiKeyUsage({
       </div>
 
       {usage.refusedLast24h > 0 && (
-        <p className="rounded-xl border border-ruby-500/25 bg-ruby-500/[0.06] px-3.5 py-2.5 text-[11.5px] text-ruby-text">
+        <p className="rounded-xl border border-ruby-500/25 bg-ruby-500/6 px-3.5 py-2.5 text-[11.5px] text-ruby-text">
           {t(
             'apiKey.usage.refusedHint',
             'Something sent a wrong or switched-off key {{when}}. A script with an old key after a regenerate is the usual cause; an unknown address is worth a look.',

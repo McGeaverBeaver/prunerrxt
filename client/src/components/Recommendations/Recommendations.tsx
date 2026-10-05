@@ -51,7 +51,7 @@ export default function Recommendations() {
     <div className="space-y-6 pb-8">
       {/* Header */}
       <header className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 via-transparent to-ruby-500/5 rounded-3xl" />
+        <div className="absolute inset-0 bg-linear-to-r from-violet-500/5 via-transparent to-ruby-500/5 rounded-3xl" />
         <div className="relative px-8 py-10">
           <Link
             to="/"
@@ -233,7 +233,7 @@ const RecommendationCard = memo(function RecommendationCard({
       className="group card overflow-hidden"
     >
       {/* Poster — the whole artwork opens the item's detail page */}
-      <Link to={detailHref} className="relative block aspect-[2/3] bg-surface-800">
+      <Link to={detailHref} className="relative block aspect-2/3 bg-surface-800">
         {item.posterUrl ? (
           <img
             src={item.posterUrl}
@@ -249,7 +249,7 @@ const RecommendationCard = memo(function RecommendationCard({
         )}
 
         {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-900 via-surface-900/50 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-surface-900 via-surface-900/50 to-transparent" />
 
         {/* Type badge */}
         <div
@@ -262,7 +262,7 @@ const RecommendationCard = memo(function RecommendationCard({
         </div>
 
         {/* Size badge */}
-        <div className="absolute top-3 right-3 px-2 py-1 rounded-lg bg-surface-900/80 backdrop-blur-sm">
+        <div className="absolute top-3 right-3 px-2 py-1 rounded-lg bg-surface-900/80 backdrop-blur-xs">
           <span className="text-xs font-medium text-surface-200">{formatBytes(item.size)}</span>
         </div>
 

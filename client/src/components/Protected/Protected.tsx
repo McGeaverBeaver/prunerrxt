@@ -245,7 +245,7 @@ export default function Protected() {
           ) : (
             <Card className="overflow-hidden">
               <div className="flex items-center gap-3 border-b border-surface-800 px-4 py-2.5 text-xs text-surface-400">
-                <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label={t('selectAll', 'Select all on this page')} className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
+                <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label={t('selectAll', 'Select all on this page')} className="h-4 w-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
                 <span>{t('count', '{{count}} titles', { count: total })}</span>
               </div>
               <ul className="divide-y divide-surface-800">
@@ -314,12 +314,12 @@ function ProtectedRow({
 
   return (
     <li className="flex items-start gap-3 px-4 py-3 hover:bg-surface-800/30 transition-colors sm:items-center">
-      <input type="checkbox" checked={selected} onChange={onToggle} className="mt-1 h-4 w-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500 sm:mt-0" aria-label={item.title} />
-      <Link to={libraryItemPath(item.id) ?? '#'} className="flex-shrink-0">
+      <input type="checkbox" checked={selected} onChange={onToggle} className="mt-1 h-4 w-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500 sm:mt-0" aria-label={item.title} />
+      <Link to={libraryItemPath(item.id) ?? '#'} className="shrink-0">
         {item.posterUrl ? (
-          <img src={item.posterUrl} alt="" className="h-14 w-10 rounded object-cover" loading="lazy" decoding="async" />
+          <img src={item.posterUrl} alt="" className="h-14 w-10 rounded-sm object-cover" loading="lazy" decoding="async" />
         ) : (
-          <div className="flex h-14 w-10 items-center justify-center rounded bg-surface-800">
+          <div className="flex h-14 w-10 items-center justify-center rounded-sm bg-surface-800">
             <TypeIcon className="h-5 w-5 text-surface-600" />
           </div>
         )}
@@ -349,7 +349,7 @@ function ProtectedRow({
           {since ? ` · ${t('row.since', 'since {{time}}', { time: formatRelativeTime(since) })} (${formatDate(since)})` : ''}
         </p>
       </div>
-      <div className="flex flex-shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         {archivedTab && (
           <Button variant="ghost" size="sm" onClick={onRecheck} disabled={busy} title={t('row.recheck', 'Ask Radarr/Sonarr again')}>
             <RotateCw className={cn('w-4 h-4', busy && 'animate-spin')} />
@@ -398,9 +398,9 @@ function CollectionsTab({
         {collections.map((c) => (
           <li key={c.id} className="flex items-center gap-3 px-4 py-3 hover:bg-surface-800/30 transition-colors">
             {c.posterUrl ? (
-              <img src={c.posterUrl} alt="" className="h-14 w-10 rounded object-cover" loading="lazy" decoding="async" />
+              <img src={c.posterUrl} alt="" className="h-14 w-10 rounded-sm object-cover" loading="lazy" decoding="async" />
             ) : (
-              <div className="flex h-14 w-10 items-center justify-center rounded bg-surface-800">
+              <div className="flex h-14 w-10 items-center justify-center rounded-sm bg-surface-800">
                 <Layers className="h-5 w-5 text-surface-600" />
               </div>
             )}

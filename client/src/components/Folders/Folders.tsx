@@ -183,9 +183,9 @@ export default function Folders() {
             {t('description', 'Folders inside your Sonarr and Radarr root folders that no series or movie owns: leftovers from moves, failed imports or titles removed without their files. Import them into the right app, or clean them up.')}
           </p>
         </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <label className="flex items-center gap-2 text-sm text-surface-400">
-            <input type="checkbox" checked={showIgnored} onChange={(e) => setShowIgnored(e.target.checked)} className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
+            <input type="checkbox" checked={showIgnored} onChange={(e) => setShowIgnored(e.target.checked)} className="h-4 w-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
             {t('showIgnored', 'Show ignored')}
           </label>
           <Button variant="secondary" size="sm" onClick={() => void refetch()} disabled={isFetching} title={t('refresh', 'Re-read from Sonarr and Radarr')}>
@@ -251,7 +251,7 @@ export default function Folders() {
       {/* Notices */}
       {data && !hasMappings && data.folders.length > 0 && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
-          <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent-text" />
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-accent-text" />
           <div className="text-sm">
             <p className="font-medium text-surface-50">{t('mappingNotice.title', 'Sizes and deletion need a folder mapping')}</p>
             <p className="mt-1 text-surface-400">
@@ -270,7 +270,7 @@ export default function Folders() {
       )}
       {permissions.data && !permissions.data.capabilities.canChown && hasMappings && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm">
-          <Lock className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent-text" />
+          <Lock className="mt-0.5 h-5 w-5 shrink-0 text-accent-text" />
           <p className="text-surface-300">
             <span className="font-medium text-surface-50">{t('capabilityNotice.title', 'PrunerrXT cannot change ownership on this install. ')}</span>
             {permissions.data.capabilities.reason}
@@ -279,7 +279,7 @@ export default function Folders() {
       )}
       {serviceErrors.map((s) => (
         <div key={s.service} className="flex items-start gap-3 rounded-xl border border-ruby-500/20 bg-ruby-500/10 p-4 text-sm">
-          <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-ruby-text" />
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-ruby-text" />
           <p className="text-surface-300">
             <span className="font-medium text-surface-50">{s.serviceLabel}: </span>
             {s.error}
@@ -309,7 +309,7 @@ export default function Folders() {
           {canAct && (
             <div className="flex flex-wrap items-center gap-3 border-b border-surface-800 px-4 py-2.5">
               <label className="flex items-center gap-2 text-sm text-surface-300">
-                <input type="checkbox" checked={allShownSelected} onChange={toggleAllShown} className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
+                <input type="checkbox" checked={allShownSelected} onChange={toggleAllShown} className="h-4 w-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
                 {allShownSelected ? t('bulk.deselectShown', 'Deselect the {{count}} shown', { count: folders.length }) : t('bulk.selectShown', 'Select the {{count}} shown', { count: folders.length })}
               </label>
               {selectedFolders.length > 0 && (
@@ -472,10 +472,10 @@ function FolderRow({
           checked={selected}
           onChange={onToggleSelected}
           aria-label={t('bulk.selectOne', 'Select {{name}}', { name: folder.name })}
-          className="mt-4 h-4 w-4 flex-shrink-0 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
+          className="mt-4 h-4 w-4 shrink-0 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
         />
       )}
-      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface-800">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-800">
         <Icon className="h-6 w-6 text-surface-500" />
       </div>
       <div className="min-w-0 flex-1">
@@ -524,7 +524,7 @@ function FolderRow({
         )}
       </div>
       {canAct && (
-        <div className="flex flex-shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <Button variant="secondary" size="sm" onClick={onImport} disabled={queued} title={t('row.import', 'Import into {{service}}', { service: folder.serviceLabel })}>
             <Download className="h-4 w-4" />
             <span className="ml-1 hidden sm:inline">{t('row.importShort', 'Import')}</span>
@@ -637,7 +637,7 @@ function ImportModal({ folder, onClose }: { folder: OrphanFolder; onClose: () =>
                 )}
               >
                 <input type="radio" name="candidate" className="mt-1" checked={selected === c.id} disabled={c.inLibrary} onChange={() => setCandidateId(c.id)} />
-                <div className="h-16 w-11 flex-shrink-0 overflow-hidden rounded bg-surface-800">
+                <div className="h-16 w-11 shrink-0 overflow-hidden rounded-sm bg-surface-800">
                   {c.posterUrl && <img src={c.posterUrl} alt="" className="h-full w-full object-cover" loading="lazy" />}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -659,7 +659,7 @@ function ImportModal({ folder, onClose }: { folder: OrphanFolder; onClose: () =>
             <select
               value={chosenProfile ?? ''}
               onChange={(e) => setProfileId(Number(e.target.value))}
-              className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-50 focus:outline-none focus:ring-2 focus:ring-accent-500/50"
+              className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-50 focus:outline-hidden focus:ring-2 focus:ring-accent-500/50"
             >
               {(profiles.data ?? []).map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -667,7 +667,7 @@ function ImportModal({ folder, onClose }: { folder: OrphanFolder; onClose: () =>
             </select>
           </label>
           <label className="flex items-center gap-2 pb-2 text-sm text-surface-300">
-            <input type="checkbox" checked={monitored} onChange={(e) => setMonitored(e.target.checked)} className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
+            <input type="checkbox" checked={monitored} onChange={(e) => setMonitored(e.target.checked)} className="h-4 w-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
             {t('importModal.monitored', 'Monitor after import')}
           </label>
         </div>

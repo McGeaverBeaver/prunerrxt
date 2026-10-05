@@ -116,7 +116,7 @@ function JobRow({ job, now, busy, onCancel, onRetry }: { job: DeletionJob; now: 
   return (
     <li className="rounded-lg border border-surface-700/40 bg-surface-800/40 px-3 py-2.5">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex-shrink-0">{icon}</span>
+        <span className="mt-0.5 shrink-0">{icon}</span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="truncate text-sm font-medium text-surface-50">{job.title}</span>
@@ -139,7 +139,7 @@ function JobRow({ job, now, busy, onCancel, onRetry }: { job: DeletionJob; now: 
             )}
           </p>
           {job.status === 'failed' && job.error && (
-            <p className="mt-1 break-words text-xs text-ruby-text">
+            <p className="mt-1 wrap-break-word text-xs text-ruby-text">
               {job.failedStep && job.failedService
                 ? t('jobs.panel.failedAt', 'Failed while {{step}} in {{service}}', { step: stepName(job.failedStep, t).toLowerCase(), service: job.failedService })
                 : t('jobs.status.failed', 'Failed')}
@@ -151,9 +151,9 @@ function JobRow({ job, now, busy, onCancel, onRetry }: { job: DeletionJob; now: 
               <summary className="cursor-pointer text-surface-400 hover:text-surface-200">
                 {t('jobs.panel.upstreamLog', 'From the {{service}} log', { service: job.failedService ?? job.service ?? 'Sonarr/Radarr' })}
               </summary>
-              <ul className="mt-1 space-y-1 rounded bg-surface-900/60 p-2 font-mono text-2xs text-surface-300">
+              <ul className="mt-1 space-y-1 rounded-sm bg-surface-900/60 p-2 font-mono text-2xs text-surface-300">
                 {job.upstreamLog.map((line, idx) => (
-                  <li key={idx} className="break-words">{line}</li>
+                  <li key={idx} className="wrap-break-word">{line}</li>
                 ))}
               </ul>
             </details>
@@ -170,7 +170,7 @@ function JobRow({ job, now, busy, onCancel, onRetry }: { job: DeletionJob; now: 
             </p>
           )}
         </div>
-        <div className="flex flex-shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           {job.status === 'pending' && (
             <Button variant="ghost" size="sm" onClick={onCancel} disabled={busy} title={t('jobs.panel.cancel', 'Cancel')}>
               <Ban className="h-4 w-4" />

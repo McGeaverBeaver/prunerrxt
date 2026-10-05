@@ -109,7 +109,7 @@ function SonarrSeriesPanelImpl({ itemId }: SonarrSeriesPanelProps) {
     return () => {
       window.removeEventListener('keydown', sync);
       window.removeEventListener('keyup', sync);
-      window.removeEventListener('blur', clear);
+      window.removeEventListener('blur-sm', clear);
     };
   }, []);
 
@@ -619,7 +619,7 @@ function SeasonRow({
         >
         <ChevronRight
           className={cn(
-            'w-4 h-4 text-surface-500 flex-shrink-0 transition-transform duration-200',
+            'w-4 h-4 text-surface-500 shrink-0 transition-transform duration-200',
             expanded && 'rotate-90',
             !toggleable && 'opacity-0'
           )}
@@ -654,7 +654,7 @@ function SeasonRow({
           <EpisodeStrip episodes={season.episodes} className="mt-2" />
         </div>
 
-          <div className="text-right flex-shrink-0">
+          <div className="text-right shrink-0">
             <p className="text-xs text-surface-400 tabular-nums">
               {season.episodeFileCount}
               <span className="text-surface-600">/{season.airedCount || season.episodeCount}</span>
@@ -753,10 +753,10 @@ function EpisodeRow({
 
   const row = (
     <>
-      <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', style.dot)} />
+      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', style.dot)} />
       {/* The code gets its own aligned column from sm up; below that it rides
           along in the meta line so the title keeps the width. */}
-      <span className="hidden sm:block text-2xs text-surface-500 tabular-nums w-12 flex-shrink-0">
+      <span className="hidden sm:block text-2xs text-surface-500 tabular-nums w-12 shrink-0">
         {code}
       </span>
 
@@ -813,7 +813,7 @@ function EpisodeRow({
       {expandable && (
         <ChevronRight
           className={cn(
-            'w-3.5 h-3.5 text-surface-600 flex-shrink-0 transition-transform duration-200',
+            'w-3.5 h-3.5 text-surface-600 shrink-0 transition-transform duration-200',
             open && 'rotate-90'
           )}
         />
@@ -866,14 +866,14 @@ function EpisodeRow({
       </div>
 
       {open && (
-        <div className="px-4 pb-4 sm:pl-[6.25rem] animate-fade-down">
+        <div className="px-4 pb-4 sm:pl-25 animate-fade-down">
           {episode.download && (
             <div className="mb-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3">
               <div className="flex items-center justify-between gap-3 mb-2">
                 <span className="text-xs font-medium text-cyan-text truncate">
                   {episode.download.title || t('sonarr.state.downloading', 'Downloading')}
                 </span>
-                <span className="text-xs text-surface-500 tabular-nums flex-shrink-0">
+                <span className="text-xs text-surface-500 tabular-nums shrink-0">
                   {formatBytes(episode.download.size - episode.download.sizeleft)}
                   <span className="text-surface-600"> / {formatBytes(episode.download.size)}</span>
                 </span>
@@ -982,7 +982,7 @@ function SelectionCheckbox({
       aria-label={label}
       onClick={onChange}
       className={cn(
-        'w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all',
+        'w-5 h-5 rounded-sm border-2 flex items-center justify-center shrink-0 transition-all',
         checked
           ? 'bg-accent-500 border-accent-500'
           : indeterminate
@@ -1017,7 +1017,7 @@ function FileField({
   return (
     <div className={cn('min-w-0', className)}>
       <dt className="text-xs text-surface-500 font-medium">{label}</dt>
-      <dd className="text-sm text-surface-200 mt-0.5 break-words">{value}</dd>
+      <dd className="text-sm text-surface-200 mt-0.5 wrap-break-word">{value}</dd>
     </div>
   );
 }
@@ -1047,7 +1047,7 @@ function MetaItem({
 }) {
   return (
     <span className={cn('inline-flex items-center gap-1.5 min-w-0', className)}>
-      <span className="text-surface-500 flex-shrink-0">{icon}</span>
+      <span className="text-surface-500 shrink-0">{icon}</span>
       <span className="truncate">{value}</span>
     </span>
   );
@@ -1144,14 +1144,14 @@ function PanelNote({ icon, text }: { icon: React.ReactNode; text: string }) {
 function SonarrPanelSkeleton() {
   return (
     <Card className="p-6">
-      <div className="h-4 w-24 bg-surface-800/80 rounded animate-pulse mb-5" />
+      <div className="h-4 w-24 bg-surface-800/80 rounded-sm animate-pulse mb-5" />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-surface-800/80 animate-pulse" />
             <div className="space-y-1.5 flex-1">
-              <div className="h-3 w-20 bg-surface-800/60 rounded animate-pulse" />
-              <div className="h-4 w-28 bg-surface-800/80 rounded animate-pulse" />
+              <div className="h-3 w-20 bg-surface-800/60 rounded-sm animate-pulse" />
+              <div className="h-4 w-28 bg-surface-800/80 rounded-sm animate-pulse" />
             </div>
           </div>
         ))}

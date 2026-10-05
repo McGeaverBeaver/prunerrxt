@@ -99,7 +99,7 @@ export default React.memo(function MediaCard({ item, onRefetch, index: _index = 
       )}
     >
       {/* Poster Container - overflow hidden only here so menu can escape */}
-      <div className="aspect-[2/3] relative overflow-hidden rounded-t-2xl">
+      <div className="aspect-2/3 relative overflow-hidden rounded-t-2xl">
         {/* Loading skeleton */}
         {!imageLoaded && item.posterUrl && (
           <div className="absolute inset-0 skeleton-shimmer" />
@@ -118,7 +118,7 @@ export default React.memo(function MediaCard({ item, onRefetch, index: _index = 
             onLoad={() => setImageLoaded(true)}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-surface-800 to-surface-900 flex items-center justify-center">
+          <div className="w-full h-full bg-linear-to-br from-surface-800 to-surface-900 flex items-center justify-center">
             <div className={cn(
               'p-6 rounded-2xl',
               typeColor === 'violet' ? 'bg-violet-500/10' : 'bg-emerald-500/10'
@@ -132,8 +132,8 @@ export default React.memo(function MediaCard({ item, onRefetch, index: _index = 
         )}
 
         {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-950 via-transparent to-transparent opacity-60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-950 via-surface-950/60 to-transparent opacity-0 group-hover:opacity-90 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-linear-to-t from-surface-950 via-transparent to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-linear-to-t from-surface-950 via-surface-950/60 to-transparent opacity-0 group-hover:opacity-90 transition-opacity duration-300" />
 
         {/* Hover detail button - navigates to item detail page */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-90 pointer-events-none">
@@ -199,20 +199,20 @@ export default React.memo(function MediaCard({ item, onRefetch, index: _index = 
         )}>
           {item.inProgress ? (
             <div
-              className="flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/20 px-1.5 py-1 backdrop-blur-sm"
+              className="flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/20 px-1.5 py-1 backdrop-blur-xs"
               title={t('card.inProgressBy', 'In progress: {{users}}', { users: (item.watchState?.inProgressUsers ?? []).join(', ') })}
             >
               <PlayCircle className="w-3.5 h-3.5 text-sky-300" />
               <span className="text-[10px] font-semibold uppercase tracking-wide text-sky-200">{t('card.inProgress', 'In progress')}</span>
             </div>
           ) : item.watched ? (
-            <div className="p-1.5 rounded-lg bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30">
+            <div className="p-1.5 rounded-lg bg-emerald-500/20 backdrop-blur-xs border border-emerald-500/30">
               {/* On the artwork rather than a theme surface, so it stays
                   light-on-dark in both themes. */}
               <Eye className="w-3.5 h-3.5 text-emerald-400" />
             </div>
           ) : (
-            <div className="p-1.5 rounded-lg bg-surface-800/80 backdrop-blur-sm border border-surface-700/50">
+            <div className="p-1.5 rounded-lg bg-surface-800/80 backdrop-blur-xs border border-surface-700/50">
               <EyeOff className="w-3.5 h-3.5 text-surface-500" />
             </div>
           )}
@@ -226,7 +226,7 @@ export default React.memo(function MediaCard({ item, onRefetch, index: _index = 
             onMenuToggle();
           }}
           className={cn(
-            "absolute right-3 p-1.5 rounded-lg bg-surface-800/90 backdrop-blur-sm border border-surface-700/50 transition-all duration-200 hover:bg-surface-700/90 hover:border-surface-600/50 z-20",
+            "absolute right-3 p-1.5 rounded-lg bg-surface-800/90 backdrop-blur-xs border border-surface-700/50 transition-all duration-200 hover:bg-surface-700/90 hover:border-surface-600/50 z-20",
             hasStatusStrip ? "top-9" : "top-3",
             isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}
@@ -304,8 +304,8 @@ export default React.memo(function MediaCard({ item, onRefetch, index: _index = 
         <div className={cn(
           'absolute inset-x-0 top-0 h-px',
           typeColor === 'violet'
-            ? 'bg-gradient-to-r from-transparent via-violet-500/30 to-transparent'
-            : 'bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent'
+            ? 'bg-linear-to-r from-transparent via-violet-500/30 to-transparent'
+            : 'bg-linear-to-r from-transparent via-emerald-500/30 to-transparent'
         )} />
 
         <Link

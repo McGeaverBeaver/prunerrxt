@@ -84,7 +84,7 @@ export function SystemHealthCard({ services, overall, loading, isFetching }: Sys
       {loading ? (
         <div className="space-y-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="skeleton-shimmer h-6 rounded" />
+            <div key={i} className="skeleton-shimmer h-6 rounded-sm" />
           ))}
         </div>
       ) : (

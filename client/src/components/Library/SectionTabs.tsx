@@ -98,7 +98,7 @@ export function SectionTabs({
       <span
         ref={pillRef}
         aria-hidden="true"
-        className="pointer-events-none absolute left-0 top-1/2 h-[44px] rounded-xl bg-accent-500/12 border border-accent-500/25 shadow-sm shadow-accent-500/10 opacity-0"
+        className="pointer-events-none absolute left-0 top-1/2 h-[44px] rounded-xl bg-accent-500/12 border border-accent-500/25 shadow-xs shadow-accent-500/10 opacity-0"
       />
 
       {sections.map((section, index) => {
@@ -121,11 +121,11 @@ export function SectionTabs({
             }}
             onKeyDown={(event) => handleKeyDown(event, index)}
             className={cn(
-              'group relative flex-shrink-0 flex items-center gap-2 rounded-xl text-sm font-medium',
+              'group relative shrink-0 flex items-center gap-2 rounded-xl text-sm font-medium',
               // Comfortably tappable on a phone without the row overflowing.
               'min-h-[44px] px-3 sm:px-4 py-2.5',
               'transition-colors duration-200',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-500/60 focus-visible:ring-offset-0',
+              'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-500/60 focus-visible:ring-offset-0',
               isActive ? 'text-accent-text' : 'text-surface-400 hover:text-surface-100'
             )}
           >
@@ -197,7 +197,7 @@ export function SectionPanel({
       aria-labelledby={`${idPrefix}-tab-${sectionId}`}
       tabIndex={-1}
       hidden={!isActive}
-      className="focus:outline-none"
+      className="focus:outline-hidden"
     >
       {children}
     </div>

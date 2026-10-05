@@ -281,9 +281,9 @@ function RuleCard({
             </button>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-medium text-surface-50 break-words">{rule.name}</h3>
+                <h3 className="font-medium text-surface-50 wrap-break-word">{rule.name}</h3>
                 <span
-                  className="text-xs font-mono px-1.5 py-0.5 rounded bg-surface-700 text-surface-400"
+                  className="text-xs font-mono px-1.5 py-0.5 rounded-sm bg-surface-700 text-surface-400"
                   title={t('card.priorityTooltip', 'Rule priority (higher wins)')}
                 >
                   P{rule.priority ?? 0}

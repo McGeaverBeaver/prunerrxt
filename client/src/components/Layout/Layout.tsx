@@ -274,7 +274,7 @@ export default function Layout({ children }: LayoutProps) {
       onTouchCancel={handleTouchCancel}
     >
       {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 bg-surface-900/95 backdrop-blur-sm border-b border-surface-800/50 flex items-center px-4 lg:hidden">
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 bg-surface-900/95 backdrop-blur-xs border-b border-surface-800/50 flex items-center px-4 lg:hidden">
         <button
           onClick={() => setMobileMenuOpen(true)}
           className="p-2 -ml-2 rounded-xl text-surface-400 hover:text-surface-50 hover:bg-surface-800/60 transition-colors"
@@ -327,7 +327,7 @@ export default function Layout({ children }: LayoutProps) {
         className={
           fullBleed
             ? 'flex-1 overflow-hidden pt-16 lg:pt-0'
-            : 'flex-1 overflow-y-auto [scrollbar-gutter:stable] pt-16 lg:pt-0'
+            : 'flex-1 overflow-y-auto scrollbar-gutter-stable pt-16 lg:pt-0'
         }
       >
         <PageScrollProvider containerRef={mainRef}>

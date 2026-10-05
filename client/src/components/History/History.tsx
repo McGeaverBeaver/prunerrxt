@@ -271,7 +271,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
       <div className="flex items-center gap-3">
         <MaybeLink
           to={detailHref}
-          className="w-8 h-10 bg-surface-800 rounded flex items-center justify-center flex-shrink-0"
+          className="w-8 h-10 bg-surface-800 rounded-sm flex items-center justify-center shrink-0"
         >
           <TypeIcon className="w-4 h-4 text-surface-600" />
         </MaybeLink>
@@ -320,7 +320,7 @@ function HistoryRow({ item }: { item: HistoryItem }) {
         <div className="flex items-center gap-3">
           <MaybeLink
             to={detailHref}
-            className="w-8 h-10 bg-surface-800 rounded flex items-center justify-center flex-shrink-0"
+            className="w-8 h-10 bg-surface-800 rounded-sm flex items-center justify-center shrink-0"
           >
             <TypeIcon className="w-4 h-4 text-surface-600" />
           </MaybeLink>

@@ -128,7 +128,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
       )}
     >
       <div className="flex items-start gap-3 px-4 py-3.5">
-        <Icon className={cn('w-5 h-5 flex-shrink-0 mt-0.5', s.icon)} />
+        <Icon className={cn('w-5 h-5 shrink-0 mt-0.5', s.icon)} />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-surface-50">{toast.title}</p>
           {toast.message && (
@@ -138,7 +138,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
         <button
           onClick={onClose}
           aria-label={t('dismissNotification', 'Dismiss notification')}
-          className="p-1 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
+          className="p-1 rounded-lg hover:bg-white/10 transition-colors shrink-0"
         >
           <X className="w-4 h-4 text-surface-400" />
         </button>

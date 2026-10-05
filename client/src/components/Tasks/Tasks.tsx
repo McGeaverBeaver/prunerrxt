@@ -280,7 +280,7 @@ function RunRow({ run, name }: { run: TaskRun; name: string }) {
           <span className="text-xs text-surface-500" title={formatDate(run.startedAt, 'MMM d, yyyy HH:mm:ss')}>{formatRelativeTime(run.startedAt)}</span>
           {run.durationMs !== null && <span className="text-xs text-surface-500">· {formatDuration(run.durationMs)}</span>}
         </div>
-        {(run.message || run.error) && <p className={cn('text-xs mt-0.5 break-words', run.success === false ? 'text-ruby-text' : 'text-surface-400')}>{run.error || run.message}</p>}
+        {(run.message || run.error) && <p className={cn('text-xs mt-0.5 wrap-break-word', run.success === false ? 'text-ruby-text' : 'text-surface-400')}>{run.error || run.message}</p>}
       </div>
       {run.name === 'verifyAuditLog' && run.success && <ShieldCheck className="w-4 h-4 text-emerald-text mt-0.5" />}
     </li>

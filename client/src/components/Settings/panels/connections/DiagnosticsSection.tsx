@@ -292,8 +292,8 @@ function ServiceDiagnostics({ service }: { service: DiagnosticsService }) {
                       </span>
                       <span className="truncate text-surface-500">{record.logger}</span>
                     </div>
-                    <p className="whitespace-pre-wrap break-words text-surface-200">{record.message}</p>
-                    {record.exception && <p className="mt-0.5 whitespace-pre-wrap break-words text-surface-500">{record.exception.split('\n').slice(0, 3).join('\n')}</p>}
+                    <p className="whitespace-pre-wrap wrap-break-word text-surface-200">{record.message}</p>
+                    {record.exception && <p className="mt-0.5 whitespace-pre-wrap wrap-break-word text-surface-500">{record.exception.split('\n').slice(0, 3).join('\n')}</p>}
                   </li>
                 ))}
               </ul>

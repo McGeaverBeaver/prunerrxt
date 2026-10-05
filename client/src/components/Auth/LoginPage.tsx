@@ -124,9 +124,9 @@ export default function LoginPage() {
               href={ssoHref}
               className={cn(
                 'flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold',
-                'bg-gradient-to-r from-accent-500 to-accent-600 text-amber-950',
+                'bg-linear-to-r from-accent-500 to-accent-600 text-amber-950',
                 'hover:from-accent-400 hover:to-accent-500 hover:shadow-lg hover:shadow-accent-500/25',
-                'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500/50'
+                'transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-accent-500/50'
               )}
             >
               <LogIn className="w-4 h-4" aria-hidden />

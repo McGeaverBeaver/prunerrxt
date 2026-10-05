@@ -16,14 +16,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = cn(
       'inline-flex items-center justify-center gap-2 font-semibold rounded-xl',
       'transition-all duration-200 ease-out',
-      'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-900',
+      'focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-900',
       'disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none',
       'active:scale-[0.98]'
     );
 
     const variants: Record<ButtonVariant, string> = {
       primary: cn(
-        'bg-gradient-to-r from-accent-500 to-accent-600 text-amber-950',
+        'bg-linear-to-r from-accent-500 to-accent-600 text-amber-950',
         'hover:from-accent-400 hover:to-accent-500',
         'hover:shadow-lg hover:shadow-accent-500/25',
         'focus:ring-accent-500/50'

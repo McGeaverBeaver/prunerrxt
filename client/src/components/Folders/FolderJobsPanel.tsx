@@ -159,7 +159,7 @@ function JobRow({ job, canAct, busy, onCancel, onRetry }: { job: FolderJob; canA
     );
   return (
     <li className="flex items-start gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-surface-800/60">
-      <span className="mt-0.5 flex-shrink-0">{icon}</span>
+      <span className="mt-0.5 shrink-0">{icon}</span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-surface-200" title={job.path}>
           {job.name} <span className="text-surface-500">· {job.serviceLabel}</span>

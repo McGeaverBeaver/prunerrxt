@@ -124,7 +124,7 @@ function SyncLogPanel({
           )}
           {logs.map((log, idx) => (
             <div key={idx} className="flex gap-2 min-w-0">
-              <span className="text-surface-600 select-none flex-shrink-0">
+              <span className="text-surface-600 select-none shrink-0">
                 {log.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
               <span className={cn(
@@ -141,7 +141,7 @@ function SyncLogPanel({
           {/* Blinking cursor on last line while running */}
           {progress && progress.stage !== 'complete' && progress.stage !== 'error' && (
             <div className="flex gap-2 min-w-0">
-              <span className="text-surface-600 select-none flex-shrink-0">
+              <span className="text-surface-600 select-none shrink-0">
                 {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
               <span className="text-surface-500 truncate">
@@ -581,7 +581,7 @@ export default function Library() {
     <div className="space-y-6 pb-8">
       {/* Header */}
       <header className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 via-transparent to-emerald-500/5 rounded-3xl" />
+        <div className="absolute inset-0 bg-linear-to-r from-violet-500/5 via-transparent to-emerald-500/5 rounded-3xl" />
         <div className="relative px-4 py-6 sm:px-8 sm:py-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -775,7 +775,7 @@ export default function Library() {
               className={cn(
                 'p-2.5 rounded-lg transition-all duration-200',
                 viewMode === 'grid'
-                  ? 'bg-accent-500/20 text-accent-text shadow-sm'
+                  ? 'bg-accent-500/20 text-accent-text shadow-xs'
                   : 'text-surface-400 hover:text-surface-200'
               )}
             >
@@ -786,7 +786,7 @@ export default function Library() {
               className={cn(
                 'p-2.5 rounded-lg transition-all duration-200',
                 viewMode === 'table'
-                  ? 'bg-accent-500/20 text-accent-text shadow-sm'
+                  ? 'bg-accent-500/20 text-accent-text shadow-xs'
                   : 'text-surface-400 hover:text-surface-200'
               )}
             >
@@ -1063,13 +1063,13 @@ function LoadingSkeleton({ viewMode }: { viewMode: ViewMode }) {
             style={{ animationDelay: `${i * 20}ms` }}
           >
             {/* Poster placeholder */}
-            <div className="aspect-[2/3] skeleton-shimmer" />
+            <div className="aspect-2/3 skeleton-shimmer" />
             {/* Card footer placeholder */}
             <div className="p-4 space-y-2.5">
               <div className="h-4 bg-surface-700/50 rounded-lg w-4/5 skeleton-shimmer" />
               <div className="flex items-center gap-2">
                 <div className="h-5 w-14 bg-surface-700/40 rounded-full skeleton-shimmer" />
-                <div className="h-3 w-8 bg-surface-700/30 rounded skeleton-shimmer" />
+                <div className="h-3 w-8 bg-surface-700/30 rounded-sm skeleton-shimmer" />
               </div>
             </div>
           </div>
@@ -1083,7 +1083,7 @@ function LoadingSkeleton({ viewMode }: { viewMode: ViewMode }) {
       <div className="divide-y divide-surface-800/50">
         {[...Array(10)].map((_, i) => (
           <div key={i} className="flex items-center gap-4 p-4">
-            <div className="w-10 h-14 rounded-lg skeleton-shimmer flex-shrink-0" />
+            <div className="w-10 h-14 rounded-lg skeleton-shimmer shrink-0" />
             <div className="flex-1 space-y-2">
               <div className="h-4 bg-surface-700/50 rounded-lg w-1/3 skeleton-shimmer" />
               <div className="h-3 bg-surface-700/30 rounded-lg w-1/5 skeleton-shimmer" />

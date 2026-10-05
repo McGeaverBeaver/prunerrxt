@@ -272,14 +272,14 @@ export function Dropdown<T extends string>({
         className={cn(
           'inline-flex max-w-full items-center gap-2.5 border text-left text-surface-100',
           'transition-[border-color,box-shadow,background-color,transform] duration-150 active:scale-[0.98]',
-          'focus:outline-none focus-visible:border-accent-500/50 focus-visible:ring-[3px] focus-visible:ring-accent-500/[0.12]',
+          'focus:outline-hidden focus-visible:border-accent-500/50 focus-visible:ring-[3px] focus-visible:ring-accent-500/12',
           'disabled:cursor-not-allowed disabled:opacity-40',
           isInput
             ? 'min-h-[44px] rounded-xl bg-surface-800/60 pl-4 pr-3 text-base'
             : 'min-h-[44px] rounded-[11px] bg-surface-800/70 pl-3 pr-2.5 text-[13px] lg:min-h-[38px]',
           mono && 'font-mono text-[12.5px]',
           menu.isOpen
-            ? 'border-accent-500/50 bg-surface-800/80 ring-[3px] ring-accent-500/[0.12]'
+            ? 'border-accent-500/50 bg-surface-800/80 ring-[3px] ring-accent-500/12'
             : error
               ? 'border-ruby-500/50'
               : isInput
@@ -288,13 +288,13 @@ export function Dropdown<T extends string>({
           className
         )}
       >
-        {icon && <span className="flex-shrink-0 text-surface-400">{icon}</span>}
+        {icon && <span className="shrink-0 text-surface-400">{icon}</span>}
         <span className={cn('min-w-0 flex-1', !shownOption && 'text-surface-500')}>
           <TypewriterLabel text={shownOption?.label ?? placeholder} reserve={reserve} playKey={playKey} />
         </span>
         <ChevronDown
           aria-hidden
-          className={cn('dd-chevron h-[17px] w-[17px] flex-shrink-0 text-surface-400', menu.isOpen && 'rotate-180')}
+          className={cn('dd-chevron h-[17px] w-[17px] shrink-0 text-surface-400', menu.isOpen && 'rotate-180')}
         />
       </button>
 
@@ -316,7 +316,7 @@ export function Dropdown<T extends string>({
               visibility: menu.pos ? 'visible' : 'hidden',
             }}
             className={cn(
-              'dd-menu z-[60] flex max-w-[min(360px,calc(100vw-16px))] flex-col overflow-hidden rounded-[14px]',
+              'dd-menu z-60 flex max-w-[min(360px,calc(100vw-16px))] flex-col overflow-hidden rounded-[14px]',
               'border border-surface-700 bg-surface-900',
               'shadow-[0_18px_40px_-12px_rgba(15,23,42,0.25)] dark:shadow-[0_18px_40px_-12px_rgba(0,0,0,0.75),0_0_0_1px_rgba(0,0,0,0.2)]',
               menu.phase === 'closing' && 'dd-menu-out',
@@ -325,7 +325,7 @@ export function Dropdown<T extends string>({
             )}
           >
             {searchable && (
-              <div className="flex h-[38px] flex-shrink-0 items-center gap-2 border-b border-surface-700 px-3 text-surface-500">
+              <div className="flex h-[38px] shrink-0 items-center gap-2 border-b border-surface-700 px-3 text-surface-500">
                 <Search className="h-3.5 w-3.5" aria-hidden />
                 <input
                   ref={searchRef}
@@ -338,7 +338,7 @@ export function Dropdown<T extends string>({
                   placeholder={searchPlaceholder}
                   aria-label={searchPlaceholder}
                   aria-controls={listboxId}
-                  className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-surface-50 placeholder:text-surface-500 focus:outline-none focus:ring-0"
+                  className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-surface-50 placeholder:text-surface-500 focus:outline-hidden focus:ring-0"
                 />
               </div>
             )}
@@ -370,17 +370,17 @@ export function Dropdown<T extends string>({
                     <span
                       aria-hidden
                       className={cn(
-                        'absolute bottom-[9px] left-0 top-[9px] w-[2px] rounded-sm bg-accent-500',
+                        'absolute bottom-[9px] left-0 top-[9px] w-[2px] rounded-xs bg-accent-500',
                         'transition-transform duration-150 ease-[cubic-bezier(.2,.8,.2,1)]',
                         isActive ? 'scale-y-100' : 'scale-y-0'
                       )}
                     />
                     {opt.code && (
-                      <span className="w-[22px] flex-shrink-0 font-mono text-[10px] tracking-[0.04em] text-surface-500">
+                      <span className="w-[22px] shrink-0 font-mono text-[10px] tracking-[0.04em] text-surface-500">
                         {opt.code}
                       </span>
                     )}
-                    {opt.icon && <span className="flex-shrink-0">{opt.icon}</span>}
+                    {opt.icon && <span className="shrink-0">{opt.icon}</span>}
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span
                         className={cn(
@@ -395,7 +395,7 @@ export function Dropdown<T extends string>({
                       )}
                     </span>
                     {opt.badge && (
-                      <span className="flex-shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/15 px-[7px] py-0.5 text-[10.5px] font-medium text-emerald-text">
+                      <span className="shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/15 px-[7px] py-0.5 text-[10.5px] font-medium text-emerald-text">
                         {opt.badge}
                       </span>
                     )}
@@ -431,7 +431,7 @@ export function DrawnCheck({ className }: { className?: string }) {
       strokeWidth={2.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn('h-[15px] w-[15px] flex-shrink-0', className)}
+      className={cn('h-[15px] w-[15px] shrink-0', className)}
     >
       <path d="M20 6 9 17l-5-5" className="dd-check" />
     </svg>

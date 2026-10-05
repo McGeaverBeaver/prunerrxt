@@ -54,7 +54,7 @@ export function ServiceStatusIndicator({
     <>
       <span
         className={cn(
-          'w-2 h-2 rounded-full flex-shrink-0 transition-colors',
+          'w-2 h-2 rounded-full shrink-0 transition-colors',
           loading ? 'bg-amber-500 animate-pulse' : config.dotColor
         )}
       />
@@ -69,7 +69,7 @@ export function ServiceStatusIndicator({
   const interactiveClass = cn(
     rowClass,
     '-mx-2 px-2 rounded-lg hover:bg-surface-800/60 transition-colors',
-    'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/40'
+    'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/40'
   );
 
   // A configured service opens its own web UI in a new tab; an unconfigured
@@ -111,5 +111,5 @@ export function ServiceStatusIndicator({
 
 /** Pins the hover affordance to the right-hand edge of the row. */
 function Trailing({ children }: { children: ReactNode }) {
-  return <span className="ml-auto flex-shrink-0">{children}</span>;
+  return <span className="ml-auto shrink-0">{children}</span>;
 }

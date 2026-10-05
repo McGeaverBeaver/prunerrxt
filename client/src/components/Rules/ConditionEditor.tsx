@@ -110,7 +110,7 @@ function GroupEditor({
           <button
             type="button"
             onClick={() => onRemove(path)}
-            className="inline-flex items-center justify-center w-8 h-8 rounded text-surface-500 hover:text-ruby-text hover:bg-ruby-500/10 active:bg-ruby-500/15 transition-colors"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-sm text-surface-500 hover:text-ruby-text hover:bg-ruby-500/10 active:bg-ruby-500/15 transition-colors"
             title={t('group.removeGroup', 'Remove group')}
             aria-label={t('group.removeGroup', 'Remove group')}
           >
@@ -391,7 +391,7 @@ function ListChipInput({
       {value.map((chip, i) => (
         <span
           key={`${chip}-${i}`}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-accent-500/20 text-surface-50 ring-1 ring-inset ring-accent-500/40 text-xs"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-accent-500/20 text-surface-50 ring-1 ring-inset ring-accent-500/40 text-xs"
         >
           {chip}
           <button
@@ -416,7 +416,7 @@ function ListChipInput({
             onChange(value.slice(0, -1));
           }
         }}
-        className="min-w-[80px] flex-1 border-0 bg-transparent text-[13px] text-surface-50 placeholder:text-surface-500 focus:outline-none focus:ring-0"
+        className="min-w-[80px] flex-1 border-0 bg-transparent text-[13px] text-surface-50 placeholder:text-surface-500 focus:outline-hidden focus:ring-0"
       />
     </div>
   );
@@ -795,7 +795,7 @@ function PlexUserWidget({
 // Matches `controlClass` in Settings/panels/AutomationPanel.tsx and the
 // Dropdown 'control' size so the whole condition row lines up.
 const baseInputClass =
-  'min-h-[44px] lg:min-h-[38px] rounded-[11px] border border-surface-600/60 bg-surface-800/70 px-3 text-[13px] text-surface-50 placeholder:text-surface-500 transition-colors focus:border-accent-500/50 focus:bg-surface-800/95 focus:outline-none';
+  'min-h-[44px] lg:min-h-[38px] rounded-[11px] border border-surface-600/60 bg-surface-800/70 px-3 text-[13px] text-surface-50 placeholder:text-surface-500 transition-colors focus:border-accent-500/50 focus:bg-surface-800/95 focus:outline-hidden';
 const numInputClass = `${baseInputClass} w-20 sm:w-24 font-mono`;
 const textInputClass = `${baseInputClass} min-w-[120px] sm:min-w-[160px]`;
 

@@ -324,10 +324,10 @@ function MediaRow({ item, onRefetch, isMenuOpen, onMenuToggle, onMenuClose, isSe
             <img
               src={item.posterUrl}
               alt=""
-              className="w-10 h-14 object-cover rounded"
+              className="w-10 h-14 object-cover rounded-sm"
             />
           ) : (
-            <div className="w-10 h-14 bg-surface-800 rounded flex items-center justify-center">
+            <div className="w-10 h-14 bg-surface-800 rounded-sm flex items-center justify-center">
               <TypeIcon className="w-5 h-5 text-surface-600" />
             </div>
           )}
@@ -401,7 +401,7 @@ function MediaRow({ item, onRefetch, isMenuOpen, onMenuToggle, onMenuClose, isSe
             e.stopPropagation();
             onMenuToggle();
           }}
-          className="p-1.5 rounded hover:bg-surface-700 transition-colors"
+          className="p-1.5 rounded-sm hover:bg-surface-700 transition-colors"
         >
           <MoreHorizontal className="w-4 h-4 text-surface-400" />
         </button>
@@ -507,9 +507,9 @@ function MobileMediaCard({ item, onRefetch, isMenuOpen, onMenuToggle, onMenuClos
 
         {/* Poster */}
         {item.posterUrl ? (
-          <img src={item.posterUrl} alt="" className="w-10 h-14 object-cover rounded flex-shrink-0" />
+          <img src={item.posterUrl} alt="" className="w-10 h-14 object-cover rounded-sm shrink-0" />
         ) : (
-          <div className="w-10 h-14 bg-surface-800 rounded flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-14 bg-surface-800 rounded-sm flex items-center justify-center shrink-0">
             <TypeIcon className="w-5 h-5 text-surface-600" />
           </div>
         )}
@@ -527,7 +527,7 @@ function MobileMediaCard({ item, onRefetch, isMenuOpen, onMenuToggle, onMenuClos
             <button
               data-menu-trigger
               onClick={(e) => { e.stopPropagation(); onMenuToggle(); }}
-              className="p-1.5 rounded hover:bg-surface-700 transition-colors flex-shrink-0"
+              className="p-1.5 rounded-sm hover:bg-surface-700 transition-colors shrink-0"
             >
               <MoreHorizontal className="w-4 h-4 text-surface-400" />
             </button>

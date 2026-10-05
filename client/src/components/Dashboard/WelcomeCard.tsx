@@ -40,13 +40,13 @@ export function WelcomeCard({ services }: WelcomeCardProps) {
   return (
     <div className="card p-6 sm:p-8 relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-accent-500/10 via-violet-500/5 to-transparent rounded-full -translate-y-32 translate-x-32" />
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-emerald-500/5 to-transparent rounded-full translate-y-24 -translate-x-24" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-bl from-accent-500/10 via-violet-500/5 to-transparent rounded-full -translate-y-32 translate-x-32" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-linear-to-tr from-emerald-500/5 to-transparent rounded-full translate-y-24 -translate-x-24" />
 
       <div className="relative">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
-          <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center shadow-lg shadow-accent-500/20 flex-shrink-0">
+          <div className="w-14 h-14 bg-linear-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center shadow-lg shadow-accent-500/20 shrink-0">
             <Scissors className="w-7 h-7 text-amber-950" />
           </div>
           <div>
@@ -69,7 +69,7 @@ export function WelcomeCard({ services }: WelcomeCardProps) {
           </div>
           <div className="h-2 bg-surface-700 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-accent-500 to-accent-400 rounded-full transition-all duration-500"
+              className="h-full bg-linear-to-r from-accent-500 to-accent-400 rounded-full transition-all duration-500"
               style={{ width: `${(configuredCount / services.length) * 100}%` }}
             />
           </div>
@@ -168,16 +168,16 @@ function ServiceItem({ service, arrGroup, hasArrConfigured }: ServiceItemProps) 
       title={t('welcome.configureService', 'Configure {{name}}', { name: service.name })}
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg transition-colors',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/40',
+        'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/40',
         showAsConfigured
           ? 'bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15'
           : 'bg-surface-800/40 border border-surface-700/30 hover:bg-surface-800/70'
       )}
     >
       {showAsConfigured ? (
-        <CheckCircle2 className="w-5 h-5 text-emerald-text flex-shrink-0" />
+        <CheckCircle2 className="w-5 h-5 text-emerald-text shrink-0" />
       ) : (
-        <Circle className="w-5 h-5 text-surface-500 flex-shrink-0" />
+        <Circle className="w-5 h-5 text-surface-500 shrink-0" />
       )}
       <div className="flex-1 min-w-0">
         <p className={cn(
@@ -189,7 +189,7 @@ function ServiceItem({ service, arrGroup, hasArrConfigured }: ServiceItemProps) 
         <p className="text-xs text-surface-500 truncate">{service.description}</p>
       </div>
       {showWarning && (
-        <span className="text-2xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 ring-1 ring-inset ring-amber-500/40 font-medium flex-shrink-0">
+        <span className="text-2xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 ring-1 ring-inset ring-amber-500/40 font-medium shrink-0">
           {t('welcome.groupRequired', 'Required')}
         </span>
       )}

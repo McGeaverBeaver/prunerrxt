@@ -162,10 +162,10 @@ function ActivityTimelineImpl({
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="flex gap-4 animate-pulse">
-            <div className="w-10 h-10 rounded-xl bg-surface-800/80 flex-shrink-0" />
+            <div className="w-10 h-10 rounded-xl bg-surface-800/80 shrink-0" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-surface-800/80 rounded w-3/4" />
-              <div className="h-3 bg-surface-800/50 rounded w-1/2" />
+              <div className="h-4 bg-surface-800/80 rounded-sm w-3/4" />
+              <div className="h-3 bg-surface-800/50 rounded-sm w-1/2" />
             </div>
           </div>
         ))}
@@ -306,7 +306,7 @@ function TimelineRow({
       {/* Icon node */}
       <div
         className={cn(
-          'relative z-10 flex-shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center transition-all',
+          'relative z-10 shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center transition-all',
           bgClass
         )}
       >
@@ -352,17 +352,17 @@ function TimelineRow({
                     key={`${detail.code}-${index}`}
                     className="flex items-baseline gap-2 text-xs text-surface-400"
                   >
-                    <span className="text-2xs text-surface-500 tabular-nums w-12 flex-shrink-0">
+                    <span className="text-2xs text-surface-500 tabular-nums w-12 shrink-0">
                       {detail.code}
                     </span>
                     <span className="text-surface-300 truncate">{detail.title}</span>
-                    {detail.meta && <span className="text-surface-500 flex-shrink-0">{detail.meta}</span>}
+                    {detail.meta && <span className="text-surface-500 shrink-0">{detail.meta}</span>}
                   </li>
                 ))}
               </ul>
             )}
           </div>
-          <div className="flex-shrink-0 text-right">
+          <div className="shrink-0 text-right">
             <p className="text-xs text-surface-400">{formatRelativeTime(entry.createdAt)}</p>
             <p className="text-2xs text-surface-600 mt-0.5">{formatDate(entry.createdAt)}</p>
           </div>

@@ -55,7 +55,7 @@ export function Modal({
     <Fragment>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-surface-950/80 backdrop-blur-sm animate-fade-in"
+        className="fixed inset-0 z-40 bg-surface-950/80 backdrop-blur-xs animate-fade-in"
         onClick={onClose}
       />
 
@@ -124,7 +124,7 @@ export function ConfirmModal({
   const buttonVariants = {
     danger: 'bg-ruby-500/20 hover:bg-ruby-500/30 border-ruby-500/30 hover:border-ruby-500/50 text-ruby-text hover:text-ruby-300 focus:ring-ruby-500/30',
     warning: 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 hover:border-amber-500/60 text-amber-100 hover:text-amber-50 focus:ring-amber-500/30',
-    primary: 'bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-amber-950 border-transparent focus:ring-accent-500/50',
+    primary: 'bg-linear-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-amber-950 border-transparent focus:ring-accent-500/50',
   };
 
   return (
@@ -138,7 +138,7 @@ export function ConfirmModal({
               'px-5 py-3 sm:py-2.5 text-sm font-semibold rounded-xl',
               'bg-surface-700/80 hover:bg-surface-600/80 border border-surface-600/50 hover:border-surface-500/50',
               'text-surface-200 hover:text-surface-50',
-              'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-surface-500/30 focus:ring-offset-2 focus:ring-offset-surface-900'
+              'transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-surface-500/30 focus:ring-offset-2 focus:ring-offset-surface-900'
             )}
           >
             {cancelText}
@@ -148,7 +148,7 @@ export function ConfirmModal({
             disabled={isLoading}
             className={cn(
               'px-5 py-3 sm:py-2.5 text-sm font-semibold rounded-xl border',
-              'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-900',
+              'transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-900',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               buttonVariants[variant]
             )}

@@ -97,7 +97,7 @@ export function StackHealthBlock() {
       disabled={ack.isPending}
       title={undo ? t('stack.unacknowledge', 'Bring this finding back') : t('stack.acknowledge', 'Acknowledge: hide this finding until it gets worse')}
       aria-label={undo ? t('stack.unacknowledgeShort', 'Unacknowledge') : t('stack.acknowledgeShort', 'Acknowledge')}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-surface-600/80 text-surface-300 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-surface-600/80 text-surface-300 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:opacity-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60"
     >
       {undo ? <Undo2 className="h-4 w-4" aria-hidden /> : <Check className="h-4 w-4" aria-hidden />}
     </button>
@@ -127,7 +127,7 @@ export function StackHealthBlock() {
             type="button"
             onClick={() => void query.refetch()}
             disabled={query.isFetching}
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5 text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60"
+            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-[10px] border border-surface-600/80 px-2.5 text-[11.5px] font-semibold text-surface-200 transition-colors hover:bg-surface-700/60 hover:text-surface-50 disabled:opacity-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60"
           >
             <RefreshCw className={cn('h-3.5 w-3.5', query.isFetching && 'animate-spin motion-reduce:animate-none')} aria-hidden />
             {t('refresh', 'Refresh')}
@@ -171,7 +171,7 @@ export function StackHealthBlock() {
           </div>
 
           {active.length === 0 ? (
-            <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-3">
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/6 px-4 py-3">
               <ShieldCheck className="h-5 w-5 text-emerald-text" aria-hidden />
               <div>
                 <p className="text-[13px] font-semibold text-surface-50">{t('stack.allClear', 'Nothing needs attention')}</p>

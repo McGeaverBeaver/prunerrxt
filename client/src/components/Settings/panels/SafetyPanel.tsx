@@ -581,7 +581,7 @@ export default function SafetyPanel({
                         instead of a truncated sliver between two labels. */}
                     <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
                       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                        <span className="shrink-0 rounded-full bg-cyan-400/[0.12] px-2.5 py-0.5 text-[11.5px] font-medium text-cyan-text">
+                        <span className="shrink-0 rounded-full bg-cyan-400/12 px-2.5 py-0.5 text-[11.5px] font-medium text-cyan-text">
                           {fieldLabels[pattern.field]}
                         </span>
                         <span className="shrink-0 text-xs text-surface-400">
@@ -639,7 +639,7 @@ export default function SafetyPanel({
 
       {/* ---------------- right column ---------------- */}
       <aside className="flex w-full shrink-0 flex-col gap-3 lg:w-[264px]">
-        <div className="rounded-[14px] border border-emerald-500/20 bg-emerald-500/[0.06] p-4">
+        <div className="rounded-[14px] border border-emerald-500/20 bg-emerald-500/6 p-4">
           <p className="text-[13.5px] font-medium text-emerald-text">
             {t('safety.protectedNow.title', 'Protected right now')}
           </p>

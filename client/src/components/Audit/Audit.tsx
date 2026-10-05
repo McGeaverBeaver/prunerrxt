@@ -94,7 +94,7 @@ export default function Audit() {
 
       {verification && (
         <div className={cn('flex items-start gap-3 p-4 rounded-xl border', verification.ok ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-ruby-500/10 border-ruby-500/30')}>
-          {verification.ok ? <ShieldCheck className="w-5 h-5 text-emerald-text flex-shrink-0 mt-0.5" /> : <ShieldAlert className="w-5 h-5 text-ruby-text flex-shrink-0 mt-0.5" />}
+          {verification.ok ? <ShieldCheck className="w-5 h-5 text-emerald-text shrink-0 mt-0.5" /> : <ShieldAlert className="w-5 h-5 text-ruby-text shrink-0 mt-0.5" />}
           <div className="text-sm">
             <p className="font-medium text-surface-50">
               {verification.ok
@@ -229,7 +229,7 @@ function AuditRow({ entry }: { entry: AuditEntry }) {
       <div className="flex items-start gap-3">
         <div className="mt-0.5"><ActorIcon type={entry.actorType} /></div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-surface-100 break-words">
+          <p className="text-sm text-surface-100 wrap-break-word">
             <span className="font-medium text-surface-50">{entry.actorName}</span>
             {entry.actorRole && <span className="text-xs text-surface-500"> ({entry.actorRole})</span>}{' '}
             <span className="text-surface-300">{actionLabel(entry.action)}</span>
@@ -257,7 +257,7 @@ function AuditRow({ entry }: { entry: AuditEntry }) {
             )}
           </p>
           {open && hasDetails && (
-            <pre className="mt-2 max-h-72 overflow-auto rounded-lg border border-surface-700/60 bg-surface-900/60 p-3 font-mono text-[11px] text-surface-300 whitespace-pre-wrap break-words">
+            <pre className="mt-2 max-h-72 overflow-auto rounded-lg border border-surface-700/60 bg-surface-900/60 p-3 font-mono text-[11px] text-surface-300 whitespace-pre-wrap wrap-break-word">
               {JSON.stringify(entry.details, null, 2)}
             </pre>
           )}

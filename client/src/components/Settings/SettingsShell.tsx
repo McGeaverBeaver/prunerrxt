@@ -531,7 +531,7 @@ export function SettingsShell({ panels }: { panels: SettingsPanelRegistry }) {
               className={cn(
                 'w-full rounded-[11px] border border-surface-600/60 bg-surface-800/70 py-2.5 pl-8 pr-11',
                 'font-sans text-[13px] text-surface-100 placeholder:text-surface-500',
-                'focus:border-accent-500/50 focus:bg-surface-800/95 focus:outline-none'
+                'focus:border-accent-500/50 focus:bg-surface-800/95 focus:outline-hidden'
               )}
             />
             <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-[5px] border border-surface-600/70 px-1 font-mono text-[10px] text-surface-500">
@@ -572,7 +572,7 @@ export function SettingsShell({ panels }: { panels: SettingsPanelRegistry }) {
                       'flex w-full items-center gap-2.5 rounded-[11px] border px-3 py-2.5',
                       'font-sans text-[13.5px] font-medium transition-colors',
                       isActive
-                        ? 'border-accent-500/[0.22] bg-accent-500/10 text-accent-text'
+                        ? 'border-accent-500/22 bg-accent-500/10 text-accent-text'
                         : 'border-transparent text-surface-400 hover:bg-surface-800/70 hover:text-surface-200'
                     )}
                   >
@@ -621,7 +621,7 @@ export function SettingsShell({ panels }: { panels: SettingsPanelRegistry }) {
                               // the pointer can cross without the peek closing.
                               cn(
                                 'absolute left-full top-0 z-30 ml-2 w-[210px] rounded-xl p-1.5',
-                                'border border-surface-700 bg-surface-900/95 backdrop-blur-sm',
+                                'border border-surface-700 bg-surface-900/95 backdrop-blur-xs',
                                 'shadow-[0_10px_30px_rgba(0,0,0,0.45)]',
                                 'before:absolute before:-left-2 before:top-0 before:h-full before:w-2 before:content-[""]'
                               )
@@ -667,7 +667,7 @@ export function SettingsShell({ panels }: { panels: SettingsPanelRegistry }) {
                                   // settles a couple of pixels off the line, which
                                   // reads as a jog in the rail.
                                   <span
-                                    className="absolute -left-[12px] top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-full bg-accent-500"
+                                    className="absolute left-[-12px] top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-full bg-accent-500"
                                     aria-hidden
                                   />
                                 )}
@@ -735,7 +735,7 @@ export function SettingsShell({ panels }: { panels: SettingsPanelRegistry }) {
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={t('search.placeholder', 'Search settings…')}
                 aria-label={t('search.placeholder', 'Search settings…')}
-                className="min-h-[46px] w-full rounded-xl border border-surface-600/60 bg-surface-800/70 pl-9 pr-3 text-[15px] text-surface-100 placeholder:text-surface-500 focus:border-accent-500/50 focus:outline-none"
+                className="min-h-[46px] w-full rounded-xl border border-surface-600/60 bg-surface-800/70 pl-9 pr-3 text-[15px] text-surface-100 placeholder:text-surface-500 focus:border-accent-500/50 focus:outline-hidden"
               />
             </div>
 
@@ -834,9 +834,9 @@ function StatusChip({
   dot?: boolean;
 }) {
   const tones = {
-    emerald: 'bg-emerald-500/[0.08] border-emerald-500/[0.22] text-emerald-text',
-    ruby: 'bg-ruby-500/[0.08] border-ruby-500/[0.22] text-ruby-text',
-    amber: 'bg-accent-500/[0.08] border-accent-500/[0.22] text-accent-text',
+    emerald: 'bg-emerald-500/8 border-emerald-500/22 text-emerald-text',
+    ruby: 'bg-ruby-500/8 border-ruby-500/22 text-ruby-text',
+    amber: 'bg-accent-500/8 border-accent-500/22 text-accent-text',
     neutral: 'bg-surface-700/50 border-surface-600/60 text-surface-300',
   } as const;
 
@@ -883,7 +883,7 @@ function SavePill({
         type="button"
         onClick={onSave}
         disabled={saving}
-        className="rounded-[10px] bg-gradient-to-r from-accent-500 to-accent-600 px-3.5 py-1.5 text-[12.5px] font-bold text-amber-950 disabled:opacity-70"
+        className="rounded-[10px] bg-linear-to-r from-accent-500 to-accent-600 px-3.5 py-1.5 text-[12.5px] font-bold text-amber-950 disabled:opacity-70"
       >
         {saving ? t('savePill.saving', 'Saving…') : t('savePill.save', 'Save changes')}
       </button>

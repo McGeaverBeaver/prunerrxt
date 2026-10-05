@@ -96,7 +96,7 @@ export function MobilePreviewSheet({
 
   // Portal to document.body so the fixed chip/sheet are positioned relative to
   // the viewport, not the SmartRuleBuilder modal container. That container has
-  // `backdrop-blur`, which makes it the containing block for our fixed
+  // `backdrop-blur-sm`, which makes it the containing block for our fixed
   // descendants; combined with framer's transform animation, Chrome
   // intermittently re-resolves the containing block mid-animation, making the
   // sheet flash to full screen as it slides up. Escaping to the body fixes it.
@@ -120,7 +120,7 @@ export function MobilePreviewSheet({
                 ? { duration: 0.1 }
                 : { type: 'spring', stiffness: 380, damping: 28 }
             }
-            className="fixed inset-x-0 mx-auto z-[60] flex items-center gap-2 px-4 py-2.5 bg-surface-900/95 border border-accent-500/40 rounded-full shadow-lg shadow-black/40 text-sm text-surface-100"
+            className="fixed inset-x-0 mx-auto z-60 flex items-center gap-2 px-4 py-2.5 bg-surface-900/95 border border-accent-500/40 rounded-full shadow-lg shadow-black/40 text-sm text-surface-100"
             style={{
               width: 'fit-content',
               maxWidth: 'calc(100vw - 2rem)',
@@ -147,7 +147,7 @@ export function MobilePreviewSheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 bg-black/55 z-[60]"
+            className="fixed inset-0 bg-black/55 z-60"
             onClick={closeSheet}
             aria-hidden
           />
@@ -177,7 +177,7 @@ export function MobilePreviewSheet({
         dragMomentum={false}
         whileDrag={{ cursor: 'grabbing' }}
         onDragEnd={handleDragEnd}
-        className="fixed inset-x-0 bottom-0 z-[61] bg-surface-900 border-t border-surface-700/60 rounded-t-2xl shadow-2xl shadow-black/60 flex flex-col"
+        className="fixed inset-x-0 bottom-0 z-61 bg-surface-900 border-t border-surface-700/60 rounded-t-2xl shadow-2xl shadow-black/60 flex flex-col"
         style={{
           maxHeight: '85vh',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',

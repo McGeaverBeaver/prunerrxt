@@ -46,7 +46,7 @@ function ActionButton({
       className={cn(
         'inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-[10px] border px-3',
         'text-[11.5px] font-semibold transition-colors',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60',
+        'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/60',
         'disabled:cursor-not-allowed disabled:opacity-50',
         tone === 'destructive'
           ? 'border-ruby-500/30 bg-ruby-500/[0.14] text-ruby-text hover:bg-ruby-500/20'
@@ -434,7 +434,7 @@ export default function SystemPanel({ registerSection }: PanelProps) {
                   {/* Child order must stay text → <code> → text: the stored
                       translation addresses the code element as <1>. */}
                   <Trans i18nKey="apiKey.usageBody" ns="settings">
-                    Include the key in the <code className="rounded bg-surface-700/50 px-1.5 py-0.5 font-mono text-[11px] text-accent-text">X-Api-Key</code> header when making API requests from external tools, scripts, or apps like nzb360.
+                    Include the key in the <code className="rounded-sm bg-surface-700/50 px-1.5 py-0.5 font-mono text-[11px] text-accent-text">X-Api-Key</code> header when making API requests from external tools, scripts, or apps like nzb360.
                   </Trans>
                 </p>
                 <code className="overflow-x-auto whitespace-pre-wrap break-all rounded-lg border border-surface-700/50 bg-surface-900/50 px-3 py-2 font-mono text-[11px] text-surface-300">

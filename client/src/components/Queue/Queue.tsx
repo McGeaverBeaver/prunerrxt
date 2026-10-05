@@ -370,7 +370,7 @@ export default function Queue() {
       {!hasArrService && (
         <div className="flex items-center justify-between gap-4 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-accent-text flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-accent-text shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-surface-50">{t('arrWarning.title', 'Sonarr/Radarr not configured')}</p>
               <p className="text-xs text-surface-400 mt-1">
@@ -387,7 +387,7 @@ export default function Queue() {
       {/* Archive paused: indexers down, rate limited, app unreachable */}
       {archiveStatus && archiveStatus.paused.length > 0 && (
         <div className="flex items-start gap-3 p-4 bg-surface-800/60 rounded-xl border border-surface-700/70">
-          <PauseCircle className="w-5 h-5 text-surface-300 flex-shrink-0 mt-0.5" />
+          <PauseCircle className="w-5 h-5 text-surface-300 shrink-0 mt-0.5" />
           <div className="min-w-0">
             <p className="text-sm font-medium text-surface-50">{t('archivePaused.title', 'Archive checks paused')}</p>
             <ul className="text-xs text-surface-400 mt-1 space-y-0.5">
@@ -407,7 +407,7 @@ export default function Queue() {
       {/* Archive holds */}
       {heldItems.length > 0 && (
         <div className="flex items-start gap-3 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
-          <ShieldAlert className="w-5 h-5 text-accent-text flex-shrink-0 mt-0.5" />
+          <ShieldAlert className="w-5 h-5 text-accent-text shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-surface-50">
               {t('archiveHold.title', '{{count}} item(s) held by Archive', { count: heldItems.length })}
@@ -529,7 +529,7 @@ export default function Queue() {
                     }
                   }}
                   onChange={handleSelectAll}
-                  className="w-4 h-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
+                  className="w-4 h-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500"
                 />
                 <span className="text-sm text-surface-400">
                   {selectedItems.length > 0
@@ -641,7 +641,7 @@ export default function Queue() {
         <div className="space-y-4">
           {!hasArrService && (
             <div className="flex items-start gap-3 p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
-              <AlertTriangle className="w-5 h-5 text-accent-text flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-accent-text shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-surface-50">{t('arrWarning.title', 'Sonarr/Radarr not configured')}</p>
                 <p className="text-xs text-surface-400 mt-1">{t('arrWarning.modalDesc', "Items will be marked as deleted in PrunerrXT but files won't be removed from disk. Set up Sonarr or Radarr in Settings first.")}</p>
@@ -649,7 +649,7 @@ export default function Queue() {
             </div>
           )}
           <div className="flex items-center gap-3 p-4 bg-ruby-500/10 rounded-lg border border-ruby-500/20">
-            <AlertTriangle className="w-6 h-6 text-ruby-text flex-shrink-0" />
+            <AlertTriangle className="w-6 h-6 text-ruby-text shrink-0" />
             <div>
               <p className="text-sm text-surface-50">
                 {t('processModal.warning', 'This will delete items that have passed their grace period.')}
@@ -684,7 +684,7 @@ export default function Queue() {
         <div className="space-y-4">
           {!hasArrService && (
             <div className="flex items-start gap-3 p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
-              <AlertTriangle className="w-5 h-5 text-accent-text flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-accent-text shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-surface-50">{t('arrWarning.title', 'Sonarr/Radarr not configured')}</p>
                 <p className="text-xs text-surface-400 mt-1">{t('arrWarning.modalDesc', "Items will be marked as deleted in PrunerrXT but files won't be removed from disk. Set up Sonarr or Radarr in Settings first.")}</p>
@@ -692,7 +692,7 @@ export default function Queue() {
             </div>
           )}
           <div className="flex items-center gap-3 p-4 bg-ruby-500/10 rounded-lg border border-ruby-500/20">
-            <AlertTriangle className="w-6 h-6 text-ruby-text flex-shrink-0" />
+            <AlertTriangle className="w-6 h-6 text-ruby-text shrink-0" />
             <div>
               <p className="text-sm text-surface-50">
                 {t('deleteAllModal.warning', 'This will permanently delete all items in the queue, ignoring grace periods.')}
@@ -726,7 +726,7 @@ export default function Queue() {
       >
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-            <Shield className="w-6 h-6 text-emerald-text flex-shrink-0" />
+            <Shield className="w-6 h-6 text-emerald-text shrink-0" />
             <div>
               <p className="text-sm text-surface-50">
                 {t('protectAtRisk.warning', 'Every queued title Archive judged at risk will be archived: protected for good and taken out of the queue. Nothing is deleted.')}
@@ -771,7 +771,7 @@ export default function Queue() {
       >
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-4 bg-ruby-500/10 rounded-lg border border-ruby-500/20">
-            <AlertTriangle className="w-6 h-6 text-ruby-text flex-shrink-0" />
+            <AlertTriangle className="w-6 h-6 text-ruby-text shrink-0" />
             <div>
               <p className="text-sm text-surface-50">
                 {t('deleteNowModal.warning', 'This will immediately and permanently delete this item, bypassing the grace period.')}
@@ -863,25 +863,25 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
           type="checkbox"
           checked={selected}
           onChange={onSelect}
-          className="w-4 h-4 mt-1 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500 flex-shrink-0"
+          className="w-4 h-4 mt-1 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500 shrink-0"
         />
 
         {/* Poster/Icon */}
         <MaybeLink
           to={detailHref}
-          className="flex-shrink-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/50"
+          className="shrink-0 rounded-sm focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/50"
           title={detailHref ? t('row.viewDetails', 'View details') : undefined}
         >
           {item.posterUrl ? (
             <img
               src={item.posterUrl}
               alt=""
-              className="w-10 h-14 sm:w-12 sm:h-16 object-cover rounded"
+              className="w-10 h-14 sm:w-12 sm:h-16 object-cover rounded-sm"
               loading="lazy"
               decoding="async"
             />
           ) : (
-            <div className="w-10 h-14 sm:w-12 sm:h-16 bg-surface-800 rounded flex items-center justify-center">
+            <div className="w-10 h-14 sm:w-12 sm:h-16 bg-surface-800 rounded-sm flex items-center justify-center">
               <TypeIcon className="w-5 h-5 sm:w-6 sm:h-6 text-surface-600" />
             </div>
           )}
@@ -902,7 +902,7 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
               </Badge>
             </div>
             {/* Grace period — inline on desktop */}
-            <div className="hidden sm:block text-right min-w-[120px] flex-shrink-0">
+            <div className="hidden sm:block text-right min-w-[120px] shrink-0">
               {showJob ? (
                 <div className="mb-1 flex justify-end"><QueueJobBadge job={job} now={now} onRetry={onRetryJob} /></div>
               ) : isHeld && daysLeft <= 0 ? (
@@ -941,18 +941,18 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
 
           {/* Deletion action badges */}
           <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-1.5">
-            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-surface-800 text-surface-300" title={deletionActionLabel(item.deletionAction)}>
+            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-sm bg-surface-800 text-surface-300" title={deletionActionLabel(item.deletionAction)}>
               <Info className="w-3 h-3" />
               <span className="truncate max-w-[150px] sm:max-w-none">{deletionActionLabel(item.deletionAction)}</span>
             </span>
             {item.resetOverseerr && (
-              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-violet-500/20 text-violet-text">
+              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-sm bg-violet-500/20 text-violet-text">
                 <RefreshCw className="w-3 h-3" />
                 <span className="hidden sm:inline">{t('row.willResetIn', 'Will reset in')}</span> Seerr
               </span>
             )}
             {item.overseerrResetAt && (
-              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-text">
+              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-text">
                 <CheckCircle className="w-3 h-3" />
                 {t('row.reset', 'Reset')}
               </span>
@@ -986,11 +986,11 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
               </button>
               {isHeld && (
                 <>
-                  <Button variant="secondary" size="sm" onClick={onArchive} disabled={jobActive} className="!py-0.5 !px-2 !text-xs">
+                  <Button variant="secondary" size="sm" onClick={onArchive} disabled={jobActive} className="py-0.5! px-2! text-xs!">
                     <Archive className="w-3 h-3" />
                     {t('row.archive', 'Archive')}
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={onDeleteAnyway} disabled={jobActive} className="!py-0.5 !px-2 !text-xs text-ruby-text">
+                  <Button variant="ghost" size="sm" onClick={onDeleteAnyway} disabled={jobActive} className="py-0.5! px-2! text-xs! text-ruby-text">
                     {t('row.deleteAnyway', 'Delete anyway')}
                   </Button>
                 </>
@@ -1016,7 +1016,7 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
             </div>
             <div className="flex items-center gap-1">
               {overseerrLink && (
-                <a href={overseerrLink} target="_blank" rel="noopener noreferrer" className="p-2 rounded hover:bg-surface-700 transition-colors" title={t('row.viewInSeerr', 'View in Seerr')}>
+                <a href={overseerrLink} target="_blank" rel="noopener noreferrer" className="p-2 rounded-sm hover:bg-surface-700 transition-colors" title={t('row.viewInSeerr', 'View in Seerr')}>
                   <ExternalLink className="w-4 h-4 text-violet-text" />
                 </a>
               )}
@@ -1036,13 +1036,13 @@ const QueueItemRow = memo(function QueueItemRow({ item, selected, onSelect, onRe
         </div>
 
         {/* Desktop: Actions */}
-        <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
           {overseerrLink && (
             <a
               href={overseerrLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded hover:bg-surface-700 transition-colors"
+              className="p-2 rounded-sm hover:bg-surface-700 transition-colors"
               title={t('row.viewInSeerr', 'View in Seerr')}
             >
               <ExternalLink className="w-4 h-4 text-violet-text" />

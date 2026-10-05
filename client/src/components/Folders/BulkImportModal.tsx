@@ -162,7 +162,7 @@ export function BulkImportModal({ folders, onClose, onQueued }: Props) {
                 return (
                   <tr key={s.folderId} className={cn(disabled && 'opacity-60', on && 'bg-accent-500/5')} onClick={() => !disabled && toggle(s.folderId)}>
                     <td className="px-3 py-2">
-                      <input type="checkbox" checked={on} disabled={disabled} onChange={() => toggle(s.folderId)} onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
+                      <input type="checkbox" checked={on} disabled={disabled} onChange={() => toggle(s.folderId)} onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
                     </td>
                     <td className="max-w-xs px-3 py-2">
                       <p className="truncate text-surface-100" title={s.path}>{s.name}</p>
@@ -203,7 +203,7 @@ export function BulkImportModal({ folders, onClose, onQueued }: Props) {
             <ProfileSelect label={t('bulkImport.sonarrProfile', 'Sonarr quality profile')} profiles={sonarrProfiles.data ?? []} value={profile.sonarr} onChange={(v) => setProfile({ ...profile, sonarr: v })} />
           )}
           <label className="flex items-center gap-2 pb-2 text-sm text-surface-300">
-            <input type="checkbox" checked={monitored} onChange={(e) => setMonitored(e.target.checked)} className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
+            <input type="checkbox" checked={monitored} onChange={(e) => setMonitored(e.target.checked)} className="h-4 w-4 rounded-sm border-surface-600 bg-surface-700 text-accent-500 focus:ring-accent-500" />
             {t('importModal.monitored', 'Monitor after import')}
           </label>
         </div>
@@ -226,7 +226,7 @@ function ProfileSelect({ label, profiles, value, onChange }: { label: string; pr
       <select
         value={value ?? profiles[0]?.id ?? ''}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-50 focus:outline-none focus:ring-2 focus:ring-accent-500/50"
+        className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-50 focus:outline-hidden focus:ring-2 focus:ring-accent-500/50"
       >
         {profiles.map((p) => (
           <option key={p.id} value={p.id}>{p.name}</option>

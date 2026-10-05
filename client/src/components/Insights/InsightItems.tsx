@@ -37,7 +37,7 @@ export function InsightRow({ item, mediaServer, action }: { item: InsightItem; m
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-semibold text-surface-50">
           {item.title}
-          <span className="ml-2 rounded bg-surface-700/50 px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-surface-400">
+          <span className="ml-2 rounded-sm bg-surface-700/50 px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-surface-400">
             {sourceLabel(item.source, mediaServer)}
           </span>
         </p>
@@ -55,7 +55,7 @@ export function InsightRow({ item, mediaServer, action }: { item: InsightItem; m
     'flex min-w-0 flex-1 items-start gap-3 rounded-xl border px-3.5 py-3 transition-colors',
     style.ring,
     dimmed && 'opacity-60',
-    item.href && 'hover:border-surface-500/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/40'
+    item.href && 'hover:border-surface-500/60 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-500/40'
   );
 
   let main: ReactNode;

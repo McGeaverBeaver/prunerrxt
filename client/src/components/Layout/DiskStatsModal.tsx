@@ -45,7 +45,7 @@ function SectionLabel({
       <span className="text-2xs font-bold uppercase tracking-[0.16em] text-surface-500 flex items-center gap-2">
         {children}
       </span>
-      <span className="flex-1 h-px bg-gradient-to-r from-surface-700/60 to-transparent" />
+      <span className="flex-1 h-px bg-linear-to-r from-surface-700/60 to-transparent" />
       {right && <span className="text-2xs text-surface-500">{right}</span>}
     </div>
   );
@@ -88,7 +88,7 @@ function CompositionDonut({ stats }: { stats: UnraidStats }) {
   ];
 
   return (
-    <div className="relative w-[160px] h-[160px] flex-shrink-0">
+    <div className="relative w-[160px] h-[160px] shrink-0">
       <svg width="160" height="160" viewBox="0 0 160 160" className="-rotate-90">
         {segments.map((seg, i) => (
           <circle
@@ -105,7 +105,7 @@ function CompositionDonut({ stats }: { stats: UnraidStats }) {
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <div className={cn('font-display font-bold leading-none tabular-nums -tracking-[0.03em] text-[34px]', color.text)}>
+        <div className={cn('font-display font-bold leading-none tabular-nums tracking-[-0.03em] text-[34px]', color.text)}>
           {Math.round(stats.usedPercent ?? 0)}
           <span className="text-base opacity-75">%</span>
         </div>
@@ -136,7 +136,7 @@ function HeroStats({ stats }: { stats: UnraidStats }) {
           {t('diskStats.usedCapacity', 'Used capacity')}
         </div>
         <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-          <span className="font-display font-bold text-[38px] leading-none -tracking-[0.025em] text-surface-50 tabular-nums">
+          <span className="font-display font-bold text-[38px] leading-none tracking-tight text-surface-50 tabular-nums">
             {formatBytes(stats.usedCapacity ?? 0)}
           </span>
           <span className="text-sm text-surface-500 tabular-nums">
@@ -261,7 +261,7 @@ function CompositionBar({ stats }: { stats: UnraidStats }) {
       <div className="h-[26px] rounded-[13px] bg-surface-800/60 border border-surface-700/30 p-[3px] flex gap-[3px] overflow-hidden">
         <CompSegment
           pct={arrayP}
-          fill={cn('bg-gradient-to-r',
+          fill={cn('bg-linear-to-r',
             (stats.usedPercent ?? 0) > 90 ? 'from-ruby-500 to-ruby-400'
             : (stats.usedPercent ?? 0) > 75 ? 'from-amber-500 to-amber-400'
             : 'from-accent-500 to-accent-400')}
@@ -486,7 +486,7 @@ function DiskRow({ disk }: { disk: UnraidDisk }) {
         </div>
       </div>
       <div className="text-right">
-        <span className={cn('font-display font-bold text-[14px] sm:text-[16px] tabular-nums -tracking-[0.01em]', c.text)}>
+        <span className={cn('font-display font-bold text-[14px] sm:text-[16px] tabular-nums tracking-[-0.01em]', c.text)}>
           {Math.round(disk.usedPercent)}
           <span className="text-[9px] sm:text-[10px] opacity-70">%</span>
         </span>
@@ -546,7 +546,7 @@ function ForecastTile({
         <span className="text-accent-text">{icon}</span>
         {label}
       </div>
-      <div className={cn('font-display font-bold text-lg -tracking-[0.01em] tabular-nums', valueClass ?? 'text-surface-50')}>
+      <div className={cn('font-display font-bold text-lg tracking-[-0.01em] tabular-nums', valueClass ?? 'text-surface-50')}>
         {value}
       </div>
       {sub && <div className="text-[11px] text-surface-500">{sub}</div>}
@@ -587,7 +587,7 @@ export function DiskStatsModal({ isOpen, onClose }: DiskStatsModalProps) {
           <div
             className={cn(
               'flex flex-col sm:flex-row items-center gap-5 sm:gap-6 p-4 sm:p-5 rounded-2xl relative overflow-hidden',
-              'bg-gradient-to-br from-surface-800/60 to-surface-800/25 border border-surface-700/40',
+              'bg-linear-to-br from-surface-800/60 to-surface-800/25 border border-surface-700/40',
             )}
           >
             <div className="absolute inset-x-0 top-0 h-40 pointer-events-none"
@@ -597,7 +597,7 @@ export function DiskStatsModal({ isOpen, onClose }: DiskStatsModalProps) {
               <HeroStats stats={stats} />
             </div>
             {stats.trend && stats.trend.length >= 2 && (
-              <div className="w-full sm:w-[240px] sm:flex-shrink-0">
+              <div className="w-full sm:w-[240px] sm:shrink-0">
                 <TrendSparkline stats={stats} />
               </div>
             )}

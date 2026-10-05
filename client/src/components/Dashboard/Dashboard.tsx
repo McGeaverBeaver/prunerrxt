@@ -149,7 +149,7 @@ export default function Dashboard() {
     <div className="space-y-8 pb-8">
       {/* Header */}
       <header className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-accent-500/5 via-transparent to-violet-500/5 rounded-3xl" />
+        <div className="absolute inset-0 bg-linear-to-r from-accent-500/5 via-transparent to-violet-500/5 rounded-3xl" />
         <div className="relative px-4 py-6 sm:px-8 sm:py-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -659,7 +659,7 @@ function StatCard({ title, value, subtitle, icon: Icon, color, trend, loading }:
       `shadow-lg ${styles.glow}`
     )}>
       <div className={cn(
-        'absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl to-transparent rounded-full opacity-50 -translate-y-8 translate-x-8',
+        'absolute top-0 right-0 w-32 h-32 bg-linear-to-bl to-transparent rounded-full opacity-50 -translate-y-8 translate-x-8',
         styles.gradient
       )} />
 
@@ -718,7 +718,7 @@ function ActivityItem({ activity }: { activity: ActivityLogEntry }) {
 
   return (
     <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-surface-800/40 transition-colors">
-      <div className={cn('p-2 rounded-lg flex-shrink-0', bg)}>
+      <div className={cn('p-2 rounded-lg shrink-0', bg)}>
         <Icon className={cn('w-4 h-4', color)} />
       </div>
       <div className="flex-1 min-w-0">
@@ -874,7 +874,7 @@ function RecommendationCard({ item, onMarkForDeletion, isLoading }: Recommendati
         {/* Poster */}
         <MaybeLink
           to={detailHref}
-          className="relative block w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-surface-800"
+          className="relative block w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-surface-800"
         >
           {item.posterUrl ? (
             <img
@@ -890,7 +890,7 @@ function RecommendationCard({ item, onMarkForDeletion, isLoading }: Recommendati
             </div>
           )}
           <div className={cn(
-            'absolute top-1 right-1 p-1 rounded',
+            'absolute top-1 right-1 p-1 rounded-sm',
             typeColor === 'violet' ? 'bg-violet-500/80' : 'bg-emerald-500/80'
           )}>
             <TypeIcon className="w-3 h-3 text-white" />
@@ -978,7 +978,7 @@ function VolumesCard({ volumes, diskPressureEnabled }: { volumes: MonitoredVolum
                     {others.length > 0 && ` · ${t('volumes.alsoAs', 'also {{paths}}', { paths: others.join(', ') })}`}
                   </p>
                 </div>
-                <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide', v.severity === 'critical' ? 'bg-ruby-500/15 text-ruby-text' : v.severity === 'soft' ? 'bg-amber-500/15 text-accent-text' : 'bg-emerald-500/15 text-emerald-text')}>
+                <span className={cn('rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide', v.severity === 'critical' ? 'bg-ruby-500/15 text-ruby-text' : v.severity === 'soft' ? 'bg-amber-500/15 text-accent-text' : 'bg-emerald-500/15 text-emerald-text')}>
                   {v.severity === 'critical' ? t('volumes.critical', 'Critical') : v.severity === 'soft' ? t('volumes.low', 'Low') : t('volumes.ok', 'OK')}
                 </span>
               </div>
@@ -1054,7 +1054,7 @@ function StorageSummaryCard({ title, value, subtitle, icon: Icon, color, percent
 
         {/* Mini ring chart for percentage */}
         {percent !== undefined && (
-          <div className="relative w-11 h-11 flex-shrink-0">
+          <div className="relative w-11 h-11 shrink-0">
             <svg className="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
               <circle cx="22" cy="22" r={ringRadius} fill="none" stroke="currentColor" strokeWidth="3" className="text-surface-700/60" />
               <circle
@@ -1374,7 +1374,7 @@ function DiskCard({ disk }: DiskCardProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', getStatusColor(disk.status))} />
+          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', getStatusColor(disk.status))} />
           <p className="text-sm font-medium text-surface-200">{disk.name}</p>
         </div>
         {disk.temp !== undefined && (

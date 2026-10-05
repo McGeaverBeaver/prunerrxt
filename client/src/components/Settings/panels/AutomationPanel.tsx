@@ -430,7 +430,7 @@ export default function AutomationPanel({
             <div className="relative h-[9px] w-full overflow-hidden rounded-full bg-surface-600/60">
               {usedPercent !== undefined && (
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-accent-500 to-accent-600 transition-[width] duration-300 motion-reduce:transition-none"
+                  className="h-full rounded-full bg-linear-to-r from-accent-500 to-accent-600 transition-[width] duration-300 motion-reduce:transition-none"
                   style={{ width: `${usedPercent}%` }}
                 />
               )}
@@ -664,7 +664,7 @@ export default function AutomationPanel({
               </div>
 
               {/* observe only */}
-              <div className="flex items-center justify-between gap-4 rounded-[11px] border border-violet-500/[0.22] bg-violet-500/[0.07] px-3.5 py-[11px]">
+              <div className="flex items-center justify-between gap-4 rounded-[11px] border border-violet-500/22 bg-violet-500/[0.07] px-3.5 py-[11px]">
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="rounded-md bg-violet-500/15 px-2 py-1 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-violet-text">
                     {t('automation.diskPressure.observeBadge', 'Observe only')}
@@ -694,7 +694,7 @@ export default function AutomationPanel({
 const controlClass = cn(
   'w-full min-h-[44px] rounded-[11px] border border-surface-600/60 bg-surface-800/70 px-3 py-[9px]',
   'font-sans text-[13px] text-surface-50 placeholder:text-surface-500',
-  'transition-colors focus:border-accent-500/50 focus:bg-surface-800/95 focus:outline-none',
+  'transition-colors focus:border-accent-500/50 focus:bg-surface-800/95 focus:outline-hidden',
   'lg:min-h-[36px]'
 );
 
@@ -763,7 +763,7 @@ function Knob({
         type="number"
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="w-full min-h-[28px] border-0 bg-transparent p-0 font-mono text-[15px] font-semibold text-surface-50 focus:outline-none focus:ring-0"
+        className="w-full min-h-[28px] border-0 bg-transparent p-0 font-mono text-[15px] font-semibold text-surface-50 focus:outline-hidden focus:ring-0"
       />
     </div>
   );

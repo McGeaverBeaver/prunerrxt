@@ -249,17 +249,17 @@ export function FieldPicker({
           'flex h-[38px] w-full items-center gap-[9px] rounded-[11px] border pl-[11px] pr-2.5 sm:w-[228px]',
           'bg-surface-800/70 text-[13px] font-medium text-surface-50',
           'transition-[border-color,box-shadow,transform] duration-150 active:scale-[0.98]',
-          'focus:outline-none focus-visible:border-accent-500/50 focus-visible:ring-[3px] focus-visible:ring-accent-500/[0.12]',
-          menu.isOpen ? 'border-accent-500/50 ring-[3px] ring-accent-500/[0.12]' : 'border-surface-600/60 hover:border-surface-500/60'
+          'focus:outline-hidden focus-visible:border-accent-500/50 focus-visible:ring-[3px] focus-visible:ring-accent-500/12',
+          menu.isOpen ? 'border-accent-500/50 ring-[3px] ring-accent-500/12' : 'border-surface-600/60 hover:border-surface-500/60'
         )}
       >
-        <span className="grid h-[22px] w-[22px] flex-shrink-0 place-items-center rounded-md bg-accent-500/[0.12]">
+        <span className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md bg-accent-500/12">
           <ShownIcon className="h-[13px] w-[13px] text-accent-text" aria-hidden />
         </span>
         <span className="min-w-0 flex-1 text-left">
           <TypewriterLabel text={shownField?.label ?? shown} playKey={playKey} />
         </span>
-        <ChevronDown aria-hidden className={cn('dd-chevron h-4 w-4 flex-shrink-0 text-surface-400', menu.isOpen && 'rotate-180')} />
+        <ChevronDown aria-hidden className={cn('dd-chevron h-4 w-4 shrink-0 text-surface-400', menu.isOpen && 'rotate-180')} />
       </button>
 
       {menu.mounted &&
@@ -279,7 +279,7 @@ export function FieldPicker({
               visibility: menu.pos ? 'visible' : 'hidden',
             }}
             className={cn(
-              'dd-menu z-[60] flex h-[430px] max-h-[calc(100vh-16px)] w-[500px] max-w-[calc(100vw-16px)] flex-col overflow-hidden rounded-[14px]',
+              'dd-menu z-60 flex h-[430px] max-h-[calc(100vh-16px)] w-[500px] max-w-[calc(100vw-16px)] flex-col overflow-hidden rounded-[14px]',
               'border border-surface-700 bg-surface-900',
               'shadow-[0_18px_40px_-12px_rgba(15,23,42,0.25)] dark:shadow-[0_18px_40px_-12px_rgba(0,0,0,0.75),0_0_0_1px_rgba(0,0,0,0.2)]',
               menu.phase === 'closing' && 'dd-menu-out',
@@ -287,7 +287,7 @@ export function FieldPicker({
             )}
           >
             {/* Search */}
-            <div className="flex h-[42px] flex-shrink-0 items-center gap-2 border-b border-surface-700 px-3 text-surface-500">
+            <div className="flex h-[42px] shrink-0 items-center gap-2 border-b border-surface-700 px-3 text-surface-500">
               <Search className="h-[15px] w-[15px]" aria-hidden />
               <input
                 ref={searchRef}
@@ -295,7 +295,7 @@ export function FieldPicker({
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('fieldPicker.searchPlaceholder', 'Search fields…')}
                 aria-label={t('fieldPicker.searchAria', 'Search fields')}
-                className="min-w-0 flex-1 border-0 bg-transparent text-[13.5px] text-surface-50 placeholder:text-surface-500 focus:outline-none focus:ring-0"
+                className="min-w-0 flex-1 border-0 bg-transparent text-[13.5px] text-surface-50 placeholder:text-surface-500 focus:outline-hidden focus:ring-0"
               />
               <span className="font-mono text-[10px] text-surface-500">
                 {q ? `${flat.length} of ${FIELD_CATALOG.length}` : `${FIELD_CATALOG.length} fields`}
@@ -304,7 +304,7 @@ export function FieldPicker({
 
             <div className="flex min-h-0 flex-1">
               {/* Group rail — hidden on narrow screens, where search + grouped list is enough */}
-              <div className="hidden w-[164px] flex-shrink-0 flex-col gap-px overflow-y-auto border-r border-surface-700 p-1.5 sm:flex">
+              <div className="hidden w-[164px] shrink-0 flex-col gap-px overflow-y-auto border-r border-surface-700 p-1.5 sm:flex">
                 {rail.map((g) => {
                   const on = !q && group === g.id;
                   const Icon = g.icon;
@@ -320,11 +320,11 @@ export function FieldPicker({
                       }}
                       className={cn(
                         'flex h-8 items-center gap-[9px] rounded-lg px-[9px] text-left text-[12.5px] font-medium transition-colors',
-                        on ? 'bg-accent-500/[0.12] text-accent-text' : 'text-surface-200 hover:bg-surface-700/50',
+                        on ? 'bg-accent-500/12 text-accent-text' : 'text-surface-200 hover:bg-surface-700/50',
                         q && g.count === 0 && 'opacity-35'
                       )}
                     >
-                      <Icon className={cn('h-[13px] w-[13px] flex-shrink-0', on ? 'text-accent-text' : 'text-surface-400')} aria-hidden />
+                      <Icon className={cn('h-[13px] w-[13px] shrink-0', on ? 'text-accent-text' : 'text-surface-400')} aria-hidden />
                       <span className="flex-1">{g.label}</span>
                       <span className="font-mono text-[10px] text-surface-500">{g.count}</span>
                     </button>
@@ -338,7 +338,7 @@ export function FieldPicker({
                   const SIcon = s.icon;
                   return (
                     <div key={s.id}>
-                      <div className="sticky top-0 z-[1] flex items-center gap-2 bg-surface-900 px-[7px] pb-1.5 pt-2.5">
+                      <div className="sticky top-0 z-1 flex items-center gap-2 bg-surface-900 px-[7px] pb-1.5 pt-2.5">
                         <SIcon className="h-3 w-3 text-accent-text" aria-hidden />
                         <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-surface-300">{s.label}</span>
                         {s.description && <span className="ml-auto truncate text-[11px] text-surface-500">{s.description}</span>}
@@ -367,7 +367,7 @@ export function FieldPicker({
                             <span
                               aria-hidden
                               className={cn(
-                                'absolute bottom-2 left-0 top-2 w-[2px] rounded-sm bg-accent-500 transition-transform duration-150 ease-[cubic-bezier(.2,.8,.2,1)]',
+                                'absolute bottom-2 left-0 top-2 w-[2px] rounded-xs bg-accent-500 transition-transform duration-150 ease-[cubic-bezier(.2,.8,.2,1)]',
                                 isActive ? 'scale-y-100' : 'scale-y-0'
                               )}
                             />
@@ -383,7 +383,7 @@ export function FieldPicker({
                               )}
                             </span>
                             {chip && (
-                              <span className="flex-shrink-0 rounded-[5px] border border-surface-700 px-1.5 py-0.5 font-mono text-[10px] text-surface-400">
+                              <span className="shrink-0 rounded-[5px] border border-surface-700 px-1.5 py-0.5 font-mono text-[10px] text-surface-400">
                                 {chip}
                               </span>
                             )}
@@ -403,7 +403,7 @@ export function FieldPicker({
             </div>
 
             {/* Footer: preview + hints */}
-            <div className="flex flex-shrink-0 flex-col gap-1.5 border-t border-surface-700 bg-surface-800/50 px-3 py-[9px]">
+            <div className="flex shrink-0 flex-col gap-1.5 border-t border-surface-700 bg-surface-800/50 px-3 py-[9px]">
               {activeField && activeOp && (
                 <div className="flex flex-wrap items-baseline gap-1.5 text-[12.5px] text-surface-300">
                   <span className="mr-0.5 text-[9.5px] font-semibold uppercase tracking-[0.12em] text-surface-500">
