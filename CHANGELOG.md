@@ -7,6 +7,10 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
+## 2.0.6 (2026-10-05)
+
+- Disk statistics: cache pool members listed under their pool, every size read as kilobytes
+
 ## 2.0.5 (2026-10-05)
 
 - Disk statistics: bars for disks over 75% full were drawn without a colour
