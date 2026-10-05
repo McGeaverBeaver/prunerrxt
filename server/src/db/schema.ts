@@ -766,6 +766,15 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_audit_log_actor ON audit_log(actor_name, id);
     `,
   },
+  {
+    version: 33,
+    name: 'oauth_tokens_last_used',
+    up: `
+      -- When an OAuth access token was last presented at /mcp, so Settings can
+      -- show which connected clients are actually in use.
+      ALTER TABLE oauth_tokens ADD COLUMN last_used_at TEXT;
+    `,
+  },
 ];
 
 // Schema version tracking table

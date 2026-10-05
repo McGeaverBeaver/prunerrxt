@@ -1070,7 +1070,59 @@ export interface McpInfo {
   prompts: string[];
 }
 
+export interface McpGrant {
+  pairId: string;
+  clientId: string;
+  clientName: string | null;
+  userKey: string;
+  username: string;
+  role: 'admin' | 'operator' | 'viewer';
+  scope: string;
+  grantedAt: string;
+  lastUsedAt: string | null;
+  accessExpiresAt: string | null;
+  refreshExpiresAt: string;
+  /** A session opened with this grant is live right now. */
+  live: boolean;
+}
+
+export interface McpLiveSession {
+  sessionId: string;
+  kind: 'apiKey' | 'oauth';
+  clientId: string;
+  username: string;
+  pairId: string | null;
+  ip: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  lastSeenAt: string;
+}
+
+export interface McpConnections {
+  grants: McpGrant[];
+  sessions: McpLiveSession[];
+  apiKey: { lastUsedAt: string | null; clients: Array<{ userAgent: string | null; ip: string | null; requests: number; lastUsedAt: string }> };
+}
+
 export const mcpApi = {
+  connections: async (): Promise<McpConnections> => {
+    const { data } = await api.get<ApiResponse<McpConnections>>('/settings/mcp/connections');
+    if (!data.data) throw new Error(data.error || 'Failed to load MCP connections');
+    return data.data;
+  },
+
+  /** Revoke one OAuth grant: the client is signed out and must ask for permission again. */
+  revokeConnection: async (pairId: string): Promise<{ sessionsClosed: number; message?: string }> => {
+    const { data } = await api.delete<ApiResponse<{ sessionsClosed: number }>>(`/settings/mcp/connections/${encodeURIComponent(pairId)}`);
+    return { sessionsClosed: data.data?.sessionsClosed ?? 0, message: data.message };
+  },
+
+  /** Forget a registered client entirely: every grant it holds, and its registration. */
+  forgetClient: async (clientId: string): Promise<{ grantsRevoked: number; sessionsClosed: number; message?: string }> => {
+    const { data } = await api.delete<ApiResponse<{ grantsRevoked: number; sessionsClosed: number }>>(`/settings/mcp/clients/${encodeURIComponent(clientId)}`);
+    return { grantsRevoked: data.data?.grantsRevoked ?? 0, sessionsClosed: data.data?.sessionsClosed ?? 0, message: data.message };
+  },
+
   get: async (): Promise<McpInfo> => {
     const { data } = await api.get<ApiResponse<McpInfo>>('/settings/mcp');
     if (!data.data) throw new Error('Failed to load MCP connector state');

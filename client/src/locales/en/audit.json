@@ -33,7 +33,9 @@
       "unprotected": "removed protection from"
     },
     "mcp": {
-      "call": "called MCP tool {{tool}}"
+      "call": "called MCP tool {{tool}}",
+      "clientForgotten": "forgot the assistant client",
+      "connectionRevoked": "disconnected the assistant client"
     },
     "queue": {
       "added": "queued for deletion",

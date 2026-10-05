@@ -209,6 +209,8 @@ function useActionLabel() {
     'collection.protected': t('actions.collection.protected', 'protected collection'),
     'collection.unprotected': t('actions.collection.unprotected', 'removed protection from collection'),
     'folder.deleted': t('actions.folder.deleted', 'deleted folder'),
+    'mcp.connection_revoked': t('actions.mcp.connectionRevoked', 'disconnected the assistant client'),
+    'mcp.client_forgotten': t('actions.mcp.clientForgotten', 'forgot the assistant client'),
     'task.run': t('actions.task.run', 'ran task'),
     'audit.verified': t('actions.audit.verified', 'verified the audit chain'),
     'audit.exported': t('actions.audit.exported', 'exported the audit log'),

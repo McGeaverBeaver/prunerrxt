@@ -11,6 +11,7 @@ import { PanelSection } from '../../components/PanelSection';
 import { SettingsCard } from '../../components/SettingsCard';
 import { SettingsEmptyState } from '../../components/SettingsEmptyState';
 import { Toggle } from '../../components/Toggle';
+import { McpConnections } from './McpConnections';
 import type { PanelProps } from '../../types';
 
 const GROUP_ORDER: McpToolGroup[] = ['overview', 'library', 'actions', 'queue', 'rules', 'collections', 'scans', 'history', 'folders', 'system'];
@@ -284,6 +285,8 @@ export function McpSection({
                 )}
               </p>
             </div>
+
+            <McpConnections enabled={Boolean(info?.enabled)} />
 
             <Snippet
               title={t('mcp.snippetClaudeCode', 'Claude Code')}

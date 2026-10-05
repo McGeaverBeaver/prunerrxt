@@ -6,6 +6,9 @@ import logger from '../utils/logger';
 import { getApiKey, clearApiKeyCache, ensureApiKey, isApiKeyEnabled, setApiKeyEnabled } from '../middleware/apiAuth';
 import { clearApiKeyUsage, getApiKeyUsageSummary } from '../services/apiKeyUsage';
 import { getMcpInfo } from '../mcp/info';
+import { closeMcpSessionsWhere, listLiveMcpSessions } from '../mcp/http';
+import { deleteClient, getClient, listConnections, revokeConnection } from '../auth/oauthServer';
+import { getMcpKeyClients } from '../services/apiKeyUsage';
 import { setAllowImmediateDeletion, setMcpEnabled } from '../mcp/config';
 import { getAuthConfig } from '../auth/config';
 import { ROLE_DESCRIPTIONS } from '../auth/roles';
@@ -552,6 +555,79 @@ router.put('/mcp', validateBody(McpUpdateSchema), (req: Request, res: Response) 
   } catch (error) {
     logger.error('Failed to update MCP settings:', error);
     res.status(500).json({ success: false, error: 'Failed to update MCP connector settings' });
+  }
+});
+
+// GET /api/settings/mcp/connections - Who is connected to the assistant:
+// every OAuth grant (client acting as a user), the sessions open right now,
+// and the clients that used the API key at /mcp.
+router.get('/mcp/connections', (_req: Request, res: Response) => {
+  try {
+    const live = listLiveMcpSessions();
+    const grants = listConnections().map((c) => ({
+      ...c,
+      live: live.some((s) => s.pairId === c.pairId),
+    }));
+    res.json({ success: true, data: { grants, sessions: live, apiKey: getMcpKeyClients() } });
+  } catch (error) {
+    logger.error('Failed to list MCP connections:', error);
+    res.status(500).json({ success: false, error: 'Failed to list MCP connections' });
+  }
+});
+
+// DELETE /api/settings/mcp/connections/:pairId - Revoke one OAuth grant: its
+// tokens die, any session it opened is closed, and the client must ask the
+// user for permission again.
+router.delete('/mcp/connections/:pairId', async (req: Request, res: Response) => {
+  try {
+    const pairId = String(req.params['pairId'] ?? '');
+    const revoked = revokeConnection(pairId);
+    if (!revoked) {
+      res.status(404).json({ success: false, error: 'Connection not found' });
+      return;
+    }
+    const closed = await closeMcpSessionsWhere((peer) => peer.pairId === pairId);
+    auditRequest(req, res, {
+      action: 'mcp.connection_revoked',
+      targetType: 'oauth_client',
+      targetId: revoked.clientId,
+      targetTitle: revoked.clientName ?? revoked.clientId,
+      details: { username: revoked.username, role: revoked.role, grantedAt: revoked.grantedAt, sessionsClosed: closed },
+    });
+    logger.info(`MCP connection revoked: ${revoked.clientName ?? revoked.clientId} as ${revoked.username} (${closed} live session(s) closed)`);
+    res.json({ success: true, data: { revoked, sessionsClosed: closed }, message: `${revoked.clientName ?? 'Client'} disconnected` });
+  } catch (error) {
+    logger.error('Failed to revoke MCP connection:', error);
+    res.status(500).json({ success: false, error: 'Failed to revoke connection' });
+  }
+});
+
+// DELETE /api/settings/mcp/clients/:clientId - Forget a registered OAuth
+// client entirely: every grant, consent and session it has, and its
+// registration, so it has to register again from scratch.
+router.delete('/mcp/clients/:clientId', async (req: Request, res: Response) => {
+  try {
+    const clientId = String(req.params['clientId'] ?? '');
+    const client = getClient(clientId);
+    if (!client) {
+      res.status(404).json({ success: false, error: 'Client not found' });
+      return;
+    }
+    const grants = listConnections().filter((c) => c.clientId === clientId).length;
+    deleteClient(clientId);
+    const closed = await closeMcpSessionsWhere((peer) => peer.clientId === clientId);
+    auditRequest(req, res, {
+      action: 'mcp.client_forgotten',
+      targetType: 'oauth_client',
+      targetId: clientId,
+      targetTitle: client.client_name ?? clientId,
+      details: { grantsRevoked: grants, sessionsClosed: closed, registeredAt: client.created_at },
+    });
+    logger.info(`MCP client forgotten: ${client.client_name ?? clientId} (${grants} grant(s), ${closed} live session(s))`);
+    res.json({ success: true, data: { clientId, grantsRevoked: grants, sessionsClosed: closed }, message: `${client.client_name ?? 'Client'} forgotten` });
+  } catch (error) {
+    logger.error('Failed to forget MCP client:', error);
+    res.status(500).json({ success: false, error: 'Failed to forget client' });
   }
 });
 

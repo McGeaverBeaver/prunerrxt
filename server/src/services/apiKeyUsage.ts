@@ -196,6 +196,28 @@ export function getApiKeyUsageSummary(): ApiKeyUsageSummary {
   };
 }
 
+/**
+ * The clients that reached /mcp with the API key (user agent and address),
+ * most recent first, for the connected-clients list in Settings. Key-based
+ * clients hold no token to revoke; switching the key off or regenerating it
+ * is the way to cut them off.
+ */
+export function getMcpKeyClients(): { lastUsedAt: string | null; clients: ApiKeyUsageClient[] } {
+  const db = getDatabase();
+  const clients = db
+    .prepare<[number], { user_agent: string | null; ip: string | null; requests: number; last_used_at: string }>(
+      `SELECT user_agent, ip, COUNT(*) AS requests, MAX(used_at) AS last_used_at
+       FROM api_key_usage
+       WHERE outcome = 'ok' AND source = 'mcp'
+       GROUP BY user_agent, ip
+       ORDER BY last_used_at DESC
+       LIMIT ?`
+    )
+    .all(CLIENTS_LIMIT)
+    .map((row) => ({ userAgent: row.user_agent, ip: row.ip, requests: row.requests, lastUsedAt: row.last_used_at }));
+  return { lastUsedAt: clients[0]?.lastUsedAt ?? null, clients };
+}
+
 export function clearApiKeyUsage(): void {
   getDatabase().prepare('DELETE FROM api_key_usage').run();
   insertsSincePrune = 0;

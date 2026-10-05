@@ -47,6 +47,24 @@ export interface ResolvedAccessToken extends TokenUser {
   clientId: string;
   scope: string;
   expiresAt: string;
+  /** The access/refresh pair this token belongs to: one grant from the Settings page's point of view. */
+  pairId: string;
+}
+
+/** One OAuth grant: a client acting as a user, as listed in Settings → AI assistant. */
+export interface OAuthConnection {
+  pairId: string;
+  clientId: string;
+  clientName: string | null;
+  userKey: string;
+  username: string;
+  role: Role;
+  scope: string;
+  grantedAt: string;
+  lastUsedAt: string | null;
+  /** When the current access token expires; the client refreshes it silently until the refresh token expires. */
+  accessExpiresAt: string | null;
+  refreshExpiresAt: string;
 }
 
 export class OAuthError extends Error {
@@ -346,6 +364,7 @@ interface TokenRow {
   resource: string | null;
   expires_at: string;
   created_at: string;
+  last_used_at?: string | null;
 }
 
 export function issueTokens(input: { clientId: string; user: TokenUser; scope: string; resource: string | null }): IssuedTokens {
@@ -390,6 +409,7 @@ export function resolveAccessToken(accessToken: string): ResolvedAccessToken | n
     .get(hashToken(accessToken));
   if (!row) return null;
   if (new Date(row.expires_at).getTime() <= Date.now()) return null;
+  touchPair(row.pair_id, row.last_used_at ?? null);
   return {
     key: row.user_key,
     username: row.username,
@@ -397,7 +417,70 @@ export function resolveAccessToken(accessToken: string): ResolvedAccessToken | n
     clientId: row.client_id,
     scope: row.scope,
     expiresAt: row.expires_at,
+    pairId: row.pair_id,
   };
+}
+
+const TOUCH_INTERVAL_MS = 60 * 1000;
+
+/** Record use of a token pair, at most once a minute so a chatty client costs one write. */
+function touchPair(pairId: string, lastUsedAt: string | null): void {
+  if (lastUsedAt && Date.now() - new Date(lastUsedAt).getTime() < TOUCH_INTERVAL_MS) return;
+  try {
+    getDatabase().prepare('UPDATE oauth_tokens SET last_used_at = ? WHERE pair_id = ?').run(nowIso(), pairId);
+  } catch (error) {
+    logger.debug(`Could not record OAuth token use: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Every live grant: one row per unexpired refresh token, with the client's
+ * registered name and when its access token was last presented.
+ */
+export function listConnections(): OAuthConnection[] {
+  const rows = getDatabase()
+    .prepare<[string], TokenRow & { client_name: string | null; access_expires_at: string | null }>(
+      `SELECT r.*, c.client_name,
+              (SELECT a.expires_at FROM oauth_tokens a WHERE a.pair_id = r.pair_id AND a.kind = 'access') AS access_expires_at
+       FROM oauth_tokens r
+       LEFT JOIN oauth_clients c ON c.client_id = r.client_id
+       WHERE r.kind = 'refresh' AND r.expires_at > ?
+       ORDER BY COALESCE(r.last_used_at, r.created_at) DESC`
+    )
+    .all(nowIso());
+  return rows.map((row) => ({
+    pairId: row.pair_id,
+    clientId: row.client_id,
+    clientName: row.client_name,
+    userKey: row.user_key,
+    username: row.username,
+    role: row.role as Role,
+    scope: row.scope,
+    grantedAt: row.created_at,
+    lastUsedAt: row.last_used_at ?? null,
+    accessExpiresAt: row.access_expires_at,
+    refreshExpiresAt: row.expires_at,
+  }));
+}
+
+/**
+ * Revoke one grant from the server side. The consent goes too when it was
+ * the user's last grant to that client, so the client has to ask again.
+ */
+export function revokeConnection(pairId: string): OAuthConnection | null {
+  const db = getDatabase();
+  const existing = listConnections().find((c) => c.pairId === pairId);
+  if (!existing) return null;
+  db.transaction(() => {
+    db.prepare('DELETE FROM oauth_tokens WHERE pair_id = ?').run(pairId);
+    const remaining = db
+      .prepare<[string, string], { c: number }>('SELECT COUNT(*) as c FROM oauth_tokens WHERE user_key = ? AND client_id = ?')
+      .get(existing.userKey, existing.clientId);
+    if ((remaining?.c ?? 0) === 0) {
+      db.prepare('DELETE FROM oauth_consents WHERE user_key = ? AND client_id = ?').run(existing.userKey, existing.clientId);
+    }
+  })();
+  return existing;
 }
 
 /** RFC 7009: revoking either token of a pair revokes both. */

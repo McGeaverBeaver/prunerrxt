@@ -82,6 +82,13 @@ identity is ever different (`git config user.email`), set it before committing.
   `services/mediaActions.ts`, which the REST routes share; put new behaviour
   there, not in a route or a tool.
 - Immediate deletion via MCP is a separate opt-in (`mcp_allow_immediate_deletion`).
+- Connected MCP clients: `oauthServer.listConnections` / `revokeConnection`
+  (one grant per token pair, `last_used_at` touched by `resolveAccessToken`),
+  live sessions and `closeMcpSessionsWhere` in `mcp/http.ts`, key-based
+  clients from `apiKeyUsage.getMcpKeyClients`; routes under
+  `/settings/mcp/connections` and `/settings/mcp/clients`; client
+  `McpConnections.tsx`. Audit actions `mcp.connection_revoked`,
+  `mcp.client_forgotten`.
 - Delete Now and Delete All never run inside a request: they create rows in
   `deletion_jobs` and `services/deletionJobs.ts` runs them in the background,
   one at a time per service, resuming after a restart. The UI follows them over

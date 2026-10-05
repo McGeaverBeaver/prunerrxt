@@ -118,6 +118,30 @@ If PrunerrXT sits behind a reverse proxy, point the client at the public URL
 and make sure the proxy passes `Authorization`, `Mcp-Session-Id` and
 `Accept: text/event-stream` through unbuffered.
 
+## Seeing who is connected, and disconnecting them
+
+Settings → System → **AI assistant** has a **Connected clients** card:
+
+- Every hosted client that signed in through OAuth, grouped by the client
+  that registered (claude.ai, Claude Desktop, …), with the user it acts as
+  and that user's role, when it was approved, when it last called the
+  endpoint, when its permission expires, and a *live* badge while it has a
+  session open. **Disconnect** revokes that one grant: both its tokens are
+  deleted, any session it opened is closed on the spot, and the client has
+  to send the user through the login and consent again. The trash button
+  **forgets** the client entirely: every grant it holds, its consents and
+  its registration, so it starts from scratch.
+- The clients that reached `/mcp` with the API key, from the key's usage
+  log (user agent, address, request count, last use). They hold no token to
+  revoke; switching the key off or regenerating it in the API key card cuts
+  them off.
+
+Both actions land in the audit log as `mcp.connection_revoked` and
+`mcp.client_forgotten`. The card refreshes itself every fifteen seconds. The
+REST equivalents are `GET /api/settings/mcp/connections`,
+`DELETE /api/settings/mcp/connections/:pairId` and
+`DELETE /api/settings/mcp/clients/:clientId`, admin only.
+
 ## What the assistant can do
 
 Every tool is annotated so clients can tell read-only from destructive. The

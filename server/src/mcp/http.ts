@@ -22,11 +22,29 @@ import { resolveAccessToken } from '../auth/oauthServer';
 import { publicBaseUrl } from '../auth/oauthRoutes';
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 
+/** Who opened a session, for the connected-clients list and for cutting a revoked grant off. */
+export interface McpSessionPeer {
+  kind: 'apiKey' | 'oauth';
+  clientId: string;
+  username: string;
+  /** OAuth grants only: the token pair the session authenticated with. */
+  pairId: string | null;
+  ip: string | null;
+  userAgent: string | null;
+}
+
+export interface McpLiveSession extends McpSessionPeer {
+  sessionId: string;
+  createdAt: string;
+  lastSeenAt: string;
+}
+
 interface McpSession {
   transport: StreamableHTTPServerTransport;
   server: McpServer;
   createdAt: number;
   lastSeenAt: number;
+  peer: McpSessionPeer;
 }
 
 const SESSION_IDLE_MS = 30 * 60 * 1000;
@@ -53,6 +71,21 @@ function ensureSweeper(): void {
 /** Number of live MCP client sessions, for the Settings panel. */
 export function getActiveMcpSessionCount(): number {
   return sessions.size;
+}
+
+/** Every live session with who opened it, newest activity first. */
+export function listLiveMcpSessions(): McpLiveSession[] {
+  return [...sessions.entries()]
+    .map(([sessionId, s]) => ({ sessionId, createdAt: new Date(s.createdAt).toISOString(), lastSeenAt: new Date(s.lastSeenAt).toISOString(), ...s.peer }))
+    .sort((a, b) => b.lastSeenAt.localeCompare(a.lastSeenAt));
+}
+
+/** Close the live sessions a predicate selects (a revoked grant, a forgotten client); returns how many. */
+export async function closeMcpSessionsWhere(predicate: (peer: McpSessionPeer) => boolean): Promise<number> {
+  const victims = [...sessions.entries()].filter(([, s]) => predicate(s.peer));
+  for (const [id] of victims) sessions.delete(id);
+  await Promise.allSettled(victims.map(([, s]) => s.transport.close()));
+  return victims.length;
 }
 
 /** Close every session; used by tests and shutdown. */
@@ -154,7 +187,7 @@ function authenticate(req: Request, res: Response): AuthInfo | null {
       clientId: resolved.clientId,
       scopes: [resolved.scope],
       expiresAt: Math.floor(new Date(resolved.expiresAt).getTime() / 1000),
-      extra: { role: resolved.role, username: resolved.username, userKey: resolved.key, kind: 'oauth' },
+      extra: { role: resolved.role, username: resolved.username, userKey: resolved.key, kind: 'oauth', pairId: resolved.pairId },
     };
   }
 
@@ -162,6 +195,19 @@ function authenticate(req: Request, res: Response): AuthInfo | null {
   challenge(req, res, 'invalid_token');
   jsonRpcError(res, 401, -32000, 'Invalid or expired token.');
   return null;
+}
+
+function peerOf(req: Request, auth: AuthInfo): McpSessionPeer {
+  const extra = (auth.extra ?? {}) as { kind?: string; username?: string; pairId?: string };
+  const ua = req.headers['user-agent'];
+  return {
+    kind: extra.kind === 'oauth' ? 'oauth' : 'apiKey',
+    clientId: auth.clientId,
+    username: typeof extra.username === 'string' ? extra.username : 'API key',
+    pairId: typeof extra.pairId === 'string' ? extra.pairId : null,
+    ip: req.ip ?? null,
+    userAgent: typeof ua === 'string' ? ua.slice(0, 200) : null,
+  };
 }
 
 function sessionIdOf(req: Request): string | undefined {
@@ -199,7 +245,7 @@ export function createMcpRouter(): Router {
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (id) => {
-          sessions.set(id, { transport, server, createdAt: Date.now(), lastSeenAt: Date.now() });
+          sessions.set(id, { transport, server, createdAt: Date.now(), lastSeenAt: Date.now(), peer: peerOf(req, authInfo) });
           ensureSweeper();
           logger.info(`MCP session opened (${sessions.size} active)`);
         },

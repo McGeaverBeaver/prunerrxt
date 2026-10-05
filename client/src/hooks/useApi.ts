@@ -655,6 +655,35 @@ export function useMcpInfo(enabled = true) {
   });
 }
 
+export function useMcpConnections(enabled = true, pollMs: number = 15_000) {
+  return useQuery({
+    queryKey: ['settings', 'mcp', 'connections'] as const,
+    queryFn: mcpApi.connections,
+    enabled,
+    refetchInterval: pollMs,
+  });
+}
+
+export function useRevokeMcpConnection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (pairId: string) => mcpApi.revokeConnection(pairId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'mcp'] });
+    },
+  });
+}
+
+export function useForgetMcpClient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (clientId: string) => mcpApi.forgetClient(clientId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'mcp'] });
+    },
+  });
+}
+
 export function useUpdateMcp() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -1,4 +1,7 @@
 {
+  "actions": {
+    "cancel": "Cancel"
+  },
   "alerts": {
     "discord": {
       "urlPlaceholder": "Paste a Discord webhook URL"
@@ -411,6 +414,43 @@
     "badgeReadOnly": "read-only",
     "catalogTitle_one": "What the assistant can do ({{count}} tools)",
     "catalogTitle_other": "What the assistant can do ({{count}} tools)",
+    "connections": {
+      "apiKeyHint": "Key-based clients hold no token to revoke. Switch the key off or regenerate it in the API key card above to cut them off.",
+      "apiKeyTitle": "Using the API key",
+      "body": "Every assistant that may act on this library. Disconnect one and it is signed out at once and must ask for permission again; forget a client to drop its registration too.",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Sign this client out and withdraw its permission",
+      "empty": "Nothing is connected yet. Clients appear here after they sign in or use the API key at the endpoint below.",
+      "expires": "expires {{time}}",
+      "forget": "Forget this client",
+      "forgetBody_one": "{{client}} will be signed out everywhere, its {{count}} permission(s) withdrawn, and its registration removed. It can register again from scratch and will ask you to approve it anew.",
+      "forgetBody_other": "{{client}} will be signed out everywhere, its {{count}} permission(s) withdrawn, and its registration removed. It can register again from scratch and will ask you to approve it anew.",
+      "forgetFailed": "Could not forget client",
+      "forgetting": "Forgetting…",
+      "forgetTitle": "Forget this client?",
+      "forgottenMsg": "{{client}} and every permission it held are gone.",
+      "forgottenTitle": "Client forgotten",
+      "granted": "approved {{time}}",
+      "lastUsed": "last used {{time}}",
+      "live": "live",
+      "liveCount_one": "{{count}} session(s) open now",
+      "liveCount_other": "{{count}} session(s) open now",
+      "liveN_one": "{{count}} live",
+      "liveN_other": "{{count}} live",
+      "loading": "Loading…",
+      "neverUsed": "never used",
+      "oauth": "signed in",
+      "off": "The connector is off, so nothing can connect.",
+      "requests_one": "{{count}} request(s)",
+      "requests_other": "{{count}} request(s)",
+      "revokedMsg_one": "{{client}} no longer acts as {{user}}. It will have to ask for permission again.",
+      "revokedMsg_other": "{{client}} no longer acts as {{user}}. It will have to ask for permission again.",
+      "revokedTitle": "Disconnected",
+      "revokeFailed": "Could not disconnect",
+      "title": "Connected clients",
+      "unknownAgent": "Unknown client",
+      "unnamed": "Unnamed client"
+    },
     "copied": "Copied",
     "copy": "Copy",
     "copyEndpoint": "Copy endpoint URL",

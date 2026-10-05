@@ -33,7 +33,9 @@
       "unprotected": ""
     },
     "mcp": {
-      "call": ""
+      "call": "",
+      "clientForgotten": "",
+      "connectionRevoked": ""
     },
     "queue": {
       "added": "",

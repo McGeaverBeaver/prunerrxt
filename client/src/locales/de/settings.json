@@ -1,4 +1,7 @@
 {
+  "actions": {
+    "cancel": ""
+  },
   "alerts": {
     "discord": {
       "urlPlaceholder": "Füge eine Discord-Webhook-URL ein"
@@ -411,6 +414,43 @@
     "badgeReadOnly": "",
     "catalogTitle_one": "",
     "catalogTitle_other": "",
+    "connections": {
+      "apiKeyHint": "",
+      "apiKeyTitle": "",
+      "body": "",
+      "disconnect": "",
+      "disconnectTitle": "",
+      "empty": "",
+      "expires": "",
+      "forget": "",
+      "forgetBody_one": "",
+      "forgetBody_other": "",
+      "forgetFailed": "",
+      "forgetting": "",
+      "forgetTitle": "",
+      "forgottenMsg": "",
+      "forgottenTitle": "",
+      "granted": "",
+      "lastUsed": "",
+      "live": "",
+      "liveCount_one": "",
+      "liveCount_other": "",
+      "liveN_one": "",
+      "liveN_other": "",
+      "loading": "",
+      "neverUsed": "",
+      "oauth": "",
+      "off": "",
+      "requests_one": "",
+      "requests_other": "",
+      "revokedMsg_one": "",
+      "revokedMsg_other": "",
+      "revokedTitle": "",
+      "revokeFailed": "",
+      "title": "",
+      "unknownAgent": "",
+      "unnamed": ""
+    },
     "copied": "",
     "copy": "",
     "copyEndpoint": "",
