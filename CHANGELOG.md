@@ -7,6 +7,10 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
+## 2.0.2 (2026-10-05)
+
+- Recommendations: a title nobody has played is not stale until it has been in the library longer than the window
+
 ## 2.0.1 (2026-10-05)
 
 - Changelog: record the dependency versions behind 2.0.0
