@@ -38,5 +38,13 @@ Elliott. Everything the original does is still here; on top of it:
 - **Plex to Arr matching** by folder and title when ids disagree.
 - **No outbound calls.** Telemetry, the remote announcements feed and
   third-party fonts are gone.
-- **Node 24**, Tailwind CSS 4, and a clean dependency audit.
+- **Dependencies.** Node 20 to Node 24 (`node:24-alpine`, the LTS line) in
+  the image and in CI; Tailwind CSS 3.4.19 to 4.3.3 (with `@tailwindcss/postcss`
+  4.3.3 replacing the PostCSS plugin and autoprefixer), which removes the
+  braces, micromatch, fast-glob and chokidar advisories; brace-expansion
+  patched; every lockfile refreshed; `npm audit` clean. GitHub Actions moved
+  to checkout 7, setup-node 7, upload-artifact 7, download-artifact 8,
+  docker/setup-buildx 4, docker/login 4, docker/metadata 6,
+  docker/build-push 7 and action-gh-release 3. Dependabot watches the Docker
+  base image and the Actions monthly, with Node majors chosen by hand.
 
