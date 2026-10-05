@@ -151,7 +151,7 @@ export function registerOverviewTools(server: McpServer): void {
       name: 'get_recommendations',
       title: 'Deletion recommendations',
       description:
-        'Items that have not been watched for a long time and are not protected or already queued — the best candidates to free space. Largest and longest-unwatched first.',
+        'Items that have not been watched for a long time and are not protected or already queued — the best candidates to free space. A title that was never played counts only once it has been in the library longer than the window, so new additions are not stale. Largest and longest-unwatched first.',
       group: 'overview',
       inputSchema: {
         limit: z.number().int().min(1).max(100).optional().describe('How many to return (default 15).'),
@@ -177,7 +177,7 @@ export function registerOverviewTools(server: McpServer): void {
         ...summarizeMediaItem(item, now),
         reason:
           !item.last_watched_at || daysSince(item.last_watched_at, now) === null
-            ? 'Never watched'
+            ? `Never watched in the ${daysSince(item.added_at || item.created_at, now) ?? '?'} days since it was added`
             : `Not watched in ${daysSince(item.last_watched_at, now)} days`,
       }));
       return ok(

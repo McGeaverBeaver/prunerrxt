@@ -730,19 +730,22 @@ export function getUnwatchedMediaItems(days: number): MediaItem[] {
   cutoffDate.setDate(cutoffDate.getDate() - days);
 
   // Items are considered "unwatched" if:
-  // 1. Never watched: play_count = 0 AND last_watched_at IS NULL
+  // 1. Never watched (play_count = 0 AND last_watched_at IS NULL) AND added
+  //    before the cutoff. A title added last week has had no chance to be
+  //    watched; it is new, not stale, and must not be recommended.
   // 2. Not watched recently: last_watched_at < cutoffDate (regardless of play_count)
   // But exclude items with play_count > 0 and no last_watched_at (data inconsistency - they were watched)
-  const stmt = db.prepare<[string, string], MediaItemRow>(`
+  const stmt = db.prepare<[string, string, string], MediaItemRow>(`
     SELECT * FROM media_items
     WHERE (
-      (play_count = 0 OR play_count IS NULL) AND last_watched_at IS NULL
+      ((play_count = 0 OR play_count IS NULL) AND last_watched_at IS NULL AND COALESCE(added_at, created_at) < ?)
       OR last_watched_at < ?
     )
     AND status = ?
     ORDER BY last_watched_at ASC
   `);
-  const rows = stmt.all(cutoffDate.toISOString(), 'monitored');
+  const cutoff = cutoffDate.toISOString();
+  const rows = stmt.all(cutoff, cutoff, 'monitored');
   return rows.map(rowToMediaItem);
 }
 

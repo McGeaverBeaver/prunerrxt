@@ -80,6 +80,8 @@ router.get('/recommendations', (req: Request, res: Response) => {
       const daysSinceWatched = lastWatchedDate
         ? Math.floor((Date.now() - lastWatchedDate.getTime()) / (1000 * 60 * 60 * 24))
         : null;
+      const addedDate = item.added_at || item.created_at;
+      const daysSinceAdded = addedDate ? Math.floor((Date.now() - new Date(addedDate).getTime()) / (1000 * 60 * 60 * 24)) : null;
 
       return {
         id: String(item.id),
@@ -91,9 +93,12 @@ router.get('/recommendations', (req: Request, res: Response) => {
         daysSinceWatched,
         neverWatched: !item.last_watched_at && item.play_count === 0,
         addedAt: item.added_at || item.created_at,
+        daysSinceAdded,
         playCount: item.play_count,
         reason: !item.last_watched_at || daysSinceWatched === null
-          ? 'Never watched'
+          ? daysSinceAdded === null
+            ? 'Never watched'
+            : `Never watched in the ${daysSinceAdded} days since it was added`
           : `Not watched in ${daysSinceWatched} days`,
       };
     });
