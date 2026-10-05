@@ -7,6 +7,10 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
+## 2.0.1 (2026-10-05)
+
+- Changelog: record the dependency versions behind 2.0.0
+
 ## 2.0.0 (2026-10-05)
 
 The first PrunerrXT release, an extended edition of Prunerr 1.8.2 by Harry
