@@ -7,6 +7,10 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
+## 2.0.3 (2026-10-05)
+
+- Queue: Delete Now respects Archive holds; dashboard counts the library, not its tombstones; a storage trend that explains itself
+
 ## 2.0.2 (2026-10-05)
 
 - Recommendations: a title nobody has played is not stale until it has been in the library longer than the window
