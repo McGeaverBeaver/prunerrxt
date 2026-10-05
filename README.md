@@ -87,7 +87,7 @@ docker run -d \
   -e SONARR_API_KEY=your-sonarr-api-key \
   -e RADARR_URL=http://your-radarr:7878 \
   -e RADARR_API_KEY=your-radarr-api-key \
-  ghcr.io/mcgeaverbeaver/prunerrxt:main
+  ghcr.io/mcgeaverbeaver/prunerrxt:latest
 ```
 
 For **Jellyfin** or **Emby**, swap the two Plex variables for:
@@ -109,13 +109,13 @@ Every other connection (Tautulli, Seerr, Unraid, Discord, media folders) is set 
 
 ### Image channels
 
-The image is published to the GitHub Container Registry as [`ghcr.io/mcgeaverbeaver/prunerrxt`](https://github.com/McGeaverBeaver/prunerrxt/pkgs/container/prunerrxt), for amd64 and arm64.
+The image is published to the GitHub Container Registry as [`ghcr.io/mcgeaverbeaver/prunerrxt`](https://github.com/McGeaverBeaver/prunerrxt/pkgs/container/prunerrxt), for amd64 and arm64. Every push to `main` is a release: the version advances on its own, [`CHANGELOG.md`](CHANGELOG.md) records what changed, and a GitHub release carries the notes. See [docs/versioning.md](docs/versioning.md).
 
 | Tag | What it is |
 |---|---|
-| `:main` | The main branch, rebuilt on demand. Each build also publishes a pinned `:main-<sha>`. |
+| `:latest` | The newest release. What a normal install runs. |
+| `:2.0.4`, `:2.0`, `:2` | Pinned to that release, that minor, or that major. |
 | `:beta` | The `beta` branch, rebuilt as changes land. Back up the database first; beta builds can carry schema migrations and downgrading is not supported. |
-| `:1.x.x`, `:1.x`, `:1`, `:latest` | Tagged releases. |
 
 ### Upgrading from Prunerr
 
@@ -151,6 +151,7 @@ Guides for what PrunerrXT adds live in this repository:
 - [Watch state](docs/watch-state.md) &mdash; In-progress and finished detection per viewer, and the rule fields built on it
 - [Unmanaged folders](docs/folders.md) &mdash; Folders Sonarr and Radarr do not own: import, delete, repair permissions
 - [Home Assistant](docs/home-assistant.md) &mdash; Webhooks, signed payloads and sensors
+- [Versioning and releases](docs/versioning.md) &mdash; How every push to main becomes a numbered release, image tags, the changelog
 
 For the features shared with the original, the [Prunerr wiki](https://github.com/helliott20/prunerr/wiki) remains the reference: [Installation](https://github.com/helliott20/prunerr/wiki/Installation), [Configuration](https://github.com/helliott20/prunerr/wiki/Configuration), [Rules Engine](https://github.com/helliott20/prunerr/wiki/Rules-Engine), [Collections](https://github.com/helliott20/prunerr/wiki/Collections), [Deletion Management](https://github.com/helliott20/prunerr/wiki/Deletion-Management), [API Reference](https://github.com/helliott20/prunerr/wiki/API-Reference), [Mobile Access](https://github.com/helliott20/prunerr/wiki/Mobile-Access) and [Troubleshooting](https://github.com/helliott20/prunerr/wiki/Troubleshooting).
 

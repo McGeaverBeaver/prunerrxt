@@ -1,0 +1,119 @@
+name: Release
+
+# Every push to main is a release. The checks run first; then the next patch
+# version is computed from the tags (the major and minor come from
+# package.json, chosen by hand), CHANGELOG.md gets a section written from the
+# commits, a "Release vX.Y.Z" commit is tagged and pushed, the image is
+# published as :latest, :X.Y.Z, :X.Y and :X, and a GitHub release carries the
+# same notes. See docs/versioning.md.
+#
+# The release commit and tag are pushed with the repository's own token, which
+# never triggers another run of this workflow, so there is no loop.
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify
+    uses: ./.github/workflows/ci.yml
+
+  version:
+    name: Version and changelog
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.next.outputs.version }}
+      major_minor: ${{ steps.next.outputs.major_minor }}
+      major: ${{ steps.next.outputs.major }}
+      sha: ${{ steps.push.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Next version
+        id: next
+        run: |
+          BASE=$(node -p "require('./package.json').version.split('.').slice(0, 2).join('.')")
+          LAST=$(git tag -l "v${BASE}.*" --sort=-v:refname | head -n 1)
+          if [ -z "$LAST" ]; then
+            PATCH=0
+          else
+            PATCH=$(( ${LAST##*.} + 1 ))
+          fi
+          PREVIOUS=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
+          echo "version=${BASE}.${PATCH}" >> "$GITHUB_OUTPUT"
+          echo "major_minor=${BASE}" >> "$GITHUB_OUTPUT"
+          echo "major=${BASE%%.*}" >> "$GITHUB_OUTPUT"
+          echo "previous=${PREVIOUS}" >> "$GITHUB_OUTPUT"
+          echo "Releasing ${BASE}.${PATCH} (previous tag: ${PREVIOUS:-none})"
+
+      - name: Write release notes
+        run: node scripts/release-notes.cjs --version "${{ steps.next.outputs.version }}" --previous "${{ steps.next.outputs.previous }}" --changelog CHANGELOG.md --out release-notes.md
+
+      - name: Commit, tag and push
+        id: push
+        run: |
+          git config user.name "McGeaverBeaver"
+          git config user.email "29310945+McGeaverBeaver@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "Release v${{ steps.next.outputs.version }}"
+          git tag "v${{ steps.next.outputs.version }}"
+          git push origin HEAD:main
+          git push origin "v${{ steps.next.outputs.version }}"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-notes
+          path: release-notes.md
+          retention-days: 1
+
+  publish:
+    name: Publish image
+    needs: version
+    uses: ./.github/workflows/docker-publish.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      ref: ${{ needs.version.outputs.sha }}
+      version: ${{ needs.version.outputs.version }}
+      tags: |
+        latest
+        ${{ needs.version.outputs.version }}
+        ${{ needs.version.outputs.major_minor }}
+        ${{ needs.version.outputs.major }}
+
+  release:
+    name: GitHub release
+    needs: [version, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-notes
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: PrunerrXT ${{ needs.version.outputs.version }}
+          body_path: release-notes.md

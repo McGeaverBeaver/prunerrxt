@@ -20,26 +20,21 @@ PrunerrXT is a media library cleanup tool for Plex/Jellyfin/Emby with Sonarr and
 ## Release Workflow
 
 The image lives on the GitHub Container Registry as `ghcr.io/mcgeaverbeaver/prunerrxt`
-(built by `.github/workflows/docker-publish.yml`, both amd64 and arm64, using
-only the repository's own GitHub token). Three ways to publish:
+(amd64 and arm64, built with only the repository's own GitHub token).
 
-- **Manual run** (Actions → Build and Push Docker Image → Run workflow) on
-  `main` with the tag input left empty publishes `:main` and a pinned
-  `:main-<sha>`. This is the day-to-day way to get a change onto the test box.
-  A tag typed into the input is published as is.
-- **Beta channel.** Pushing to the `beta` branch publishes `:beta`:
-  `git push origin <your-branch>:beta`.
-- **Release.** A version tag publishes `:<version>`, `:<major>.<minor>`,
-  `:<major>` and `:latest`, and creates a GitHub Release with generated notes:
-
-```bash
-git push
-git tag v1.x.x
-git push origin v1.x.x
-```
-
-A plain push to `main` runs `ci.yml` (client and server lint, typecheck,
-build and tests) but builds no image.
+- **Every push to `main` is a release** (`.github/workflows/release.yml`):
+  the CI checks run, the next patch version is computed from the tags (major
+  and minor come from `package.json`), `scripts/release-notes.cjs` writes the
+  `CHANGELOG.md` section, a `Release vX.Y.Z` commit is tagged and pushed,
+  `docker-publish.yml` is called to publish `:latest`, `:X.Y.Z`, `:X.Y` and
+  `:X`, and a GitHub release is created. Never push a version tag by hand and
+  never edit the release commit; to start a new minor or major, change the
+  version in the three package.json files and add a `## X.Y.0 (unreleased)`
+  section to CHANGELOG.md before pushing. See docs/versioning.md.
+- **Beta channel.** Pushing to the `beta` branch publishes `:beta`.
+- **Manual build** (Actions → Build and Push Docker Image → Run workflow):
+  a tag typed into the input is published as is; left empty, the branch name
+  is the tag. For one-off testing only; it is not a release.
 
 **No outbound calls.** PrunerrXT contacts only the services the user configures.
 Do not add telemetry, update checks, remote feeds, CDN assets or any other

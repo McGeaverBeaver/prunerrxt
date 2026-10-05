@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <Container version="2">
     <Name>PrunerrXT</Name>
-    <Repository>ghcr.io/mcgeaverbeaver/prunerrxt:main</Repository>
+    <Repository>ghcr.io/mcgeaverbeaver/prunerrxt:latest</Repository>
     <!-- Community Applications turns each Branch into a pickable channel:
          the Tag is appended to the repository above. -->
     <Branch>
-        <Tag>main</Tag>
-        <TagDescription>Main - rebuilt from the main branch on demand, the usual channel for this fork</TagDescription>
+        <Tag>latest</Tag>
+        <TagDescription>Latest - the newest release; every change on main is published here with its own version number</TagDescription>
     </Branch>
     <Branch>
         <Tag>beta</Tag>
