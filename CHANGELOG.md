@@ -7,6 +7,10 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
+## 2.0.4 (2026-10-05)
+
+- Sync revives deleted titles that are still there; deletions report what left the disk
+
 ## 2.0.3 (2026-10-05)
 
 - Queue: Delete Now respects Archive holds; dashboard counts the library, not its tombstones; a storage trend that explains itself
