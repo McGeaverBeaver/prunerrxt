@@ -5,10 +5,14 @@
     "deleteAll": "Elimina tutto",
     "deleteAllNow": "Elimina tutto adesso",
     "deleting": "Eliminazione in corso...",
+    "noAtRisk": "",
     "noItemsPastGrace": "Nessun elemento ha ancora superato il periodo di tolleranza",
     "process": "Elabora",
     "processing": "Elaborazione in corso...",
     "processQueue": "Elabora coda",
+    "protect": "",
+    "protectAtRisk": "",
+    "protecting": "",
     "queueing": "",
     "removeSelected_one": "Rimuovi selezionato ({{count}})",
     "removeSelected_many": "Rimuovi selezionati ({{count}})",
@@ -145,6 +149,22 @@
     "title": "Elabora coda di eliminazione",
     "warning": "Questo eliminerà gli elementi che hanno superato il periodo di tolleranza."
   },
+  "protectAtRisk": {
+    "doneMsg_one": "",
+    "doneMsg_many": "",
+    "doneMsg_other": "",
+    "doneTitle": "",
+    "failedTitle": "",
+    "more_one": "",
+    "more_many": "",
+    "more_other": "",
+    "summary_one": "",
+    "summary_many": "",
+    "summary_other": "",
+    "title": "",
+    "undo": "",
+    "warning": ""
+  },
   "row": {
     "archive": "",
     "archiveTitle": "",
@@ -178,9 +198,18 @@
     "willResetIn": "Verrà reimpostato tra"
   },
   "stats": {
+    "atRisk": "",
+    "atRiskSize": "",
     "itemsInQueue": "Elementi in coda",
     "readyToDelete": "Pronti per l'eliminazione",
+    "replaceable": "",
     "spaceToReclaim": "Spazio da recuperare",
+    "unchecked_one": "",
+    "unchecked_many": "",
+    "unchecked_other": "",
+    "unknown_one": "",
+    "unknown_many": "",
+    "unknown_other": "",
     "willResetSeerr": "Verrà reimpostato Seerr"
   },
   "table": {

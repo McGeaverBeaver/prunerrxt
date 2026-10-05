@@ -39,6 +39,16 @@ The title's age is not part of the verdict. A 1950s classic that every tracker
 carries is replaceable; a 2019 release with one dead torrent is not, and only
 the live search can tell which is which.
 
+## The queue at a glance
+
+The cards above the queue count what Archive found: **Replaceable** (with a
+note for titles still unchecked or whose check came back unknown) and
+**At Risk**, with the space those titles take. **Protect At-Risk** next to
+Process Queue archives every at-risk title in one go, after a confirmation
+that lists them; it never deletes anything and never touches unchecked or
+unknown titles. Over the MCP connector the same action is
+`archive_items` with `allAtRisk: true`.
+
 ## What happens to an at-risk title
 
 **When an item is at risk** in Settings → Safety → Archive decides:

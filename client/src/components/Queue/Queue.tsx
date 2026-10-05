@@ -25,7 +25,7 @@ import { MaybeLink } from '@/components/common/MaybeLink';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Modal } from '@/components/common/Modal';
-import { useArchiveQueueItem, useArchiveStatus, useCheckQueueAvailability, useDeleteAnyway, useDeletionQueue, useRemoveFromQueue, useProcessQueue, useProtectItem, useSettings } from '@/hooks/useApi';
+import { useArchiveQueueItem, useArchiveStatus, useCheckQueueAvailability, useDeleteAnyway, useDeletionQueue, useRemoveFromQueue, useProcessQueue, useProtectAtRisk, useProtectItem, useSettings } from '@/hooks/useApi';
 import { AvailabilityBadge } from '@/components/common/AvailabilityBadge';
 import { useAvailabilityText } from '@/lib/availabilityText';
 import { useToast } from '@/components/common/Toast';
@@ -48,6 +48,7 @@ export default function Queue() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [confirmProcessing, setConfirmProcessing] = useState(false);
   const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+  const [confirmProtectAtRisk, setConfirmProtectAtRisk] = useState(false);
   const [confirmDeleteNow, setConfirmDeleteNow] = useState<QueueItem | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const { scrollToTop } = usePageScroll();
@@ -67,6 +68,7 @@ export default function Queue() {
   const removeFromQueueMutation = useRemoveFromQueue();
   const processQueueMutation = useProcessQueue();
   const protectMutation = useProtectItem();
+  const protectAtRiskMutation = useProtectAtRisk();
   const { addToast } = useToast();
   const { t } = useTranslation('queue');
 
@@ -217,6 +219,26 @@ export default function Queue() {
     });
   };
 
+  const handleProtectAtRisk = () => {
+    protectAtRiskMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        setConfirmProtectAtRisk(false);
+        addToast({
+          type: result.failed.length > 0 ? 'warning' : 'success',
+          title: t('protectAtRisk.doneTitle', 'At-risk items protected'),
+          message: result.message || t('protectAtRisk.doneMsg', '{{count}} item(s) archived', { count: result.archived.length }),
+        });
+      },
+      onError: (error) => {
+        addToast({
+          type: 'error',
+          title: t('protectAtRisk.failedTitle', 'Could not protect'),
+          message: error instanceof Error ? error.message : String(error),
+        });
+      },
+    });
+  };
+
   const handleDeleteNow = (item: QueueItem) => setConfirmDeleteNow(item);
 
   // Delete Now queues a background job and returns at once; the row badge,
@@ -254,6 +276,12 @@ export default function Queue() {
   const totalSize = queue?.reduce((acc, item) => acc + item.size, 0) || 0;
   const readyItems = queue?.filter((item) => (item.daysRemaining ?? getDaysUntil(item.deleteAt)) <= 0 && !item.held) || [];
   const heldItems = queue?.filter((item) => item.held) || [];
+  // Archive verdicts over the whole movies and shows in the queue; episodes carry none.
+  const replaceableItems = queue?.filter((item) => item.availability?.verdict === 'replaceable') || [];
+  const atRiskItems = queue?.filter((item) => item.availability?.verdict === 'at_risk') || [];
+  const unknownCount = queue?.filter((item) => item.availability?.verdict === 'unknown').length || 0;
+  const uncheckedCount = queue?.filter((item) => item.kind !== 'episode' && !item.availability).length || 0;
+  const atRiskSize = atRiskItems.reduce((acc, item) => acc + item.size, 0);
   const readyToDelete = readyItems.length;
   const readyToDeleteSize = readyItems.reduce((acc, item) => acc + item.size, 0);
   const willResetOverseerr = queue?.filter((item) => item.resetOverseerr).length || 0;
@@ -298,6 +326,17 @@ export default function Queue() {
                 : t('actions.removeSelected', 'Remove Selected ({{count}})', { count: selectedItems.length })}
             </Button>
           )}
+          <Button
+            variant="secondary"
+            onClick={() => setConfirmProtectAtRisk(true)}
+            disabled={atRiskItems.length === 0 || protectAtRiskMutation.isPending}
+            title={atRiskItems.length === 0 ? t('actions.noAtRisk', 'Nothing in the queue is at risk') : undefined}
+          >
+            <ShieldAlert className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">{t('actions.protectAtRisk', 'Protect At-Risk')}</span>
+            <span className="sm:hidden">{t('actions.protect', 'Protect')}</span>
+            {atRiskItems.length > 0 && ` (${atRiskItems.length})`}
+          </Button>
           <div className="relative group">
             <Button
               variant="danger"
@@ -381,7 +420,7 @@ export default function Queue() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-warning-500/10">
@@ -390,6 +429,38 @@ export default function Queue() {
             <div>
               <p className="text-sm text-surface-400">{t('stats.itemsInQueue', 'Items in Queue')}</p>
               <p className="text-2xl font-bold text-surface-50">{queue?.length || 0}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-lg bg-emerald-500/10">
+              <CheckCircle className="w-6 h-6 text-emerald-text" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm text-surface-400">{t('stats.replaceable', 'Replaceable')}</p>
+              <p className="text-2xl font-bold text-surface-50">{replaceableItems.length}</p>
+              {uncheckedCount + unknownCount > 0 && (
+                <p className="text-[11px] text-surface-500 truncate">
+                  {uncheckedCount > 0 && t('stats.unchecked', '{{count}} unchecked', { count: uncheckedCount })}
+                  {uncheckedCount > 0 && unknownCount > 0 && ' · '}
+                  {unknownCount > 0 && t('stats.unknown', '{{count}} unknown', { count: unknownCount })}
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-lg bg-ruby-500/10">
+              <ShieldAlert className="w-6 h-6 text-ruby-text" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm text-surface-400">{t('stats.atRisk', 'At Risk')}</p>
+              <p className="text-2xl font-bold text-surface-50">{atRiskItems.length}</p>
+              {atRiskItems.length > 0 && (
+                <p className="text-[11px] text-surface-500 truncate">{t('stats.atRiskSize', '{{size}} not downloadable again', { size: formatBytes(atRiskSize) })}</p>
+              )}
             </div>
           </div>
         </Card>
@@ -642,6 +713,51 @@ export default function Queue() {
               disabled={processQueueMutation.isPending}
             >
               {processQueueMutation.isPending ? t('actions.deleting', 'Deleting...') : t('actions.deleteAllNow', 'Delete All Now')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirm Protect At-Risk Modal */}
+      <Modal
+        isOpen={confirmProtectAtRisk}
+        onClose={() => !protectAtRiskMutation.isPending && setConfirmProtectAtRisk(false)}
+        title={t('protectAtRisk.title', 'Protect At-Risk Items')}
+      >
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+            <Shield className="w-6 h-6 text-emerald-text flex-shrink-0" />
+            <div>
+              <p className="text-sm text-surface-50">
+                {t('protectAtRisk.warning', 'Every queued title Archive judged at risk will be archived: protected for good and taken out of the queue. Nothing is deleted.')}
+              </p>
+              <p className="text-sm text-emerald-text mt-1">
+                {t('protectAtRisk.summary', '{{count}} item(s) will be archived ({{size}})', { count: atRiskItems.length, size: formatBytes(atRiskSize) })}
+              </p>
+            </div>
+          </div>
+          {atRiskItems.length > 0 && (
+            <ul className="max-h-48 overflow-y-auto divide-y divide-surface-800 rounded-lg border border-surface-800 text-sm">
+              {atRiskItems.slice(0, 50).map((item) => (
+                <li key={item.id} className="flex items-center justify-between gap-3 px-3 py-1.5">
+                  <span className="truncate text-surface-200">{item.title}</span>
+                  <span className="shrink-0 text-xs text-surface-500">{formatBytes(item.size)}</span>
+                </li>
+              ))}
+              {atRiskItems.length > 50 && (
+                <li className="px-3 py-1.5 text-xs text-surface-500">{t('protectAtRisk.more', 'and {{count}} more', { count: atRiskItems.length - 50 })}</li>
+              )}
+            </ul>
+          )}
+          <p className="text-xs text-surface-500">
+            {t('protectAtRisk.undo', 'Archived titles are listed on the Protected page; Unarchive there puts one back under the rules.')}
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button variant="secondary" onClick={() => setConfirmProtectAtRisk(false)} disabled={protectAtRiskMutation.isPending}>
+              {t('actions.cancel', 'Cancel')}
+            </Button>
+            <Button variant="primary" onClick={handleProtectAtRisk} disabled={protectAtRiskMutation.isPending || atRiskItems.length === 0}>
+              {protectAtRiskMutation.isPending ? t('actions.protecting', 'Protecting...') : t('actions.protectAtRisk', 'Protect At-Risk')}
             </Button>
           </div>
         </div>

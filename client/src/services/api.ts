@@ -562,7 +562,21 @@ export const queueApi = {
   deleteAnyway: async (id: string): Promise<void> => {
     await api.post(`/queue/${id}/delete-anyway`);
   },
+
+  /** Archive: protect every queued movie and show whose verdict is at risk, taking them out of the queue. */
+  protectAtRisk: async (): Promise<ProtectAtRiskResult> => {
+    const { data } = await api.post<ApiResponse<ProtectAtRiskResult>>('/queue/protect-at-risk');
+    return { ...data.data!, message: data.message };
+  },
 };
+
+export interface ProtectAtRiskResult {
+  considered: number;
+  archived: Array<{ id: number; title: string }>;
+  skipped: Array<{ id: number; title: string; reason: string }>;
+  failed: Array<{ id: number; error: string }>;
+  message?: string;
+}
 
 export interface QueueProcessResult {
   batchId: string;

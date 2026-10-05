@@ -11,7 +11,7 @@ vi.mock('../init', () => ({
   getRadarrService: () => null,
 }));
 
-import { mergeArrVolumes, sameVolume } from '../arrDiskSpace';
+import { mergeArrVolumes, mountsHoldingRootFolders, rowsHoldingRootFolders, sameVolume, type ArrDiskRow } from '../arrDiskSpace';
 
 const TB = 1024 ** 4;
 
@@ -36,5 +36,42 @@ describe('arr disk space', () => {
 
   it('drops rows without a usable total', () => {
     expect(mergeArrVolumes([{ source: 'radarr', path: '/x', totalSpace: 0, freeSpace: 0 }])).toEqual([]);
+  });
+});
+
+describe('arr disk space: only mounts holding a root folder', () => {
+  it('drops the container root and /config when the root folders live on another mount', () => {
+    const rows: ArrDiskRow[] = [
+      { source: 'radarr', path: '/', totalSpace: 1000, freeSpace: 90 },
+      { source: 'radarr', path: '/config', totalSpace: 1000, freeSpace: 90 },
+      { source: 'radarr', path: '/data', totalSpace: 20 * TB, freeSpace: 3 * TB },
+      { source: 'sonarr', path: '/', totalSpace: 1000, freeSpace: 90 },
+      { source: 'sonarr', path: '/tv', totalSpace: 20 * TB, freeSpace: 3 * TB },
+    ];
+    const kept = rowsHoldingRootFolders(rows, { radarr: ['/data/movies', '/data/movies-4k'], sonarr: ['/tv'] });
+    expect(kept.map((r) => `${r.source}:${r.path}`)).toEqual(['sonarr:/tv', 'radarr:/data']);
+  });
+
+  it('keeps the root mount when a root folder really sits on it', () => {
+    const kept = mountsHoldingRootFolders(['/', '/config'], ['/movies']);
+    expect([...kept]).toEqual(['/']);
+  });
+
+  it('picks the longest matching mount, not a parent', () => {
+    expect([...mountsHoldingRootFolders(['/', '/mnt', '/mnt/user'], ['/mnt/user/media/tv'])]).toEqual(['/mnt/user']);
+    expect([...mountsHoldingRootFolders(['/', '/mnt/users'], ['/mnt/user/media'])]).toEqual(['/']);
+  });
+
+  it('keeps every row of an app whose root folders could not be read', () => {
+    const rows: ArrDiskRow[] = [
+      { source: 'radarr', path: '/', totalSpace: 1000, freeSpace: 90 },
+      { source: 'radarr', path: '/movies', totalSpace: 20 * TB, freeSpace: 3 * TB },
+    ];
+    expect(rowsHoldingRootFolders(rows, { radarr: null })).toEqual(rows);
+    expect(rowsHoldingRootFolders(rows, {})).toEqual(rows);
+  });
+
+  it('understands Windows paths', () => {
+    expect([...mountsHoldingRootFolders(['C:\\', 'D:\\'], ['D:\\Media\\Movies'])]).toEqual(['D:\\']);
   });
 });

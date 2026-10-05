@@ -420,6 +420,10 @@ export function useDeleteAnyway() {
   return useArchiveMutation((id: string) => queueApi.deleteAnyway(id));
 }
 
+export function useProtectAtRisk() {
+  return useArchiveMutation((_: void) => queueApi.protectAtRisk());
+}
+
 export function useArchiveItem() {
   return useArchiveMutation((id: string) => libraryApi.archiveItem(id));
 }

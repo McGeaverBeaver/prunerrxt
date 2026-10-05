@@ -65,7 +65,12 @@ export interface QueueSummary {
   willResetOverseerr: number;
   /** Items Archive is holding for a decision. */
   held: number;
+  /** Archive verdicts over the whole movies and shows in the queue (episodes carry none). */
   atRisk: number;
+  replaceable: number;
+  unknown: number;
+  /** Movies and shows still waiting for their first verdict. */
+  unchecked: number;
 }
 
 export interface QueueListing {
@@ -224,6 +229,9 @@ export function summarizeQueue(items: QueueItemResponse[]): QueueSummary {
     willResetOverseerr: items.filter((item) => item.resetOverseerr).length,
     held: items.filter((item) => item.held).length,
     atRisk: items.filter((item) => item.availability?.verdict === 'at_risk').length,
+    replaceable: items.filter((item) => item.availability?.verdict === 'replaceable').length,
+    unknown: items.filter((item) => item.availability?.verdict === 'unknown').length,
+    unchecked: items.filter((item) => item.kind !== 'episode' && !item.availability).length,
   };
 }
 

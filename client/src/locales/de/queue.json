@@ -5,10 +5,14 @@
     "deleteAll": "Alle löschen",
     "deleteAllNow": "Jetzt alle löschen",
     "deleting": "Wird gelöscht...",
+    "noAtRisk": "",
     "noItemsPastGrace": "Bisher hat noch kein Element seine Karenzzeit überschritten",
     "process": "Verarbeiten",
     "processing": "Wird verarbeitet...",
     "processQueue": "Warteschlange verarbeiten",
+    "protect": "",
+    "protectAtRisk": "",
+    "protecting": "",
     "queueing": "",
     "removeSelected_one": "Auswahl entfernen ({{count}})",
     "removeSelected_other": "Auswahl entfernen ({{count}})",
@@ -137,6 +141,19 @@
     "title": "Löschwarteschlange verarbeiten",
     "warning": "Dadurch werden Elemente gelöscht, deren Karenzzeit abgelaufen ist."
   },
+  "protectAtRisk": {
+    "doneMsg_one": "",
+    "doneMsg_other": "",
+    "doneTitle": "",
+    "failedTitle": "",
+    "more_one": "",
+    "more_other": "",
+    "summary_one": "",
+    "summary_other": "",
+    "title": "",
+    "undo": "",
+    "warning": ""
+  },
   "row": {
     "archive": "",
     "archiveTitle": "",
@@ -168,9 +185,16 @@
     "willResetIn": "Wird zurückgesetzt in"
   },
   "stats": {
+    "atRisk": "",
+    "atRiskSize": "",
     "itemsInQueue": "Elemente in Warteschlange",
     "readyToDelete": "Bereit zum Löschen",
+    "replaceable": "",
     "spaceToReclaim": "Freizugebender Speicherplatz",
+    "unchecked_one": "",
+    "unchecked_other": "",
+    "unknown_one": "",
+    "unknown_other": "",
     "willResetSeerr": "Wird Seerr zurücksetzen"
   },
   "table": {

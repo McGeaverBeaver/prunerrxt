@@ -5,7 +5,7 @@ import { requestActorName } from '../utils/actor';
 import { enqueueDeleteNow, enqueueReadyItems } from '../services/deletionJobs';
 import { AvailabilityPausedError, checkItem, getAvailabilityStatus } from '../services/availability';
 import { describeReasons, holdState, parseAvailability } from '../services/availabilityVerdict';
-import { allowDeletionAnyway, archiveItems } from '../services/mediaActions';
+import { allowDeletionAnyway, archiveAtRiskQueue, archiveItems, atRiskQueuedItems } from '../services/mediaActions';
 import {
   getAllQueueItems,
   listQueue,
@@ -160,6 +160,34 @@ router.get('/archive-status', (_req: Request, res: Response) => {
   } catch (error) {
     logger.error('Failed to read the Archive status:', error);
     res.status(500).json({ success: false, error: 'Failed to read the Archive status' });
+  }
+});
+
+// GET /api/queue/at-risk - The queued movies and shows Archive judged at risk,
+// for the confirmation before protecting them all.
+router.get('/at-risk', (_req: Request, res: Response) => {
+  try {
+    const items = atRiskQueuedItems().map((item) => ({ id: item.id, title: item.title, type: item.type === 'show' ? 'tv' : item.type, size: item.file_size || 0 }));
+    res.json({ success: true, data: items, total: items.length });
+  } catch (error) {
+    logger.error('Failed to list at-risk queue items:', error);
+    res.status(500).json({ success: false, error: 'Failed to list at-risk items' });
+  }
+});
+
+// POST /api/queue/protect-at-risk - Archive every queued item Archive judged
+// at risk: protect them for good and take them out of the queue.
+router.post('/protect-at-risk', (req: Request, res: Response) => {
+  try {
+    const result = archiveAtRiskQueue(requestActorName(req));
+    const message =
+      result.considered === 0
+        ? 'No queued items are at risk'
+        : `${result.archived.length} at-risk item(s) archived${result.failed.length > 0 ? `, ${result.failed.length} failed` : ''}`;
+    res.json({ success: true, data: result, message });
+  } catch (error) {
+    logger.error('Failed to archive at-risk items:', error);
+    res.status(500).json({ success: false, error: 'Failed to archive at-risk items' });
   }
 });
 

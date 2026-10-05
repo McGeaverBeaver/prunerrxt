@@ -64,7 +64,7 @@ export function registerQueueTools(server: McpServer): void {
           },
           items: page,
         },
-        `${listing.summary.totalItems} queued item(s), ${formatBytes(listing.summary.totalSize)} reclaimable, ${listing.summary.readyForDeletion} ready for deletion now${listing.summary.held > 0 ? `, ${listing.summary.held} held by Archive for a decision (archive_items or clear_availability_hold)` : ''}. Showing ${page.length}.`
+        `${listing.summary.totalItems} queued item(s), ${formatBytes(listing.summary.totalSize)} reclaimable, ${listing.summary.readyForDeletion} ready for deletion now, ${listing.summary.replaceable} replaceable, ${listing.summary.atRisk} at risk${listing.summary.unchecked > 0 ? `, ${listing.summary.unchecked} unchecked` : ''}${listing.summary.held > 0 ? `, ${listing.summary.held} held by Archive for a decision (archive_items or clear_availability_hold)` : ''}. Showing ${page.length}.`
       );
     }
   );

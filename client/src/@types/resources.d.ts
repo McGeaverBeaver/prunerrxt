@@ -1440,10 +1440,14 @@ export default interface Resources {
       "deleteAll": "Delete All",
       "deleteAllNow": "Delete All Now",
       "deleting": "Deleting...",
+      "noAtRisk": "Nothing in the queue is at risk",
       "noItemsPastGrace": "No items have passed their grace period yet",
       "process": "Process",
       "processQueue": "Process Queue",
       "processing": "Processing...",
+      "protect": "Protect",
+      "protectAtRisk": "Protect At-Risk",
+      "protecting": "Protecting...",
       "queueing": "Starting...",
       "removeSelected_one": "Remove Selected ({{count}})",
       "removeSelected_other": "Remove Selected ({{count}})",
@@ -1572,6 +1576,19 @@ export default interface Resources {
       "title": "Process Deletion Queue",
       "warning": "This will delete items that have passed their grace period."
     },
+    "protectAtRisk": {
+      "doneMsg_one": "{{count}} item(s) archived",
+      "doneMsg_other": "{{count}} item(s) archived",
+      "doneTitle": "At-risk items protected",
+      "failedTitle": "Could not protect",
+      "more_one": "and {{count}} more",
+      "more_other": "and {{count}} more",
+      "summary_one": "{{count}} item(s) will be archived ({{size}})",
+      "summary_other": "{{count}} item(s) will be archived ({{size}})",
+      "title": "Protect At-Risk Items",
+      "undo": "Archived titles are listed on the Protected page; Unarchive there puts one back under the rules.",
+      "warning": "Every queued title Archive judged at risk will be archived: protected for good and taken out of the queue. Nothing is deleted."
+    },
     "row": {
       "archive": "Archive",
       "archiveTitle": "Archive: keep for good",
@@ -1603,9 +1620,16 @@ export default interface Resources {
       "willResetIn": "Will reset in"
     },
     "stats": {
+      "atRisk": "At Risk",
+      "atRiskSize": "{{size}} not downloadable again",
       "itemsInQueue": "Items in Queue",
       "readyToDelete": "Ready to Delete",
+      "replaceable": "Replaceable",
       "spaceToReclaim": "Space to Reclaim",
+      "unchecked_one": "{{count}} unchecked",
+      "unchecked_other": "{{count}} unchecked",
+      "unknown_one": "{{count}} unknown",
+      "unknown_other": "{{count}} unknown",
       "willResetSeerr": "Will Reset Seerr"
     },
     "table": {

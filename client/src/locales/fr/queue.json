@@ -5,10 +5,14 @@
     "deleteAll": "Tout supprimer",
     "deleteAllNow": "Tout supprimer maintenant",
     "deleting": "Suppression...",
+    "noAtRisk": "",
     "noItemsPastGrace": "Aucun élément n'a encore dépassé son délai de grâce",
     "process": "Traiter",
     "processing": "Traitement...",
     "processQueue": "Traiter la file d'attente",
+    "protect": "",
+    "protectAtRisk": "",
+    "protecting": "",
     "queueing": "",
     "removeSelected_one": "Retirer la sélection ({{count}})",
     "removeSelected_many": "Retirer la sélection ({{count}})",
@@ -145,6 +149,22 @@
     "title": "Traiter la file d'attente de suppression",
     "warning": "Cela supprimera les éléments qui ont dépassé leur délai de grâce."
   },
+  "protectAtRisk": {
+    "doneMsg_one": "",
+    "doneMsg_many": "",
+    "doneMsg_other": "",
+    "doneTitle": "",
+    "failedTitle": "",
+    "more_one": "",
+    "more_many": "",
+    "more_other": "",
+    "summary_one": "",
+    "summary_many": "",
+    "summary_other": "",
+    "title": "",
+    "undo": "",
+    "warning": ""
+  },
   "row": {
     "archive": "",
     "archiveTitle": "",
@@ -178,9 +198,18 @@
     "willResetIn": "Sera réinitialisé dans"
   },
   "stats": {
+    "atRisk": "",
+    "atRiskSize": "",
     "itemsInQueue": "Éléments en file d'attente",
     "readyToDelete": "Prêts à supprimer",
+    "replaceable": "",
     "spaceToReclaim": "Espace à récupérer",
+    "unchecked_one": "",
+    "unchecked_many": "",
+    "unchecked_other": "",
+    "unknown_one": "",
+    "unknown_many": "",
+    "unknown_other": "",
     "willResetSeerr": "Réinitialisera Seerr"
   },
   "table": {

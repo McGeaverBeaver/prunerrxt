@@ -5,10 +5,14 @@
     "deleteAll": "Alles verwijderen",
     "deleteAllNow": "Alles nu verwijderen",
     "deleting": "Bezig met verwijderen...",
+    "noAtRisk": "",
     "noItemsPastGrace": "Er zijn nog geen items waarvan de respijtperiode is verstreken",
     "process": "Verwerken",
     "processing": "Bezig met verwerken...",
     "processQueue": "Wachtrij verwerken",
+    "protect": "",
+    "protectAtRisk": "",
+    "protecting": "",
     "queueing": "",
     "removeSelected_one": "Geselecteerde verwijderen ({{count}})",
     "removeSelected_other": "Geselecteerde verwijderen ({{count}})",
@@ -137,6 +141,19 @@
     "title": "Verwijderwachtrij verwerken",
     "warning": "Hiermee worden items verwijderd waarvan de respijtperiode is verstreken."
   },
+  "protectAtRisk": {
+    "doneMsg_one": "",
+    "doneMsg_other": "",
+    "doneTitle": "",
+    "failedTitle": "",
+    "more_one": "",
+    "more_other": "",
+    "summary_one": "",
+    "summary_other": "",
+    "title": "",
+    "undo": "",
+    "warning": ""
+  },
   "row": {
     "archive": "",
     "archiveTitle": "",
@@ -168,9 +185,16 @@
     "willResetIn": "Wordt gereset in"
   },
   "stats": {
+    "atRisk": "",
+    "atRiskSize": "",
     "itemsInQueue": "Items in wachtrij",
     "readyToDelete": "Gereed om te verwijderen",
+    "replaceable": "",
     "spaceToReclaim": "Terug te winnen ruimte",
+    "unchecked_one": "",
+    "unchecked_other": "",
+    "unknown_one": "",
+    "unknown_other": "",
     "willResetSeerr": "Reset Seerr"
   },
   "table": {

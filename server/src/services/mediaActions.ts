@@ -14,6 +14,7 @@ import type { MediaItem } from '../types';
 import logger from '../utils/logger';
 import { kickAvailabilityChecks } from './availabilityKick';
 import { namedActor, recordAudit } from './audit';
+import { describeReasons, parseAvailability } from './availabilityVerdict';
 
 export const DELETION_ACTIONS = [
   'unmonitor_only',
@@ -283,6 +284,34 @@ export function archiveItems(ids: number[], reason: string = 'Archived', actorNa
   }
 
   logger.info(`Archive: ${result.archived.length} archived, ${result.skipped.length} skipped, ${result.failed.length} failed`);
+  return result;
+}
+
+/**
+ * The queued movies and shows whose Archive verdict is "at risk": the ones the
+ * Queue page's "Protect at-risk" button acts on. An explicit "delete anyway"
+ * decision is not excluded; pressing the button is the later, broader choice.
+ */
+export function atRiskQueuedItems(): MediaItem[] {
+  return mediaItemsRepo.getPendingDeletion().filter((item) => parseAvailability(item.availability)?.verdict === 'at_risk');
+}
+
+/**
+ * Archive every queued item that Archive judged at risk, each with its own
+ * verdict as the reason. Returns the archive outcome plus how many were
+ * considered, so "nothing to do" is distinguishable from "everything failed".
+ */
+export function archiveAtRiskQueue(actorName?: string): ArchiveResult & { considered: number } {
+  const items = atRiskQueuedItems();
+  const result: ArchiveResult & { considered: number } = { archived: [], skipped: [], failed: [], considered: items.length };
+  for (const item of items) {
+    const report = parseAvailability(item.availability);
+    const reason = report ? `Archived: ${describeReasons(report)}` : 'Archived: at risk';
+    const one = archiveItems([item.id], reason, actorName);
+    result.archived.push(...one.archived);
+    result.skipped.push(...one.skipped);
+    result.failed.push(...one.failed);
+  }
   return result;
 }
 

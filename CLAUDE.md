@@ -114,6 +114,9 @@ identity is ever different (`git config user.email`), set it before committing.
 - Disk pressure watches the typed paths (statfs) plus the volumes Sonarr and
   Radarr report from `/diskspace` (`services/arrDiskSpace.ts`, merged in
   `services/monitoredVolumes.ts`, switch `diskPressure_includeArrVolumes`).
+  `/diskspace` lists every mount in the app's container, so only the mounts
+  that hold one of its `/rootfolder` entries are kept (longest prefix wins);
+  the container's own `/` and `/config` never count.
   `computeDiskPressureStats`, the `monitorDiskPressure` task, the dashboard's
   volumes card and `get_overview` all read that merged list.
 - Matching Plex items to Radarr/Sonarr goes by TMDB/TVDB/IMDb id first; when
@@ -131,7 +134,10 @@ identity is ever different (`git config user.email`), set it before committing.
   protected item with `archived_at` set (`mediaActions.archiveItems`). Checks
   are kicked after queueing through `availabilityKick.ts` (avoids an import
   cycle), run by the `checkAvailability` task and before the nightly queue
-  run. MCP: `check_availability`, `archive_items`, `unarchive_items`,
+  run. The Queue page's Replaceable / At Risk cards and its Protect At-Risk
+  button (`POST /api/queue/protect-at-risk`, `mediaActions.archiveAtRiskQueue`,
+  `archive_items` with `allAtRisk`) act on those verdicts. MCP:
+  `check_availability`, `archive_items`, `unarchive_items`,
   `clear_availability_hold`. See docs/archive.md.
 - Tasks page (`routes/tasks.ts`, client `components/Tasks/`): `task_runs`
   rows are written by the scheduler's `executeTask` for every run and by

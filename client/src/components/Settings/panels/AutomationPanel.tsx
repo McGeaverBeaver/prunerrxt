@@ -466,7 +466,7 @@ export default function AutomationPanel({
                 title={t('automation.diskPressure.arrVolumes', 'Watch the volumes Sonarr and Radarr report')}
                 description={t(
                   'automation.diskPressure.arrVolumesHint',
-                  'Both apps report free and total space for their root folders, so nothing has to be mounted or typed here. Turn off to watch only the paths below.'
+                  'Both apps report free and total space for the mounts that hold their root folders, so nothing has to be mounted or typed here. Their own container volumes (/, /config) are left out. Turn off to watch only the paths below.'
                 )}
                 control={
                   <Toggle

@@ -8,6 +8,7 @@ import { getSonarrService } from '../../services/init';
 import {
   DELETION_ACTIONS,
   allowDeletionAnyway,
+  archiveAtRiskQueue,
   archiveItems,
   defaultDeletionAction,
   defaultGracePeriodDays,
@@ -139,12 +140,18 @@ export function registerActionTools(server: McpServer): void {
         'Archive movies or shows: protect them permanently because they could not be downloaded again (or are not worth the risk), and take them out of the deletion queue. An archived item is a protected item with an archive mark; no rule, scan or deletion touches it until unarchive_items. Use this to resolve an Archive hold on an at-risk queued item.',
       group: 'actions',
       inputSchema: {
-        ids: z.array(z.number().int().positive()).min(1).max(500),
+        ids: z.array(z.number().int().positive()).max(500).optional().describe('Prunerr media item ids to archive.'),
+        allAtRisk: z.boolean().optional().describe('Instead of ids: archive every queued movie and show whose verdict is at risk (the Queue page\'s "Protect at-risk" button).'),
         reason: z.string().max(200).optional().describe('Why, shown in the UI. Defaults to the stored verdict.'),
       },
       annotations: MUTATING,
     },
-    async ({ ids, reason }) => {
+    async ({ ids, allAtRisk, reason }) => {
+      if (allAtRisk) {
+        const result = archiveAtRiskQueue(ACTOR);
+        return ok(result, result.considered === 0 ? 'No queued items are at risk.' : `${result.archived.length} at-risk item(s) archived, ${result.skipped.length} skipped, ${result.failed.length} failed.`);
+      }
+      if (!ids || ids.length === 0) return ok({ archived: [], skipped: [], failed: [] }, 'Pass ids, or allAtRisk=true to archive every at-risk queued item.');
       const result = archiveItems(ids, reason || 'Archived via MCP assistant', ACTOR);
       return ok(result, `${result.archived.length} item(s) archived, ${result.skipped.length} skipped, ${result.failed.length} failed.`);
     }
