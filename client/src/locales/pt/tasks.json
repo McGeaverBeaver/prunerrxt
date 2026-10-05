@@ -1,0 +1,66 @@
+{
+  "actions": {
+    "refresh": ""
+  },
+  "header": {
+    "subtitle": "",
+    "title": ""
+  },
+  "loading": "",
+  "names": {
+    "availabilityPass": "",
+    "captureInsightSnapshot": "",
+    "captureStorageSnapshot": "",
+    "captureUnraidCapacitySnapshot": "",
+    "checkAvailability": "",
+    "monitorDiskPressure": "",
+    "processDeletionQueue": "",
+    "scanLibraries": "",
+    "sendDeletionReminders": "",
+    "syncPlexLibrary": "",
+    "syncPlexUsers": "",
+    "verifyAuditLog": ""
+  },
+  "recent": {
+    "empty": "",
+    "title": "",
+    "trigger": {
+      "manual": "",
+      "mcp": "",
+      "queue": "",
+      "schedule": "",
+      "startup": ""
+    }
+  },
+  "running": {
+    "availabilityPass": "",
+    "between": "",
+    "deleting": "",
+    "folderJob": "",
+    "idle_one": "",
+    "idle_many": "",
+    "idle_other": "",
+    "passProgress": "",
+    "retry": "",
+    "schedulerStopped": "",
+    "searching": "",
+    "startedAgo": "",
+    "sync": "",
+    "title": ""
+  },
+  "scheduled": {
+    "disabled": "",
+    "failed": "",
+    "lastRun": "",
+    "neverRan": "",
+    "nextRun": "",
+    "ok": "",
+    "runNow": "",
+    "title": "",
+    "tz": ""
+  },
+  "toasts": {
+    "done": "",
+    "failed": ""
+  }
+}

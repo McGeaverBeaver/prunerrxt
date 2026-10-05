@@ -85,7 +85,7 @@ export function registerQueueTools(server: McpServer): void {
       const removed: Array<{ queueId: string; title: string }> = [];
       const failed: Array<{ queueId: string; error: string }> = [];
       for (const raw of queueIds) {
-        const result = removeFromQueue(raw);
+        const result = removeFromQueue(raw, 'MCP assistant');
         if (result.ok) removed.push({ queueId: result.id, title: result.title });
         else failed.push({ queueId: raw, error: result.error });
       }

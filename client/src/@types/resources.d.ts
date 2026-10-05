@@ -91,6 +91,112 @@ export default interface Resources {
       "time": "Time"
     }
   },
+  "audit": {
+    "actions": {
+      "apiKey": {
+        "disabled": "disabled the API key",
+        "enabled": "enabled the API key",
+        "regenerated": "regenerated the API key"
+      },
+      "audit": {
+        "exported": "exported the audit log",
+        "verified": "verified the audit chain"
+      },
+      "auth": {
+        "login": "signed in",
+        "loginFailed": "failed to sign in",
+        "loginRefused": "was refused (no mapped role)",
+        "logout": "signed out",
+        "sessionRevoked": "signed out a session of"
+      },
+      "collection": {
+        "protected": "protected collection",
+        "unprotected": "removed protection from collection"
+      },
+      "export": "Export",
+      "folder": {
+        "deleted": "deleted folder"
+      },
+      "item": {
+        "archived": "archived",
+        "deleteAnyway": "chose Delete anyway for",
+        "deleted": "deleted",
+        "protected": "protected",
+        "unarchived": "unarchived",
+        "unprotected": "removed protection from"
+      },
+      "mcp": {
+        "call": "called MCP tool {{tool}}"
+      },
+      "queue": {
+        "added": "queued for deletion",
+        "removed": "removed from the queue"
+      },
+      "rule": {
+        "created": "created rule",
+        "deleted": "deleted rule",
+        "disabled": "disabled rule",
+        "enabled": "enabled rule",
+        "updated": "updated rule"
+      },
+      "settings": {
+        "changed": "changed settings"
+      },
+      "system": {
+        "started": "started"
+      },
+      "task": {
+        "run": "ran task"
+      },
+      "verify": "Verify chain",
+      "verifying": "Verifying…"
+    },
+    "empty": {
+      "desc": "Logins, settings changes, rule changes and every delete, protect and archive decision land here as they happen.",
+      "title": "Nothing recorded yet"
+    },
+    "filters": {
+      "actor": "Who (name or id)",
+      "all": "Everything",
+      "apiKey": "API key",
+      "audit": "Audit log itself",
+      "auth": "Logins",
+      "collections": "Collections",
+      "folders": "Folders",
+      "items": "Titles: delete, protect, archive",
+      "kind": "Kind",
+      "mcp": "MCP tool calls",
+      "queue": "Queue",
+      "rules": "Rules",
+      "search": "Title, action or detail…",
+      "settings": "Settings",
+      "system": "System",
+      "tasks": "Manual task runs"
+    },
+    "header": {
+      "subtitle": "Who changed what, when and from where. Append-only and hash-chained; nothing here can be edited or removed.",
+      "title": "Audit log"
+    },
+    "loading": "Loading…",
+    "next": "Next page",
+    "pagination": "Showing {{from}}–{{to}} of {{total}}",
+    "prev": "Previous page",
+    "row": {
+      "details": "details"
+    },
+    "verify": {
+      "anchorBad": "Anchor #{{id}} does not match: the table may have been replaced.",
+      "anchorMismatch": "The anchor file beside the database does not match the chain",
+      "anchorOk": "Anchor #{{id}} matches.",
+      "broken": "Chain BROKEN at entry #{{id}} ({{reason}}) recorded {{at}}",
+      "chainGap": "link to the previous entry is missing",
+      "checkedAt": "checked {{time}}",
+      "hashMismatch": "hash does not match",
+      "noAnchor": "No anchor file yet; it is written on the next entry.",
+      "ok_one": "Chain intact: {{count}} entries verified",
+      "ok_other": "Chain intact: {{count}} entries verified"
+    }
+  },
   "auth": {
     "continueWith": "Continue with {{provider}}",
     "errors": {
@@ -946,6 +1052,7 @@ export default interface Resources {
     "menuLabel": "Menu",
     "nav": {
       "activity": "Activity",
+      "audit": "Audit",
       "collections": "Collections",
       "dashboard": "Dashboard",
       "folders": "Folders",
@@ -956,7 +1063,8 @@ export default interface Resources {
       "queue": "Queue",
       "recommendations": "Recommendations",
       "rules": "Rules",
-      "settings": "Settings"
+      "settings": "Settings",
+      "tasks": "Tasks"
     },
     "openMenu": "Open navigation menu",
     "storage": {
@@ -2439,6 +2547,27 @@ export default interface Resources {
         "verifying": "Verifying connection..."
       }
     },
+    "sessions": {
+      "auditLink": "Login history",
+      "description": "Everyone signed in right now. Roles come from your identity provider; every login and sign-out is in the audit log.",
+      "disabledBody": "With login disabled there are no users or sessions to show. Set AUTH_ENABLED=true to turn it on.",
+      "disabledTitle": "Login is off",
+      "emptyBody": "Sessions appear here as people sign in.",
+      "emptyTitle": "Nobody is signed in",
+      "footnote": "To change who may sign in or their role, change the groups in your identity provider or the AUTH_* environment variables.",
+      "lastSeen": "active {{time}}",
+      "loading": "Loading…",
+      "local": "local",
+      "revokeFailed": "Could not sign out",
+      "revokedMsg": "{{name}} has been signed out.",
+      "revokedTitle": "Signed out",
+      "signOut": "Sign this session out",
+      "signOutSelf": "Sign yourself out",
+      "signedIn": "signed in {{time}}",
+      "sso": "SSO",
+      "title": "Users & sessions",
+      "you": "you"
+    },
     "summary": {
       "alertsOff": "No alerts configured",
       "alertsOn": "Discord enabled",
@@ -2528,6 +2657,71 @@ export default interface Resources {
       "secretPlaceholder": "Used to sign requests with X-Prunerr-Signature",
       "sendTest": "Send test",
       "title": "Outbound Webhooks"
+    }
+  },
+  "tasks": {
+    "actions": {
+      "refresh": "Refresh"
+    },
+    "header": {
+      "subtitle": "What Prunerr is doing in the background, and what it did",
+      "title": "Tasks"
+    },
+    "loading": "Loading…",
+    "names": {
+      "availabilityPass": "Archive availability pass",
+      "captureInsightSnapshot": "Insights snapshot",
+      "captureStorageSnapshot": "Storage snapshot",
+      "captureUnraidCapacitySnapshot": "Unraid capacity snapshot",
+      "checkAvailability": "Archive availability check",
+      "monitorDiskPressure": "Disk pressure monitor",
+      "processDeletionQueue": "Queue run",
+      "scanLibraries": "Rules scan",
+      "sendDeletionReminders": "Deletion reminders",
+      "syncPlexLibrary": "Library sync",
+      "syncPlexUsers": "Users sync",
+      "verifyAuditLog": "Audit log verification"
+    },
+    "recent": {
+      "empty": "No runs recorded yet. Every scheduled, manual and start-up run lands here from now on.",
+      "title": "Recent runs",
+      "trigger": {
+        "manual": "manual",
+        "mcp": "MCP",
+        "queue": "after queueing",
+        "schedule": "scheduled",
+        "startup": "start-up"
+      }
+    },
+    "running": {
+      "availabilityPass": "Archive: checking whether queued titles can be downloaded again",
+      "between": "Between titles",
+      "deleting": "Deleting \"{{title}}\"",
+      "folderJob": "{{action}} \"{{name}}\"",
+      "idle_one": "Idle. {{count}} queued titles still need an Archive verdict.",
+      "idle_other": "Idle. {{count}} queued titles still need an Archive verdict.",
+      "passProgress": "{{done}} of {{total}} · {{replaceable}} replaceable · {{atRisk}} at risk · {{unknown}} unknown",
+      "retry": "retrying {{time}}",
+      "schedulerStopped": "scheduler stopped",
+      "searching": "Searching {{app}} for \"{{title}}\"",
+      "startedAgo": "started {{time}}",
+      "sync": "Library sync in progress",
+      "title": "Running now"
+    },
+    "scheduled": {
+      "disabled": "off",
+      "failed": "failed",
+      "lastRun": "Last run {{time}}",
+      "neverRan": "Never run",
+      "nextRun": "next {{time}}",
+      "ok": "ok",
+      "runNow": "Run now",
+      "title": "Scheduled",
+      "tz": "times in {{tz}}"
+    },
+    "toasts": {
+      "done": "Finished",
+      "failed": "Failed"
     }
   }
 }

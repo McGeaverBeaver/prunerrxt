@@ -55,6 +55,7 @@
   "menuLabel": "Menu",
   "nav": {
     "activity": "Activiteit",
+    "audit": "",
     "collections": "Collecties",
     "dashboard": "Dashboard",
     "folders": "",
@@ -65,7 +66,8 @@
     "queue": "Wachtrij",
     "recommendations": "",
     "rules": "Regels",
-    "settings": "Instellingen"
+    "settings": "Instellingen",
+    "tasks": ""
   },
   "openMenu": "Navigatiemenu openen",
   "storage": {

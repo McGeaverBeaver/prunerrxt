@@ -1288,3 +1288,113 @@ export interface InsightSnapshot {
   viewers30: number;
   transcodeRate30: number | null;
 }
+
+// Tasks page (GET /api/tasks)
+export interface TaskRun {
+  id: number;
+  name: string;
+  trigger: 'schedule' | 'manual' | 'startup' | 'queue' | 'mcp';
+  startedAt: string;
+  completedAt: string | null;
+  durationMs: number | null;
+  success: boolean | null;
+  message: string | null;
+  error: string | null;
+  data: Record<string, unknown> | null;
+}
+
+export interface ScheduledJob {
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  schedule: string;
+  isRunning: boolean;
+  runnable: boolean;
+  lastRun: string | null;
+  lastResult: { success: boolean; message: string | null; error: string | null; durationMs: number } | null;
+  nextRun: string | null;
+}
+
+export interface AvailabilityPassProgress {
+  startedAt: string;
+  total: number;
+  done: number;
+  current: { id: number; title: string; service: 'radarr' | 'sonarr' } | null;
+  replaceable: number;
+  atRisk: number;
+  unknown: number;
+  archived: number;
+  paused: number;
+}
+
+export interface TasksStatus {
+  schedulerRunning: boolean;
+  timezone: string;
+  running: {
+    availabilityPass: AvailabilityPassProgress | null;
+    archivePaused: ArchivePause[];
+    unchecked: number;
+    sync: { inProgress: boolean; latest: unknown } | null;
+    deletionJobs: DeletionJob[];
+    folderJobs: FolderJob[];
+  };
+  jobs: ScheduledJob[];
+  recent: TaskRun[];
+  descriptions: Record<string, string>;
+}
+
+// Audit log (GET /api/audit)
+export type AuditActorType = 'user' | 'apiKey' | 'mcp' | 'scheduler' | 'rule' | 'system';
+
+export interface AuditEntry {
+  id: number;
+  at: string;
+  actorType: AuditActorType;
+  actorName: string;
+  actorId: string | null;
+  actorRole: string | null;
+  source: 'web' | 'api' | 'mcp' | 'scheduler' | 'system';
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  targetTitle: string | null;
+  details: Record<string, unknown> | null;
+  ip: string | null;
+  prevHash: string | null;
+  hash: string;
+}
+
+export interface AuditVerification {
+  ok: boolean;
+  entries: number;
+  checkedAt: string;
+  firstBreak: { id: number; at: string; reason: 'hash_mismatch' | 'chain_gap' } | null;
+  anchor: { id: number; hash: string; at: string } | null;
+  anchorMatches: boolean | null;
+  lastHash: string | null;
+}
+
+export interface AuditFilters {
+  limit?: number;
+  offset?: number;
+  action?: string;
+  actor?: string;
+  search?: string;
+  since?: string;
+}
+
+// Login sessions (GET /api/auth/sessions)
+export interface LoginSession {
+  id: string;
+  userKey: string;
+  username: string;
+  displayName: string | null;
+  email: string | null;
+  role: 'admin' | 'operator' | 'viewer';
+  provider: 'oidc' | 'local';
+  groups: string[];
+  createdAt: string;
+  expiresAt: string;
+  lastSeenAt: string;
+  current: boolean;
+}

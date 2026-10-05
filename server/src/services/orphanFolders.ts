@@ -20,6 +20,7 @@ import settingsRepo from '../db/repositories/settings';
 import { logActivity } from '../db/repositories/activity';
 import logger from '../utils/logger';
 import { getRadarrService, getSonarrService } from './init';
+import { namedActor, recordAudit } from './audit';
 import { ServiceNotConfiguredError, serviceLabel, type DiagnosticsService } from './serviceDiagnostics';
 import type { ArrRootFolder } from './arrDiagnostics';
 import type { RadarrMovie, SonarrSeries } from './types';
@@ -844,6 +845,7 @@ export async function deleteFolder(id: string, options: { actorName: string }): 
   logger.info(`Deleted orphan folder ${folder.path} (${real}): ${summary.fileCount} file(s), ${summary.sizeBytes} bytes`);
 
   try {
+    recordAudit({ action: 'folder.deleted', actor: namedActor(options.actorName, 'user'), targetType: 'folder', targetId: id, targetTitle: folder.name, details: { path: folder.path, service: folder.service, sizeBytes: folder.sizeBytes } });
     logActivity({
       eventType: 'manual_action',
       action: 'folder_deleted',

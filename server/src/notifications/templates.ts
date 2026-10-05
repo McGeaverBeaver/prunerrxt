@@ -755,7 +755,8 @@ export type NotificationEvent =
   | 'SCAN_COMPLETE'
   | 'SCAN_ERROR'
   | 'DELETION_ERROR'
-  | 'DISK_PRESSURE_TRIGGERED';
+  | 'DISK_PRESSURE_TRIGGERED'
+  | 'AUDIT_LOG_BROKEN';
 
 /**
  * Get plain text message for any notification event.
@@ -778,6 +779,8 @@ export function getPlainTextMessage(event: NotificationEvent, data: Notification
       return getDeletionErrorText(data as unknown as DeletionErrorData, t);
     case 'DISK_PRESSURE_TRIGGERED':
       return getDiskPressureText(data as unknown as DiskPressureData, t);
+    case 'AUDIT_LOG_BROKEN':
+      return `Prunerr audit log integrity failure: ${String((data as Record<string, unknown>)['where'] ?? 'the chain does not verify')}. Entries checked: ${String((data as Record<string, unknown>)['entries'] ?? '?')}. Someone or something has altered the audit log; review it before trusting its history.`;
     default:
       return t('fallback', { event });
   }
@@ -804,6 +807,12 @@ export function getDiscordMessage(event: NotificationEvent, data: NotificationDa
       return getDeletionErrorDiscord(data as unknown as DeletionErrorData, t);
     case 'DISK_PRESSURE_TRIGGERED':
       return getDiskPressureDiscord(data as unknown as DiskPressureData, t);
+    case 'AUDIT_LOG_BROKEN':
+      return {
+        content: `**Audit log integrity failure**\n${String((data as Record<string, unknown>)['where'] ?? 'the chain does not verify')}. Review the audit log before trusting its history.`,
+        username: t('common.brand'),
+        avatar_url: AVATAR_URL,
+      };
     default:
       return { content: t('fallbackDiscord', { event }), username: t('common.brand'), avatar_url: AVATAR_URL };
   }

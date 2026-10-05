@@ -59,6 +59,7 @@
   "menuLabel": "Menu",
   "nav": {
     "activity": "Attività",
+    "audit": "",
     "collections": "Raccolte",
     "dashboard": "Dashboard",
     "folders": "",
@@ -69,7 +70,8 @@
     "queue": "Coda",
     "recommendations": "",
     "rules": "Regole",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "tasks": ""
   },
   "openMenu": "Apri il menu di navigazione",
   "storage": {

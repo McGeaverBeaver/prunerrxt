@@ -133,6 +133,21 @@ identity is ever different (`git config user.email`), set it before committing.
   cycle), run by the `checkAvailability` task and before the nightly queue
   run. MCP: `check_availability`, `archive_items`, `unarchive_items`,
   `clear_availability_hold`. See docs/archive.md.
+- Tasks page (`routes/tasks.ts`, client `components/Tasks/`): `task_runs`
+  rows are written by the scheduler's `executeTask` for every run and by
+  Archive's background pass; `getAvailabilityStatus().pass` is the live
+  progress. Only the allowlist in `routes/tasks.ts` is runnable by hand
+  (never the queue run).
+- Audit log (`services/audit.ts`, `audit_log` table, client
+  `components/Audit/`): append-only, each row HMAC-SHA256-chained to the
+  previous one with `AUDIT_SECRET` or `audit.secret` beside the database;
+  anchor in `audit.anchor.json`. Record with `recordAudit` (named actor) or
+  `auditRequest` (actor from the request); redact secrets with `redact`.
+  Hooks live in auth routes, settings, rules, mediaActions, deletion,
+  deletionQueue, orphanFolders, collections and the MCP `defineTool`
+  wrapper. Never add a route or tool that updates or deletes rows. Daily
+  `verifyAuditLog` task and stack health raise a break; see
+  docs/tasks-and-audit.md.
 - Permission repair (`services/permissions.ts`) relies on the Dockerfile
   granting the Node binary `cap_chown,cap_fowner`; it only ever runs on paths
   resolved inside a folder mapping.

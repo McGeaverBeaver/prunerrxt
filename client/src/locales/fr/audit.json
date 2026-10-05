@@ -1,0 +1,107 @@
+{
+  "actions": {
+    "apiKey": {
+      "disabled": "",
+      "enabled": "",
+      "regenerated": ""
+    },
+    "audit": {
+      "exported": "",
+      "verified": ""
+    },
+    "auth": {
+      "login": "",
+      "loginFailed": "",
+      "loginRefused": "",
+      "logout": "",
+      "sessionRevoked": ""
+    },
+    "collection": {
+      "protected": "",
+      "unprotected": ""
+    },
+    "export": "",
+    "folder": {
+      "deleted": ""
+    },
+    "item": {
+      "archived": "",
+      "deleteAnyway": "",
+      "deleted": "",
+      "protected": "",
+      "unarchived": "",
+      "unprotected": ""
+    },
+    "mcp": {
+      "call": ""
+    },
+    "queue": {
+      "added": "",
+      "removed": ""
+    },
+    "rule": {
+      "created": "",
+      "deleted": "",
+      "disabled": "",
+      "enabled": "",
+      "updated": ""
+    },
+    "settings": {
+      "changed": ""
+    },
+    "system": {
+      "started": ""
+    },
+    "task": {
+      "run": ""
+    },
+    "verify": "",
+    "verifying": ""
+  },
+  "empty": {
+    "desc": "",
+    "title": ""
+  },
+  "filters": {
+    "actor": "",
+    "all": "",
+    "apiKey": "",
+    "audit": "",
+    "auth": "",
+    "collections": "",
+    "folders": "",
+    "items": "",
+    "kind": "",
+    "mcp": "",
+    "queue": "",
+    "rules": "",
+    "search": "",
+    "settings": "",
+    "system": "",
+    "tasks": ""
+  },
+  "header": {
+    "subtitle": "",
+    "title": ""
+  },
+  "loading": "",
+  "next": "",
+  "pagination": "",
+  "prev": "",
+  "row": {
+    "details": ""
+  },
+  "verify": {
+    "anchorBad": "",
+    "anchorMismatch": "",
+    "anchorOk": "",
+    "broken": "",
+    "chainGap": "",
+    "checkedAt": "",
+    "hashMismatch": "",
+    "noAnchor": "",
+    "ok_one": "",
+    "ok_many": "",
+    "ok_other": ""
+  }
+}

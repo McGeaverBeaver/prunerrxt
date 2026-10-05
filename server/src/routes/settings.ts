@@ -18,6 +18,7 @@ import { JellyfinService } from '../services/jellyfin';
 import { getConfiguredServerType, isMediaServerType } from '../services/mediaServer';
 import { refreshServices, initializeServices, applyDiskPressureSchedule } from '../services/init';
 import { getScheduler } from '../scheduler';
+import { auditRequest, redact } from '../services/audit';
 import { getNotificationService } from '../notifications';
 import { getFixedT } from '../i18n';
 import { createBackup, restoreFromFile, validateBackupFile } from '../services/backup';
@@ -476,6 +477,7 @@ router.put('/api-key', validateBody(ApiKeyUpdateSchema), (req: Request, res: Res
   try {
     const { enabled } = req.body as z.infer<typeof ApiKeyUpdateSchema>;
     setApiKeyEnabled(enabled);
+    auditRequest(req, res, { action: enabled ? 'apiKey.enabled' : 'apiKey.disabled', targetType: 'apiKey' });
     logger.info(`API key access ${enabled ? 'enabled' : 'disabled'} in settings`);
     res.json({ success: true, data: apiKeyInfo() });
   } catch (error) {
@@ -503,6 +505,7 @@ router.post('/api-key/regenerate', (_req: Request, res: Response) => {
     settingsRepo.set({ key: 'api_key', value: newKey });
     clearApiKeyCache();
     logger.info('API key regenerated');
+    auditRequest(_req, res, { action: 'apiKey.regenerated', targetType: 'apiKey' });
 
     res.json({
       success: true,
@@ -640,6 +643,8 @@ router.put('/', async (req: Request, res: Response) => {
   try {
     const settings = req.body;
     const savedSettings: Array<{ key: string; value: string }> = [];
+    // For the audit log: what each saved key held before this request.
+    const before = new Map(settingsRepo.getAll().map((s) => [s.key, s.value] as const));
 
     // Save the selected media server backend (plex | jellyfin | emby)
     if (settings.mediaServerType !== undefined && settings.mediaServerType !== null) {
@@ -847,6 +852,14 @@ router.put('/', async (req: Request, res: Response) => {
     }
 
     logger.info(`Saved ${savedSettings.length} settings`);
+    const changed = savedSettings.filter((s) => before.get(s.key) !== s.value);
+    if (changed.length > 0) {
+      auditRequest(req, res, {
+        action: 'settings.changed',
+        targetType: 'settings',
+        details: { changes: changed.map((s) => ({ key: s.key, from: redact(before.get(s.key) ?? null, s.key), to: redact(s.value, s.key) })) },
+      });
+    }
 
     // Refresh service instances if service settings were updated
     const hasServiceSettings = savedSettings.some(s =>

@@ -1,0 +1,106 @@
+{
+  "actions": {
+    "apiKey": {
+      "disabled": "disabled the API key",
+      "enabled": "enabled the API key",
+      "regenerated": "regenerated the API key"
+    },
+    "audit": {
+      "exported": "exported the audit log",
+      "verified": "verified the audit chain"
+    },
+    "auth": {
+      "login": "signed in",
+      "loginFailed": "failed to sign in",
+      "loginRefused": "was refused (no mapped role)",
+      "logout": "signed out",
+      "sessionRevoked": "signed out a session of"
+    },
+    "collection": {
+      "protected": "protected collection",
+      "unprotected": "removed protection from collection"
+    },
+    "export": "Export",
+    "folder": {
+      "deleted": "deleted folder"
+    },
+    "item": {
+      "archived": "archived",
+      "deleteAnyway": "chose Delete anyway for",
+      "deleted": "deleted",
+      "protected": "protected",
+      "unarchived": "unarchived",
+      "unprotected": "removed protection from"
+    },
+    "mcp": {
+      "call": "called MCP tool {{tool}}"
+    },
+    "queue": {
+      "added": "queued for deletion",
+      "removed": "removed from the queue"
+    },
+    "rule": {
+      "created": "created rule",
+      "deleted": "deleted rule",
+      "disabled": "disabled rule",
+      "enabled": "enabled rule",
+      "updated": "updated rule"
+    },
+    "settings": {
+      "changed": "changed settings"
+    },
+    "system": {
+      "started": "started"
+    },
+    "task": {
+      "run": "ran task"
+    },
+    "verify": "Verify chain",
+    "verifying": "Verifying…"
+  },
+  "empty": {
+    "desc": "Logins, settings changes, rule changes and every delete, protect and archive decision land here as they happen.",
+    "title": "Nothing recorded yet"
+  },
+  "filters": {
+    "actor": "Who (name or id)",
+    "all": "Everything",
+    "apiKey": "API key",
+    "audit": "Audit log itself",
+    "auth": "Logins",
+    "collections": "Collections",
+    "folders": "Folders",
+    "items": "Titles: delete, protect, archive",
+    "kind": "Kind",
+    "mcp": "MCP tool calls",
+    "queue": "Queue",
+    "rules": "Rules",
+    "search": "Title, action or detail…",
+    "settings": "Settings",
+    "system": "System",
+    "tasks": "Manual task runs"
+  },
+  "header": {
+    "subtitle": "Who changed what, when and from where. Append-only and hash-chained; nothing here can be edited or removed.",
+    "title": "Audit log"
+  },
+  "loading": "Loading…",
+  "next": "Next page",
+  "pagination": "Showing {{from}}–{{to}} of {{total}}",
+  "prev": "Previous page",
+  "row": {
+    "details": "details"
+  },
+  "verify": {
+    "anchorBad": "Anchor #{{id}} does not match: the table may have been replaced.",
+    "anchorMismatch": "The anchor file beside the database does not match the chain",
+    "anchorOk": "Anchor #{{id}} matches.",
+    "broken": "Chain BROKEN at entry #{{id}} ({{reason}}) recorded {{at}}",
+    "chainGap": "link to the previous entry is missing",
+    "checkedAt": "checked {{time}}",
+    "hashMismatch": "hash does not match",
+    "noAnchor": "No anchor file yet; it is written on the next entry.",
+    "ok_one": "Chain intact: {{count}} entries verified",
+    "ok_other": "Chain intact: {{count}} entries verified"
+  }
+}

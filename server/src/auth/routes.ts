@@ -7,6 +7,7 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import logger from '../utils/logger';
+import { auditRequest, recordAudit } from '../services/audit';
 import { getAuthConfig, type Role } from './config';
 import { ROLE_DESCRIPTIONS, roleFromGroups } from './roles';
 import {
@@ -17,6 +18,7 @@ import {
   setSessionCookie,
   requestIsSecure,
   type AuthSession,
+  listSessions,
 } from './sessions';
 import { verifyLocalCredentials } from './local';
 import { beginOidcLogin, completeOidcLogin, OidcError } from './oidc';
@@ -157,6 +159,7 @@ router.post('/login/local', (req: Request, res: Response) => {
   if (!identity) {
     recordFailure(ip);
     logger.warn(`Local login failed for "${parsed.data.username}" from ${ip}`);
+    recordAudit({ action: 'auth.login_failed', actor: { type: 'user', name: parsed.data.username, id: null }, source: 'web', ip, details: { provider: 'local' } });
     res.status(401).json({ success: false, error: 'Incorrect username or password.' });
     return;
   }
@@ -173,6 +176,7 @@ router.post('/login/local', (req: Request, res: Response) => {
   });
   setSessionCookie(req, res, token, session.expiresAt);
   logger.info(`Local login: ${identity.username} (${identity.role})`);
+  recordAudit({ action: 'auth.login', actor: { type: 'user', name: identity.username, id: session.key, role: identity.role }, source: 'web', ip, details: { provider: 'local', sessionId: session.id.slice(0, 8) } });
   res.json({ success: true, data: { user: publicUser(session) } });
 });
 
@@ -223,6 +227,7 @@ router.get('/oidc/callback', async (req: Request, res: Response) => {
     const role: Role | null = roleFromGroups(identity.groups, config.oidc);
     if (!role) {
       logger.warn(`Single sign-on: "${identity.username}" is in no mapped group (groups: ${identity.groups.join(', ') || 'none'}); refused`);
+      recordAudit({ action: 'auth.login_refused', actor: { type: 'user', name: identity.username, id: `oidc:${identity.subject}` }, source: 'web', ip: req.ip ?? null, details: { provider: 'oidc', reason: 'no_role', groups: identity.groups } });
       res.redirect('/login?error=no_role');
       return;
     }
@@ -238,6 +243,7 @@ router.get('/oidc/callback', async (req: Request, res: Response) => {
     });
     setSessionCookie(req, res, token, session.expiresAt);
     logger.info(`Single sign-on: ${identity.username} (${role}) via ${config.oidc.providerName}`);
+    recordAudit({ action: 'auth.login', actor: { type: 'user', name: identity.displayName || identity.username, id: session.key, role }, source: 'web', ip: req.ip ?? null, details: { provider: 'oidc', providerName: config.oidc.providerName, groups: identity.groups, sessionId: session.id.slice(0, 8) } });
     res.redirect(returnTo);
   } catch (error) {
     const code = error instanceof OidcError ? error.code : 'provider';
@@ -252,9 +258,46 @@ router.post('/logout', (req: Request, res: Response) => {
   if (session) {
     deleteSession(session.id);
     logger.info(`Logout: ${session.username}`);
+    recordAudit({ action: 'auth.logout', actor: { type: 'user', name: session.displayName || session.username, id: session.key, role: session.role }, source: 'web', ip: req.ip ?? null });
   }
   clearSessionCookie(req, res);
   res.json({ success: true });
+});
+
+// GET /api/auth/sessions - Every live login session (admin only; see roles.ts)
+router.get('/sessions', (req: Request, res: Response) => {
+  const me = sessionFromRequest(req);
+  res.json({
+    success: true,
+    data: listSessions().map((s) => ({
+      id: s.id.slice(0, 8),
+      userKey: s.key,
+      username: s.username,
+      displayName: s.displayName,
+      email: s.email,
+      role: s.role,
+      provider: s.provider,
+      groups: s.groups,
+      createdAt: s.createdAt,
+      expiresAt: s.expiresAt,
+      lastSeenAt: s.lastSeenAt,
+      current: me?.id === s.id,
+    })),
+  });
+});
+
+// DELETE /api/auth/sessions/:id - Sign a session out (the id prefix the list shows)
+router.delete('/sessions/:id', (req: Request, res: Response) => {
+  const prefix = String(req.params['id'] ?? '');
+  const target = prefix.length >= 8 ? listSessions().find((s) => s.id.startsWith(prefix)) : null;
+  if (!target) {
+    res.status(404).json({ success: false, error: 'Session not found' });
+    return;
+  }
+  deleteSession(target.id);
+  logger.info(`Session revoked for ${target.username}`);
+  auditRequest(req, res, { action: 'auth.session_revoked', targetType: 'user', targetId: target.key, targetTitle: target.displayName || target.username, details: { sessionId: prefix, role: target.role } });
+  res.json({ success: true, message: `${target.displayName || target.username} has been signed out` });
 });
 
 export default router;

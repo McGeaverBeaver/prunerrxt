@@ -2,6 +2,7 @@ import cron, { ScheduledTask } from 'node-cron';
 import { CronExpressionParser } from 'cron-parser';
 import logger from '../utils/logger';
 import settingsRepo from '../db/repositories/settings';
+import taskRunsRepo, { type TaskTrigger } from '../db/repositories/taskRuns';
 import {
   scanLibraries,
   processDeletionQueue,
@@ -13,6 +14,7 @@ import {
   monitorDiskPressure,
   captureInsightSnapshot,
   checkAvailability,
+  verifyAuditLog,
   getTask,
   getAvailableTasks,
   type TaskResult,
@@ -36,12 +38,13 @@ export interface SchedulerConfig {
     monitorDiskPressure: string;
     captureInsightSnapshot: string;
     checkAvailability: string;
+    verifyAuditLog: string;
   };
   timezone: string;
 }
 
 const DEFAULT_CONFIG: SchedulerConfig = {
-  enabledTasks: ['syncPlexLibrary', 'scanLibraries', 'processDeletionQueue', 'sendDeletionReminders', 'captureStorageSnapshot', 'captureUnraidCapacitySnapshot', 'syncPlexUsers', 'monitorDiskPressure', 'captureInsightSnapshot', 'checkAvailability'],
+  enabledTasks: ['syncPlexLibrary', 'scanLibraries', 'processDeletionQueue', 'sendDeletionReminders', 'captureStorageSnapshot', 'captureUnraidCapacitySnapshot', 'syncPlexUsers', 'monitorDiskPressure', 'captureInsightSnapshot', 'checkAvailability', 'verifyAuditLog'],
   schedules: {
     syncPlexLibrary: '0 2 * * *', // Daily at 2 AM (before scan, so rules see fresh catalog)
     scanLibraries: '0 3 * * *', // Daily at 3 AM
@@ -55,6 +58,7 @@ const DEFAULT_CONFIG: SchedulerConfig = {
     // Every 15 minutes (node-cron rejects the "7/15" step form, so the minutes are spelled out):
     // a no-op when every queued item has a fresh verdict; probes a paused app.
     checkAvailability: '7,22,37,52 * * * *',
+    verifyAuditLog: '30 4 * * *', // Daily at 4:30 AM: walk the audit chain and raise an alert on a break
   },
   timezone: 'UTC',
 };
@@ -226,6 +230,11 @@ export class Scheduler {
       this.scheduleJob('checkAvailability', this.config.schedules.checkAvailability, checkAvailability);
     }
 
+    // Audit log: daily chain verification
+    if (this.config.enabledTasks.includes('verifyAuditLog')) {
+      this.scheduleJob('verifyAuditLog', this.config.schedules.verifyAuditLog, verifyAuditLog);
+    }
+
     this.isRunning = true;
     logger.info(`Scheduler started with ${this.jobs.size} scheduled jobs`);
   }
@@ -326,7 +335,7 @@ export class Scheduler {
   /**
    * Execute a task and track its status
    */
-  private async executeTask(name: string, taskFn: TaskFunction): Promise<TaskResult | null> {
+  private async executeTask(name: string, taskFn: TaskFunction, trigger: TaskTrigger = 'schedule'): Promise<TaskResult | null> {
     const status = this.jobStatus.get(name);
 
     if (status?.isRunning) {
@@ -340,6 +349,12 @@ export class Scheduler {
     }
 
     logger.info(`Executing scheduled task: ${name}`);
+    let runId: number | null = null;
+    try {
+      runId = taskRunsRepo.start(name, trigger);
+    } catch (error) {
+      logger.debug(`Could not record the start of task "${name}": ${(error as Error).message}`);
+    }
 
     try {
       const result = await taskFn();
@@ -350,6 +365,13 @@ export class Scheduler {
         status.nextRun = this.getNextRunTime(status.schedule);
       }
       this.persistJobHistory(name);
+      if (runId !== null) {
+        try {
+          taskRunsRepo.finish(runId, { success: result.success, message: result.message ?? null, error: result.error ?? null, data: result.data ?? null, completedAt: result.completedAt });
+        } catch (error) {
+          logger.debug(`Could not record the end of task "${name}": ${(error as Error).message}`);
+        }
+      }
 
       if (result.success) {
         logger.info(`Task "${name}" completed successfully in ${result.durationMs}ms`);
@@ -374,6 +396,13 @@ export class Scheduler {
         status.nextRun = this.getNextRunTime(status.schedule);
       }
       this.persistJobHistory(name);
+      if (runId !== null) {
+        try {
+          taskRunsRepo.finish(runId, { success: false, error: errorMessage });
+        } catch {
+          /* already logged below */
+        }
+      }
 
       logger.error(`Task "${name}" threw an exception:`, error);
       return null;
@@ -387,7 +416,7 @@ export class Scheduler {
   /**
    * Run a task immediately by name
    */
-  async runNow(taskName: string): Promise<TaskResult> {
+  async runNow(taskName: string, trigger: TaskTrigger = 'manual'): Promise<TaskResult> {
     logger.info(`Manual execution requested for task: ${taskName}`);
 
     const taskFn = getTask(taskName);
@@ -398,7 +427,7 @@ export class Scheduler {
       throw new Error(error);
     }
 
-    const result = await this.executeTask(taskName, taskFn);
+    const result = await this.executeTask(taskName, taskFn, trigger);
 
     if (!result) {
       throw new Error(`Task "${taskName}" is currently running`);

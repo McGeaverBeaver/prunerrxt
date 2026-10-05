@@ -638,6 +638,27 @@
       "verifying": "A verificar a ligação..."
     }
   },
+  "sessions": {
+    "auditLink": "",
+    "description": "",
+    "disabledBody": "",
+    "disabledTitle": "",
+    "emptyBody": "",
+    "emptyTitle": "",
+    "footnote": "",
+    "lastSeen": "",
+    "loading": "",
+    "local": "",
+    "revokedMsg": "",
+    "revokedTitle": "",
+    "revokeFailed": "",
+    "signedIn": "",
+    "signOut": "",
+    "signOutSelf": "",
+    "sso": "",
+    "title": "",
+    "you": ""
+  },
   "summary": {
     "alertsOff": "Nenhum alerta configurado",
     "alertsOn": "Discord ativado",

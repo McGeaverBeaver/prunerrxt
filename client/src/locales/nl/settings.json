@@ -628,6 +628,27 @@
       "verifying": "Verbinding controleren..."
     }
   },
+  "sessions": {
+    "auditLink": "",
+    "description": "",
+    "disabledBody": "",
+    "disabledTitle": "",
+    "emptyBody": "",
+    "emptyTitle": "",
+    "footnote": "",
+    "lastSeen": "",
+    "loading": "",
+    "local": "",
+    "revokedMsg": "",
+    "revokedTitle": "",
+    "revokeFailed": "",
+    "signedIn": "",
+    "signOut": "",
+    "signOutSelf": "",
+    "sso": "",
+    "title": "",
+    "you": ""
+  },
   "summary": {
     "alertsOff": "Geen meldingen geconfigureerd",
     "alertsOn": "Discord ingeschakeld",

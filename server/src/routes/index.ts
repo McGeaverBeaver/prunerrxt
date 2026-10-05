@@ -17,6 +17,8 @@ import usersRouter from './users';
 import collectionsRouter from './collections';
 import webhooksRouter from './webhooks';
 import insightsRouter from './insights';
+import tasksRouter from './tasks';
+import auditRouter from './audit';
 import authRouter from '../auth/routes';
 
 const router = Router();
@@ -41,5 +43,7 @@ router.use('/users', usersRouter);
 router.use('/collections', collectionsRouter);
 router.use('/webhooks', webhooksRouter);
 router.use('/insights', insightsRouter);
+router.use('/tasks', tasksRouter);
+router.use('/audit', auditRouter);
 
 export default router;

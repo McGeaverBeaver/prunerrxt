@@ -17,6 +17,7 @@ import type { PanelProps } from '../types';
 import { Toggle } from '../components/Toggle';
 import { McpSection } from './system/McpSection';
 import { LoginSection } from './system/LoginSection';
+import { SessionsSection } from './system/SessionsSection';
 import { ApiKeyUsage } from './system/ApiKeyUsage';
 
 /** How often the usage history refreshes while the panel is open. */
@@ -461,6 +462,7 @@ export default function SystemPanel({ registerSection }: PanelProps) {
       />
 
       <LoginSection registerSection={registerSection} />
+      <SessionsSection registerSection={registerSection} />
 
       <PanelSection
         id="backup-restore"

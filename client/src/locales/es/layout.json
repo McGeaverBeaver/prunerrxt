@@ -59,6 +59,7 @@
   "menuLabel": "Menú",
   "nav": {
     "activity": "Actividad",
+    "audit": "",
     "collections": "Colecciones",
     "dashboard": "Panel",
     "folders": "",
@@ -69,7 +70,8 @@
     "queue": "Cola",
     "recommendations": "",
     "rules": "Reglas",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "tasks": ""
   },
   "openMenu": "Abrir el menú de navegación",
   "storage": {

@@ -628,6 +628,27 @@
       "verifying": "Verifying connection..."
     }
   },
+  "sessions": {
+    "auditLink": "Login history",
+    "description": "Everyone signed in right now. Roles come from your identity provider; every login and sign-out is in the audit log.",
+    "disabledBody": "With login disabled there are no users or sessions to show. Set AUTH_ENABLED=true to turn it on.",
+    "disabledTitle": "Login is off",
+    "emptyBody": "Sessions appear here as people sign in.",
+    "emptyTitle": "Nobody is signed in",
+    "footnote": "To change who may sign in or their role, change the groups in your identity provider or the AUTH_* environment variables.",
+    "lastSeen": "active {{time}}",
+    "loading": "Loading…",
+    "local": "local",
+    "revokedMsg": "{{name}} has been signed out.",
+    "revokedTitle": "Signed out",
+    "revokeFailed": "Could not sign out",
+    "signedIn": "signed in {{time}}",
+    "signOut": "Sign this session out",
+    "signOutSelf": "Sign yourself out",
+    "sso": "SSO",
+    "title": "Users & sessions",
+    "you": "you"
+  },
   "summary": {
     "alertsOff": "No alerts configured",
     "alertsOn": "Discord enabled",

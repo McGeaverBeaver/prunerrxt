@@ -196,6 +196,12 @@ export function readSession(token: string): AuthSession | null {
   return session;
 }
 
+/** Every live session, newest activity first, for the Users panel. */
+export function listSessions(): AuthSession[] {
+  purgeExpiredSessions();
+  return getDatabase().prepare<[], SessionRow>('SELECT * FROM auth_sessions ORDER BY last_seen_at DESC').all().map(rowToSession);
+}
+
 export function deleteSession(id: string): void {
   getDatabase().prepare('DELETE FROM auth_sessions WHERE id = ?').run(id);
 }

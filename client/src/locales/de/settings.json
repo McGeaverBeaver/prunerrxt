@@ -628,6 +628,27 @@
       "verifying": "Verbindung wird überprüft..."
     }
   },
+  "sessions": {
+    "auditLink": "",
+    "description": "",
+    "disabledBody": "",
+    "disabledTitle": "",
+    "emptyBody": "",
+    "emptyTitle": "",
+    "footnote": "",
+    "lastSeen": "",
+    "loading": "",
+    "local": "",
+    "revokedMsg": "",
+    "revokedTitle": "",
+    "revokeFailed": "",
+    "signedIn": "",
+    "signOut": "",
+    "signOutSelf": "",
+    "sso": "",
+    "title": "",
+    "you": ""
+  },
   "summary": {
     "alertsOff": "Keine Benachrichtigungen konfiguriert",
     "alertsOn": "Discord aktiviert",

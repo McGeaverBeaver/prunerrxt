@@ -15,6 +15,9 @@ import {
   mcpApi,
   foldersApi,
   insightsApi,
+  tasksApi,
+  auditApi,
+  sessionsApi,
 } from '@/services/api';
 import { mediaServerName } from '@/lib/mediaServer';
 import type {
@@ -29,6 +32,7 @@ import type {
   PermissionSettings,
   FolderJobAction,
   FolderJobParams,
+  AuditFilters,
 } from '@/types';
 
 // Query Keys
@@ -359,6 +363,40 @@ function useArchiveMutation<TArgs, TResult>(fn: (args: TArgs) => Promise<TResult
       queryClient.invalidateQueries({ queryKey: queryKeys.stats });
     },
   });
+}
+
+export function useTasksStatus(pollMs: number = 5_000) {
+  return useQuery({ queryKey: ['tasks'] as const, queryFn: tasksApi.status, refetchInterval: pollMs });
+}
+
+export function useRunTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => tasksApi.run(name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue });
+      queryClient.invalidateQueries({ queryKey: ['library'] });
+    },
+  });
+}
+
+export function useAuditLog(filters: AuditFilters) {
+  return useQuery({ queryKey: ['audit', filters] as const, queryFn: () => auditApi.list(filters), placeholderData: (prev) => prev });
+}
+
+export function useVerifyAudit() {
+  const queryClient = useQueryClient();
+  return useMutation({ mutationFn: auditApi.verify, onSuccess: () => queryClient.invalidateQueries({ queryKey: ['audit'] }) });
+}
+
+export function useLoginSessions(enabled = true) {
+  return useQuery({ queryKey: ['auth', 'sessions'] as const, queryFn: sessionsApi.list, enabled, refetchInterval: 60_000 });
+}
+
+export function useRevokeSession() {
+  const queryClient = useQueryClient();
+  return useMutation({ mutationFn: sessionsApi.revoke, onSuccess: () => queryClient.invalidateQueries({ queryKey: ['auth', 'sessions'] }) });
 }
 
 /** Polled while the Queue page is open so a pause shows up and clears on its own. */

@@ -10,6 +10,8 @@ import {
   HeartPulse,
   ShieldCheck,
   Lightbulb,
+  ListChecks,
+  Scale,
 } from 'lucide-react';
 import {
   DashboardIcon,
@@ -64,6 +66,8 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar({ onCl
     { id: 'protected', label: t('nav.protected', 'Protected'), href: '/protected', icon: ShieldCheck },
     { id: 'history', label: t('nav.history', 'History'), href: '/history', icon: HistoryIcon },
     { id: 'activity', label: t('nav.activity', 'Activity'), href: '/activity', icon: ActivityIcon },
+    { id: 'tasks', label: t('nav.tasks', 'Tasks'), href: '/tasks', icon: ListChecks },
+    { id: 'audit', label: t('nav.audit', 'Audit'), href: '/audit', icon: Scale },
     { id: 'insights', label: t('nav.insights', 'Insights'), href: '/insights', icon: HeartPulse },
     { id: 'settings', label: t('nav.settings', 'Settings'), href: '/settings', icon: SettingsIcon },
   ];

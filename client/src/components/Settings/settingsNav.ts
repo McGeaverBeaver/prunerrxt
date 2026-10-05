@@ -101,6 +101,7 @@ export const SETTINGS_NAV: NavCategory[] = [
       { id: 'api-key', labelKey: 'nav.sub.apiKey', fallback: 'API key' },
       { id: 'mcp', labelKey: 'nav.sub.mcp', fallback: 'AI assistant (MCP)' },
       { id: 'login', labelKey: 'nav.sub.login', fallback: 'Login & access' },
+      { id: 'sessions', labelKey: 'nav.sub.sessions', fallback: 'Users & sessions' },
       { id: 'backup-restore', labelKey: 'nav.sub.backupRestore', fallback: 'Backup & restore' },
     ],
     keywords:

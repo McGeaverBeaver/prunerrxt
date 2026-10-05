@@ -723,6 +723,49 @@ const migrations: Migration[] = [
       UPDATE media_items SET protected_at = updated_at WHERE is_protected = 1 AND protected_at IS NULL;
     `,
   },
+  {
+    version: 32,
+    name: 'task_runs_and_audit_log',
+    up: `
+      -- One row per background task run (scheduled, manual, start-up), for
+      -- the Tasks page.
+      CREATE TABLE IF NOT EXISTS task_runs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        trigger TEXT NOT NULL,
+        started_at TEXT NOT NULL,
+        completed_at TEXT,
+        duration_ms INTEGER,
+        success INTEGER,
+        message TEXT,
+        error TEXT,
+        data TEXT
+      );
+      CREATE INDEX IF NOT EXISTS idx_task_runs_name ON task_runs(name, id);
+
+      -- The audit log (services/audit.ts): append-only, each row HMAC-chained
+      -- to the previous one. Nothing updates or deletes rows here.
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        at TEXT NOT NULL,
+        actor_type TEXT NOT NULL,
+        actor_name TEXT NOT NULL,
+        actor_id TEXT,
+        actor_role TEXT,
+        source TEXT NOT NULL,
+        action TEXT NOT NULL,
+        target_type TEXT,
+        target_id TEXT,
+        target_title TEXT,
+        details TEXT,
+        ip TEXT,
+        prev_hash TEXT,
+        hash TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action, id);
+      CREATE INDEX IF NOT EXISTS idx_audit_log_actor ON audit_log(actor_name, id);
+    `,
+  },
 ];
 
 // Schema version tracking table

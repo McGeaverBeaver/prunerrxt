@@ -44,6 +44,10 @@ You set up rules like "delete movies nobody's watched in 6 months that are over 
 
 - **Smart Deletion** &mdash; Grace periods, four deletion actions (unmonitor, delete files, full removal, etc.), Seerr request resets, and a review queue. Nothing gets deleted without your say-so. [More &rarr;](https://github.com/helliott20/prunerr/wiki/Deletion-Management)
 
+- **Tasks** &mdash; One page for what runs in the background: the Archive pass with live progress, syncs and jobs in flight, every scheduled job with its last and next run, and the recent run history. [More &rarr;](docs/tasks-and-audit.md)
+
+- **Audit log** &mdash; Who changed what, when and from where: logins, settings and rule changes, every delete, protect and archive decision, MCP tool calls. Append-only and HMAC hash-chained, with a verify button, a daily check and an anchor outside the database, so tampering is detectable and, without the secret, unforgeable. [More &rarr;](docs/tasks-and-audit.md)
+
 - **Diagnostics** &mdash; Sonarr's and Radarr's health, version, command queue, deletion setup (recycle bin, root folders, the cross-filesystem trap) and a filtered log tail, under Settings → Connections, so a failed delete is explained without leaving Prunerr.
 
 - **Protected** &mdash; One page for everything Prunerr has promised to leave alone: titles protected by hand, titles Archive kept, and protected collections, each with why and since when, and releasable from the row.
@@ -145,6 +149,7 @@ Full docs are in the **[Wiki](https://github.com/helliott20/prunerr/wiki)**:
 - [Insights](docs/insights.md) &mdash; Stack health, library quality, watch patterns, playback friction
 - [Watch state](docs/watch-state.md) &mdash; In-progress and finished detection per viewer, and the rule fields built on it
 - [Archive](docs/archive.md) &mdash; Re-acquisition checks before deletion, holds and archived titles
+- [Tasks and the audit log](docs/tasks-and-audit.md) &mdash; Background work with live progress; the tamper-evident record of who did what
 - [Troubleshooting](https://github.com/helliott20/prunerr/wiki/Troubleshooting) &mdash; Common issues
 
 ## Privacy

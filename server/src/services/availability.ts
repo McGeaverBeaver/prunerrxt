@@ -21,6 +21,7 @@
 import { isAxiosError } from 'axios';
 import logger from '../utils/logger';
 import mediaItemsRepo from '../db/repositories/mediaItems';
+import taskRunsRepo, { type TaskTrigger } from '../db/repositories/taskRuns';
 import { logActivity } from '../db/repositories/activity';
 import type { MediaItem } from '../types';
 import type { ArrRelease, SonarrSeason } from './types';
@@ -70,12 +71,27 @@ export interface ServicePause {
   failures: number;
 }
 
+export interface PassProgress {
+  startedAt: string;
+  /** Items this pass set out to check. */
+  total: number;
+  done: number;
+  current: { id: number; title: string; service: ArrService } | null;
+  replaceable: number;
+  atRisk: number;
+  unknown: number;
+  archived: number;
+  paused: number;
+}
+
 export interface AvailabilityStatus {
   enabled: boolean;
   paused: ServicePause[];
   /** Queued movies/shows still without a verdict. */
   unchecked: number;
   lastPassAt: string | null;
+  /** The pass running right now, if any. */
+  pass: PassProgress | null;
 }
 
 /** Thrown by a check that could not get an answer; the service is paused when it is raised. */
@@ -88,6 +104,7 @@ export class AvailabilityPausedError extends Error {
 
 let lastSearchAt = 0;
 let lastPassAt: string | null = null;
+let passProgress: PassProgress | null = null;
 let passRunning: Promise<CheckQueueResult> | null = null;
 let kickTimer: NodeJS.Timeout | null = null;
 const pauses: Record<ArrService, ServicePause | null> = { radarr: null, sonarr: null };
@@ -418,6 +435,7 @@ export function getAvailabilityStatus(): AvailabilityStatus {
     paused: (['radarr', 'sonarr'] as ArrService[]).map((s) => getPause(s, now)).filter((p): p is ServicePause => p !== null),
     unchecked: settings.enabled ? itemsNeedingCheck(settings, now).length : 0,
     lastPassAt,
+    pass: passProgress ? { ...passProgress, current: passProgress.current ? { ...passProgress.current } : null } : null,
   };
 }
 
@@ -427,7 +445,7 @@ export function getAvailabilityStatus(): AvailabilityStatus {
  * probed first and skipped while still down; a failure mid-pass pauses that
  * service and the pass moves on to the other one.
  */
-export function checkQueue(options: { limit?: number; actorName?: string } = {}): Promise<CheckQueueResult> {
+export function checkQueue(options: { limit?: number; actorName?: string; trigger?: TaskTrigger } = {}): Promise<CheckQueueResult> {
   if (passRunning) return passRunning;
   passRunning = (async () => {
     const result: CheckQueueResult = { checked: 0, replaceable: 0, atRisk: 0, unknown: 0, archived: 0, skipped: 0, paused: 0, pauses: [] };
@@ -438,6 +456,17 @@ export function checkQueue(options: { limit?: number; actorName?: string } = {})
     const items = itemsNeedingCheck(settings);
     result.skipped = Math.max(0, items.length - limit);
     const batch = items.slice(0, limit);
+    if (batch.length === 0) return result;
+    passProgress = { startedAt: lastPassAt, total: batch.length, done: 0, current: null, replaceable: 0, atRisk: 0, unknown: 0, archived: 0, paused: 0 };
+    // The scheduler records its own runs; a background pass records itself.
+    let runId: number | null = null;
+    if (options.trigger && options.trigger !== 'schedule') {
+      try {
+        runId = taskRunsRepo.start('availabilityPass', options.trigger);
+      } catch {
+        runId = null;
+      }
+    }
 
     for (const service of ['radarr', 'sonarr'] as ArrService[]) {
       const mine = batch.filter((item) => serviceFor(item) === service);
@@ -448,9 +477,17 @@ export function checkQueue(options: { limit?: number; actorName?: string } = {})
         continue;
       }
       for (const item of mine) {
+        if (passProgress) passProgress.current = { id: item.id, title: item.title, service };
         try {
           const { report, archived } = await checkItem(item, { actorName: options.actorName });
           result.checked += 1;
+          if (passProgress) {
+            passProgress.done += 1;
+            if (archived) passProgress.archived += 1;
+            if (report.verdict === 'replaceable') passProgress.replaceable += 1;
+            else if (report.verdict === 'at_risk') passProgress.atRisk += 1;
+            else passProgress.unknown += 1;
+          }
           if (archived) result.archived += 1;
           if (report.verdict === 'replaceable') result.replaceable += 1;
           else if (report.verdict === 'at_risk') result.atRisk += 1;
@@ -466,7 +503,19 @@ export function checkQueue(options: { limit?: number; actorName?: string } = {})
       }
     }
 
+    passProgress = null;
     result.pauses = getAvailabilityStatus().paused;
+    if (runId !== null) {
+      try {
+        taskRunsRepo.finish(runId, {
+          success: true,
+          message: `${result.checked} checked: ${result.replaceable} replaceable, ${result.atRisk} at risk, ${result.unknown} unknown, ${result.archived} archived${result.paused > 0 ? `, ${result.paused} waiting on a paused app` : ''}`,
+          data: { ...result, pauses: undefined },
+        });
+      } catch {
+        /* the pass itself succeeded */
+      }
+    }
     if (result.checked > 0 || result.paused > 0) {
       logger.info(
         `Availability pass: ${result.checked} checked, ${result.replaceable} replaceable, ${result.atRisk} at risk, ${result.unknown} unknown, ${result.archived} archived${result.paused > 0 ? `, ${result.paused} waiting (${result.pauses.map(describePause).join('; ')})` : ''}`
@@ -483,13 +532,13 @@ export function checkQueue(options: { limit?: number; actorName?: string } = {})
  * Ask for a background pass soon. Debounced, so a rule that queues fifty
  * items at once starts one pass, not fifty.
  */
-export function kickAvailabilityChecks(delayMs: number = 5_000): void {
+export function kickAvailabilityChecks(delayMs: number = 5_000, trigger: TaskTrigger = 'queue'): void {
   if (kickTimer) clearTimeout(kickTimer);
   // The enabled check waits for the timer: this can be called before the
   // database is open (at start-up), and checkQueue reads the setting anyway.
   kickTimer = setTimeout(() => {
     kickTimer = null;
-    checkQueue({ actorName: 'Archive' }).catch((error) => logger.warn('Background availability pass failed', error));
+    checkQueue({ actorName: 'Archive', trigger }).catch((error) => logger.warn('Background availability pass failed', error));
   }, delayMs);
   kickTimer.unref?.();
 }
@@ -502,7 +551,7 @@ registerAvailabilityKick(() => kickAvailabilityChecks());
  * Called from service initialisation, once the database is open.
  */
 export function scheduleStartupAvailabilityPass(delayMs: number = 60_000): void {
-  kickAvailabilityChecks(delayMs);
+  kickAvailabilityChecks(delayMs, 'startup');
 }
 
 /** Tests only. */
@@ -511,6 +560,7 @@ export function resetAvailabilityState(options: { searchGapMs?: number } = {}): 
   lastSearchAt = 0;
   lastPassAt = null;
   passRunning = null;
+  passProgress = null;
   pauses.radarr = null;
   pauses.sonarr = null;
   failureCounts.radarr = 0;

@@ -7,6 +7,7 @@ import { logActivity } from '../db/repositories/activity';
 import { getDatabase } from '../db';
 import { getRadarrService } from '../services/init';
 import logger from '../utils/logger';
+import { auditRequest } from '../services/audit';
 import { toThumbnailUrl } from '../utils/posterUrl';
 
 const router = Router();
@@ -166,6 +167,7 @@ router.patch('/:id/protection', (req: Request, res: Response) => {
         parsed.data.isProtected,
         parsed.data.reason ?? null
       );
+      auditRequest(req, res, { action: parsed.data.isProtected ? 'collection.protected' : 'collection.unprotected', targetType: 'collection', targetId: id, targetTitle: existing.title, details: { reason: parsed.data.reason ?? null } });
 
       if (!result) return null;
 

@@ -19,6 +19,7 @@ import { DeletionAction, DELETION_ACTION_LABELS } from '../rules/types';
 import rulesRepo from '../db/repositories/rules';
 import { getNotificationService } from '../notifications';
 import { getArchiveSettings, holdState, type ArchiveSettings, type AvailabilityReport, type HoldReason } from './availabilityVerdict';
+import { namedActor, recordAudit } from './audit';
 
 // ============================================================================
 // Shapes
@@ -291,7 +292,7 @@ export type RemoveFromQueueResult =
  * Cancel a queued deletion. Whole items go back to `monitored`; queued
  * episodes are cancelled in the episode queue. Nothing is deleted.
  */
-export function removeFromQueue(rawId: string): RemoveFromQueueResult {
+export function removeFromQueue(rawId: string, actorName?: string): RemoveFromQueueResult {
   const parsedId = parseQueueId(rawId);
   if (!parsedId) {
     return { ok: false, status: 400, error: 'Invalid queue item ID' };
@@ -340,6 +341,7 @@ export function removeFromQueue(rawId: string): RemoveFromQueueResult {
   }
 
   logger.info(`Removed item "${item.title}" from deletion queue`);
+  recordAudit({ action: 'queue.removed', actor: namedActor(actorName, 'user'), targetType: 'media_item', targetId: id, targetTitle: item.title });
 
   logActivity({
     eventType: 'manual_action',

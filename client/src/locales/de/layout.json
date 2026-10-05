@@ -55,6 +55,7 @@
   "menuLabel": "Menü",
   "nav": {
     "activity": "Aktivität",
+    "audit": "",
     "collections": "Sammlungen",
     "dashboard": "Dashboard",
     "folders": "",
@@ -65,7 +66,8 @@
     "queue": "Warteschlange",
     "recommendations": "",
     "rules": "Regeln",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "tasks": ""
   },
   "openMenu": "Navigationsmenü öffnen",
   "storage": {

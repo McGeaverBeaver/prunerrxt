@@ -13,6 +13,7 @@ import { logActivity } from '../db/repositories/activity';
 import type { MediaItem } from '../types';
 import logger from '../utils/logger';
 import { kickAvailabilityChecks } from './availabilityKick';
+import { namedActor, recordAudit } from './audit';
 
 export const DELETION_ACTIONS = [
   'unmonitor_only',
@@ -159,7 +160,16 @@ export function markItemsForDeletion(ids: number[], options: MarkForDeletionOpti
     `Mark for deletion: ${result.queued.length} queued, ${result.skipped.length} skipped, ${result.failed.length} failed`
   );
 
-  if (result.queued.length > 0) kickAvailabilityChecks();
+  if (result.queued.length > 0) {
+    kickAvailabilityChecks();
+    recordAudit({
+      action: 'queue.added',
+      actor: namedActor(options.actorName, 'user'),
+      targetType: 'media_items',
+      targetTitle: result.queued.length === 1 ? result.queued[0]!.title : `${result.queued.length} titles`,
+      details: { ids: result.queued.map((q) => q.id), titles: result.queued.slice(0, 50).map((q) => q.title), gracePeriodDays, deletionAction, resetOverseerr, deleteAfter: deleteAfterIso },
+    });
+  }
 
   return result;
 }
@@ -195,6 +205,7 @@ export function protectItems(ids: number[], reason: string = 'Manually protected
     }
 
     result.protected.push({ id, title: item.title });
+    recordAudit({ action: 'item.protected', actor: namedActor(actorName, 'user'), targetType: 'media_item', targetId: id, targetTitle: item.title, details: { reason } });
     logActivity({
       eventType: 'protection',
       action: 'protected',
@@ -258,6 +269,7 @@ export function archiveItems(ids: number[], reason: string = 'Archived', actorNa
     }
 
     result.archived.push({ id, title: item.title });
+    recordAudit({ action: 'item.archived', actor: namedActor(actorName, 'scheduler'), targetType: 'media_item', targetId: id, targetTitle: item.title, details: { reason, wasQueued: item.status === 'pending_deletion' } });
     logActivity({
       eventType: 'protection',
       action: 'archived',
@@ -281,6 +293,7 @@ export function allowDeletionAnyway(id: number, actorName?: string): { ok: true;
   if (item.status !== 'pending_deletion') return { ok: false, status: 400, error: 'Item is not in the deletion queue' };
   const updated = mediaItemsRepo.update(id, { availability_decision: 'delete' });
   if (!updated) return { ok: false, status: 500, error: 'Failed to update item' };
+  recordAudit({ action: 'item.delete_anyway', actor: namedActor(actorName, 'user'), targetType: 'media_item', targetId: id, targetTitle: item.title, details: { availability: item.availability ? JSON.parse(item.availability) : null } });
   logActivity({
     eventType: 'protection',
     action: 'availability_overridden',
@@ -321,6 +334,7 @@ export function unprotectItems(ids: number[], actorName?: string): UnprotectResu
     }
 
     result.unprotected.push({ id, title: item.title });
+    recordAudit({ action: item.archived_at ? 'item.unarchived' : 'item.unprotected', actor: namedActor(actorName, 'user'), targetType: 'media_item', targetId: id, targetTitle: item.title });
     logActivity({
       eventType: 'protection',
       action: item.archived_at ? 'unarchived' : 'unprotected',

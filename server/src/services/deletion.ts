@@ -12,6 +12,7 @@ import { upstreamStatus, type FileDeletionProgress } from './arrHttp';
 import type { OverseerrResetResult } from './overseerr';
 import { getArchiveSettings, holdState } from './availabilityVerdict';
 import { kickAvailabilityChecks } from './availabilityKick';
+import { namedActor, recordAudit } from './audit';
 
 // ============================================================================
 // Types
@@ -589,6 +590,15 @@ export class DeletionService {
       // write, rule lookup, activity log, status update) runs in its own
       // try-catch so a failure in one doesn't lose the others or mark the
       // whole deletion as failed — the file is gone either way.
+
+      recordAudit({
+        action: 'item.deleted',
+        actor: options.actorName ? namedActor(options.actorName, 'user') : deletionType === 'automatic' ? { type: 'scheduler', name: 'Scheduled queue run' } : { type: 'user', name: 'Manual deletion' },
+        targetType: 'media_item',
+        targetId: item.id,
+        targetTitle: item.title,
+        details: { deletionType, action, bytesFreed: fileSizeFreed, ruleId: options.ruleId ?? null, overseerrReset, radarrId: item.radarr_id, sonarrId: item.sonarr_id, filePath: item.file_path },
+      });
 
       // Record in deletion history
       if (this.dependencies.deletionHistoryRepository) {

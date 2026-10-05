@@ -147,6 +147,10 @@ whether Archive is holding it. See docs/archive.md.
 `ignore_orphan_folder`: folders under Sonarr's and Radarr's root folders that
 no title owns, imported into the right app or cleaned up. See docs/folders.md.
 
+**Tasks and audit** — `get_task_status` (what is running, recent runs),
+`list_audit_log` (who did what, hash-chained), `verify_audit_log`. See
+docs/tasks-and-audit.md.
+
 **Troubleshooting** — `get_service_logs`, `get_service_health`,
 `get_service_activity`, `get_deletion_setup` read Sonarr's and Radarr's own
 logs, health checks, command queue and recycling-bin/root-folder setup, so a

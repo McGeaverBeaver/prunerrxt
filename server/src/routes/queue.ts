@@ -76,7 +76,7 @@ router.get('/', (req: Request, res: Response) => {
 // DELETE /api/queue/:id - Remove an item from the deletion queue (cancel deletion)
 router.delete('/:id', (req: Request, res: Response) => {
   try {
-    const result = removeFromQueue(req.params['id'] as string);
+    const result = removeFromQueue(req.params['id'] as string, requestActorName(req));
     if (!result.ok) {
       res.status(result.status).json({ success: false, error: result.error });
       return;

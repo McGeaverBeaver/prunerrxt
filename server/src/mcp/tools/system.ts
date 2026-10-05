@@ -9,6 +9,11 @@ import { TracearrService } from '../../services/tracearr';
 import { JellyfinService } from '../../services/jellyfin';
 import { allowsImmediateDeletion } from '../config';
 import { EXTERNAL_READ, READ_ONLY, defineTool, fail, ok } from '../helpers';
+import { listAudit, verifyAuditChain } from '../../services/audit';
+import { getAvailabilityStatus } from '../../services/availability';
+import taskRunsRepo from '../../db/repositories/taskRuns';
+import { listJobs } from '../../services/deletionJobs';
+import { getScheduler } from '../../scheduler';
 import {
   ServiceNotConfiguredError,
   getDeletionSetup,
@@ -27,6 +32,71 @@ function serviceSummary(name: string, credentialKeys: string[]) {
 }
 
 export function registerSystemTools(server: McpServer): void {
+  defineTool(
+    server,
+    {
+      name: 'get_task_status',
+      title: 'Background tasks: running now and recent runs',
+      description:
+        'What Prunerr is doing in the background: the Archive availability pass in progress (current title, done/total), paused apps, active deletion jobs, and the last runs of every scheduled task with duration and outcome. Use list_scheduled_tasks for schedules and next runs.',
+      group: 'system',
+      inputSchema: { limit: z.number().int().min(1).max(100).optional().describe('Recent runs to include (default 20).') },
+      annotations: READ_ONLY,
+      minRole: 'viewer',
+    },
+    async ({ limit }) => {
+      const archive = getAvailabilityStatus();
+      const jobs = listJobs(5);
+      const recent = taskRunsRepo.list(limit ?? 20);
+      const running = getScheduler().getStatus().filter((j) => j.isRunning).map((j) => j.name);
+      return ok(
+        { running: { scheduledTasks: running, availabilityPass: archive.pass, archivePaused: archive.paused, unchecked: archive.unchecked, deletionJobs: jobs.active }, recent },
+        `${running.length + (archive.pass ? 1 : 0) + jobs.active.length} thing(s) running; ${recent.filter((r) => r.success === false).length} of the last ${recent.length} runs failed.`
+      );
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'list_audit_log',
+      title: 'Audit log',
+      description:
+        'The tamper-evident audit log: who did what, when, from where (web, API key, MCP, scheduler). Covers logins, settings changes, rule changes, every queue/protect/archive/delete decision, folder deletes and MCP tool calls that change something. Entries are hash-chained; use verify_audit_log to prove none were altered. Newest first.',
+      group: 'system',
+      inputSchema: {
+        limit: z.number().int().min(1).max(200).optional().describe('Default 50.'),
+        offset: z.number().int().min(0).optional(),
+        action: z.string().max(80).optional().describe('Prefix filter, e.g. "item.", "auth.", "settings.", "mcp.".'),
+        actor: z.string().max(80).optional().describe('Substring of the actor name or id.'),
+        search: z.string().max(120).optional().describe('Substring of the target title, action or details.'),
+        since: z.string().max(40).optional().describe('ISO timestamp; only entries at or after it.'),
+      },
+      annotations: READ_ONLY,
+      minRole: 'viewer',
+    },
+    async (args) => {
+      const result = listAudit(args);
+      return ok({ total: result.total, entries: result.entries }, `${result.total} matching audit entr${result.total === 1 ? 'y' : 'ies'}; showing ${result.entries.length}.`);
+    }
+  );
+
+  defineTool(
+    server,
+    {
+      name: 'verify_audit_log',
+      title: 'Verify the audit log chain',
+      description: 'Recompute every hash in the audit log and check the anchor file. Reports the first broken entry if the log has been altered.',
+      group: 'system',
+      annotations: READ_ONLY,
+      minRole: 'operator',
+    },
+    async () => {
+      const result = verifyAuditChain();
+      return ok(result, result.ok ? `Audit chain intact: ${result.entries} entries.` : `AUDIT CHAIN BROKEN: ${result.firstBreak ? `entry #${result.firstBreak.id} (${result.firstBreak.reason})` : 'anchor mismatch'}.`);
+    }
+  );
+
   defineTool(
     server,
     {

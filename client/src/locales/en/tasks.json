@@ -1,0 +1,65 @@
+{
+  "actions": {
+    "refresh": "Refresh"
+  },
+  "header": {
+    "subtitle": "What Prunerr is doing in the background, and what it did",
+    "title": "Tasks"
+  },
+  "loading": "Loading…",
+  "names": {
+    "availabilityPass": "Archive availability pass",
+    "captureInsightSnapshot": "Insights snapshot",
+    "captureStorageSnapshot": "Storage snapshot",
+    "captureUnraidCapacitySnapshot": "Unraid capacity snapshot",
+    "checkAvailability": "Archive availability check",
+    "monitorDiskPressure": "Disk pressure monitor",
+    "processDeletionQueue": "Queue run",
+    "scanLibraries": "Rules scan",
+    "sendDeletionReminders": "Deletion reminders",
+    "syncPlexLibrary": "Library sync",
+    "syncPlexUsers": "Users sync",
+    "verifyAuditLog": "Audit log verification"
+  },
+  "recent": {
+    "empty": "No runs recorded yet. Every scheduled, manual and start-up run lands here from now on.",
+    "title": "Recent runs",
+    "trigger": {
+      "manual": "manual",
+      "mcp": "MCP",
+      "queue": "after queueing",
+      "schedule": "scheduled",
+      "startup": "start-up"
+    }
+  },
+  "running": {
+    "availabilityPass": "Archive: checking whether queued titles can be downloaded again",
+    "between": "Between titles",
+    "deleting": "Deleting \"{{title}}\"",
+    "folderJob": "{{action}} \"{{name}}\"",
+    "idle_one": "Idle. {{count}} queued titles still need an Archive verdict.",
+    "idle_other": "Idle. {{count}} queued titles still need an Archive verdict.",
+    "passProgress": "{{done}} of {{total}} · {{replaceable}} replaceable · {{atRisk}} at risk · {{unknown}} unknown",
+    "retry": "retrying {{time}}",
+    "schedulerStopped": "scheduler stopped",
+    "searching": "Searching {{app}} for \"{{title}}\"",
+    "startedAgo": "started {{time}}",
+    "sync": "Library sync in progress",
+    "title": "Running now"
+  },
+  "scheduled": {
+    "disabled": "off",
+    "failed": "failed",
+    "lastRun": "Last run {{time}}",
+    "neverRan": "Never run",
+    "nextRun": "next {{time}}",
+    "ok": "ok",
+    "runNow": "Run now",
+    "title": "Scheduled",
+    "tz": "times in {{tz}}"
+  },
+  "toasts": {
+    "done": "Finished",
+    "failed": "Failed"
+  }
+}

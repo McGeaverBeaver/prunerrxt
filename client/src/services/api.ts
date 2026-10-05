@@ -2,6 +2,12 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import type {
   ArchiveStatus,
   ArrLogLevel,
+  AuditEntry,
+  AuditFilters,
+  AuditVerification,
+  LoginSession,
+  TaskRun,
+  TasksStatus,
   AvailabilityCheckResult,
   DeletionSetupResult,
   DiagnosticsService,
@@ -831,6 +837,44 @@ export const apiKeyApi = {
 };
 
 // Settings APIs
+// Tasks page
+export const tasksApi = {
+  status: async (): Promise<TasksStatus> => {
+    const { data } = await api.get<ApiResponse<TasksStatus>>('/tasks');
+    return data.data!;
+  },
+  run: async (name: string): Promise<{ success: boolean; message?: string | null }> => {
+    const { data } = await api.post<ApiResponse<TaskRun> & { message?: string | null }>(`/tasks/${encodeURIComponent(name)}/run`, undefined, { timeout: 600_000 });
+    return { success: data.success, message: data.message };
+  },
+};
+
+// Audit log (read-only)
+export const auditApi = {
+  list: async (filters: AuditFilters = {}): Promise<{ entries: AuditEntry[]; total: number }> => {
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== '' && v !== null) params.set(k, String(v));
+    const { data } = await api.get<ApiResponse<AuditEntry[]> & { total?: number }>(`/audit${params.size ? `?${params}` : ''}`);
+    return { entries: data.data ?? [], total: data.total ?? 0 };
+  },
+  verify: async (): Promise<AuditVerification> => {
+    const { data } = await api.get<ApiResponse<AuditVerification>>('/audit/verify');
+    return data.data!;
+  },
+  exportUrl: '/api/audit/export',
+};
+
+// Login sessions
+export const sessionsApi = {
+  list: async (): Promise<LoginSession[]> => {
+    const { data } = await api.get<ApiResponse<LoginSession[]>>('/auth/sessions');
+    return data.data ?? [];
+  },
+  revoke: async (id: string): Promise<void> => {
+    await api.delete(`/auth/sessions/${encodeURIComponent(id)}`);
+  },
+};
+
 // Sonarr/Radarr diagnostics, read through their own APIs
 export const diagnosticsApi = {
   logs: async (service: DiagnosticsService, options: { level?: ArrLogLevel; limit?: number; search?: string } = {}): Promise<ServiceLogsResult> => {

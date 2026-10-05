@@ -38,6 +38,8 @@ import { getPermissionCapabilities } from '../permissions';
 import { formatBytes } from '../../utils/format';
 import { defaultGracePeriodDays } from '../mediaActions';
 import { describePause, getAvailabilityStatus } from '../availability';
+import { verifyAuditChainCached } from '../audit';
+import taskRunsRepo from '../../db/repositories/taskRuns';
 import { countBySeverity, worstSeverity, type InsightCounts, type InsightItem, type InsightSeverity, type InsightSource } from './types';
 import { applyAcknowledgements } from './acknowledgements';
 
@@ -324,6 +326,35 @@ function checkArchive(items: InsightItem[]): void {
   }
 }
 
+function checkAudit(items: InsightItem[]): void {
+  const result = verifyAuditChainCached();
+  if (!result.ok) {
+    items.push({
+      id: 'prunerr.audit.broken',
+      severity: 'critical',
+      source: 'prunerr',
+      title: 'The audit log does not verify',
+      detail: result.firstBreak
+        ? `Entry #${result.firstBreak.id} (${result.firstBreak.at}) fails its hash check (${result.firstBreak.reason}). Everything after it is suspect: someone or something has altered the audit log. Export it and compare with your last known-good copy.`
+        : 'The anchor file beside the database does not match the chain, which happens when the audit table was replaced or rebuilt. Export the log and review it before trusting its history.',
+      href: '/audit',
+    });
+  }
+  const failed = taskRunsRepo.list(40).filter((run) => run.success === false && run.name !== 'availabilityPass');
+  const names = new Set(failed.map((run) => run.name));
+  if (names.size > 0 && failed.some((run) => run.completedAt && Date.now() - new Date(run.completedAt).getTime() < 48 * 60 * 60 * 1000)) {
+    const first = failed[0]!;
+    items.push({
+      id: 'prunerr.tasks.failed',
+      severity: 'warning',
+      source: 'prunerr',
+      title: `${names.size === 1 ? 'A scheduled task' : `${names.size} scheduled tasks`} failed recently`,
+      detail: `${[...names].join(', ')}. Most recent: "${first.name}" ${first.completedAt ? `at ${first.completedAt}` : ''}${first.error ? ` — ${first.error}` : ''}. The Tasks page has each run.`,
+      href: '/tasks',
+    });
+  }
+}
+
 function checkDeletionJobs(items: InsightItem[]): void {
   const active = deletionJobsRepo.listActive();
   const stuck = active.filter((job) => job.status !== 'pending' && job.step_started_at && Date.now() - new Date(job.step_started_at).getTime() > STUCK_STEP_MS);
@@ -569,6 +600,7 @@ async function build(): Promise<StackHealthReport> {
   await safe('watchHistory', () => checkWatchHistory(items));
   await safe('access', () => checkAccess(items));
   await safe('archive', () => checkArchive(items));
+  await safe('audit', () => checkAudit(items));
   await safe('safety', () => checkDeletionSafety(items));
 
   const rank: Record<InsightSeverity, number> = { critical: 0, warning: 1, info: 2, ok: 3 };

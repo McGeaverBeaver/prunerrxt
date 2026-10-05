@@ -21,6 +21,8 @@ import { setTaskDependencies } from '../scheduler/tasks';
 import { getScheduler } from '../scheduler';
 import type { MediaItem } from '../types';
 import { findRadarrId, findSonarrId } from './arrLink';
+import taskRunsRepo from '../db/repositories/taskRuns';
+import { recordAudit } from './audit';
 // Registers the background availability pass that queueing kicks (Archive).
 import { scheduleStartupAvailabilityPass } from './availability';
 
@@ -160,6 +162,17 @@ export async function initializeServices(): Promise<void> {
   // Archive: give queued items their verdicts a minute after start-up. The
   // database is open by now; the module itself must not touch it on load.
   if (process.env['NODE_ENV'] !== 'test') scheduleStartupAvailabilityPass();
+
+  // Task history: runs the previous process never finished are closed as
+  // interrupted, and the table is kept bounded.
+  try {
+    const stale = taskRunsRepo.closeStale(new Date());
+    if (stale > 0) logger.info(`Marked ${stale} task run(s) interrupted by the restart`);
+    taskRunsRepo.prune();
+  } catch (error) {
+    logger.debug(`Could not tidy task runs: ${(error as Error).message}`);
+  }
+  recordAudit({ action: 'system.started', actor: { type: 'system', name: 'Prunerr' }, source: 'system', details: { version: process.env['APP_VERSION'] ?? null, node: process.version } });
 
   // Initialize service instances based on config
   const sonarr = getSonarrService();

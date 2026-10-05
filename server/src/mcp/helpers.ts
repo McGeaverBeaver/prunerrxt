@@ -9,6 +9,7 @@ import type { MediaItem } from '../types';
 import { formatBytes } from '../utils/format';
 import { parseWatchState } from '../services/watchState';
 import { describeReasons, holdState, parseAvailability } from '../services/availabilityVerdict';
+import { recordAudit } from '../services/audit';
 import { IMMEDIATE_DELETION_REFUSED, allowsImmediateDeletion } from './config';
 import { isRole, type Role } from '../auth/config';
 import { ROLE_RANK } from '../auth/roles';
@@ -107,6 +108,16 @@ export function defineTool<InputShape extends Shape | undefined = undefined>(
     }
     if (definition.requiresImmediateDeletion && !allowsImmediateDeletion()) {
       return fail(IMMEDIATE_DELETION_REFUSED);
+    }
+    if (!readOnly) {
+      recordAudit({
+        action: `mcp.${definition.name}`,
+        actor: { type: 'mcp', name: 'MCP assistant', id: definition.name, role },
+        source: 'mcp',
+        targetType: 'tool',
+        targetTitle: definition.title,
+        details: { args: args && typeof args === 'object' ? (args as Record<string, unknown>) : null },
+      });
     }
     try {
       return await (handler as (a: unknown) => Promise<CallToolResult> | CallToolResult)(args);

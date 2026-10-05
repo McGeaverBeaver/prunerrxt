@@ -39,7 +39,7 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
  * Routes (relative to /api) only an admin may touch, with any method. These
  * either expose credentials or reconfigure the install.
  */
-const ADMIN_ONLY_PREFIXES = ['/settings', '/webhooks', '/library/plex-libraries/exclusions', '/diagnostics', '/folders/mappings', '/folders/mounts', '/folders/permission-settings'];
+const ADMIN_ONLY_PREFIXES = ['/settings', '/webhooks', '/library/plex-libraries/exclusions', '/diagnostics', '/folders/mappings', '/folders/mounts', '/folders/permission-settings', '/auth/sessions', '/audit/export'];
 
 /**
  * Whether `role` may perform `method` on an API path (relative to /api, e.g.

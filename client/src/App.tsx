@@ -19,6 +19,8 @@ const CollectionDetail = lazy(() => import('./components/Collections/CollectionD
 const Folders = lazy(() => import('./components/Folders/Folders'));
 const Insights = lazy(() => import('./components/Insights/Insights'));
 const Protected = lazy(() => import('./components/Protected/Protected'));
+const Tasks = lazy(() => import('./components/Tasks/Tasks'));
+const Audit = lazy(() => import('./components/Audit/Audit'));
 
 /**
  * AnimatedRoutes fades each page in as you navigate. We key on the first path
@@ -66,6 +68,8 @@ function AnimatedRoutes() {
         <Route path="/rules" element={<Rules />} />
         <Route path="/queue" element={<Queue />} />
         <Route path="/protected" element={<Protected />} />
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/audit" element={<Audit />} />
         <Route path="/history" element={<History />} />
         <Route path="/activity" element={<ActivityLog />} />
         <Route path="/insights" element={<Insights />} />

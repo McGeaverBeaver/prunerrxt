@@ -23,6 +23,7 @@ import {
   type QueuedMatch,
 } from '../scheduler/tasks';
 import { logActivity } from '../db/repositories/activity';
+import { auditRequest } from '../services/audit';
 import { buildRuleSuggestions } from '../services/ruleSuggestions';
 
 // ============================================================================
@@ -427,6 +428,7 @@ function validateRegexSafety(req: Request, res: Response, next: NextFunction): v
 router.post('/', validateRegexSafety, validateBody(CreateRuleSchema), (req: Request, res: Response) => {
   try {
     const rule = rulesRepo.rules.create(req.body);
+    auditRequest(req, res, { action: 'rule.created', targetType: 'rule', targetId: rule.id, targetTitle: rule.name, details: { rule: req.body } });
     res.status(201).json({
       success: true,
       data: toClientRule(rule),
@@ -454,6 +456,7 @@ router.put('/:id', validateRegexSafety, validateBody(UpdateRuleSchema), (req: Re
     }
 
     const rule = rulesRepo.rules.update(id, req.body);
+    if (rule) auditRequest(req, res, { action: 'rule.updated', targetType: 'rule', targetId: rule.id, targetTitle: rule.name, details: { changes: req.body } });
     if (!rule) {
       res.status(404).json({
         success: false,
@@ -488,7 +491,9 @@ router.delete('/:id', (req: Request, res: Response) => {
       return;
     }
 
+    const doomed = rulesRepo.rules.getById(id);
     const deleted = rulesRepo.rules.delete(id);
+    if (deleted) auditRequest(req, res, { action: 'rule.deleted', targetType: 'rule', targetId: id, targetTitle: doomed?.name ?? null });
     if (!deleted) {
       res.status(404).json({
         success: false,
@@ -527,6 +532,7 @@ router.patch('/:id/toggle', (req: Request, res: Response) => {
     let rule;
     if (typeof enabled === 'boolean') {
       rule = rulesRepo.rules.update(id, { enabled });
+      if (rule) auditRequest(req, res, { action: enabled ? 'rule.enabled' : 'rule.disabled', targetType: 'rule', targetId: rule.id, targetTitle: rule.name });
     } else {
       rule = rulesRepo.rules.toggle(id);
     }

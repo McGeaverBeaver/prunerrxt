@@ -25,6 +25,7 @@ import type { MediaItem } from '../types';
 import { kickAvailabilityChecks } from '../services/availabilityKick';
 import { checkQueue } from '../services/availability';
 import { holdState } from '../services/availabilityVerdict';
+import { verifyAuditChain } from '../services/audit';
 
 // ============================================================================
 // Task Result Types
@@ -1558,6 +1559,46 @@ export async function checkAvailability(): Promise<TaskResult> {
   }
 }
 
+/**
+ * Walk the audit log chain and recompute every hash. A break is logged as an
+ * error, surfaced by stack health, and sent through the configured
+ * notification channels.
+ */
+export async function verifyAuditLog(): Promise<TaskResult> {
+  const startedAt = new Date();
+  const taskName = 'verifyAuditLog';
+  try {
+    const result = verifyAuditChain();
+    const completedAt = new Date();
+    if (!result.ok) {
+      const where = result.firstBreak ? `entry #${result.firstBreak.id} (${result.firstBreak.at}): ${result.firstBreak.reason}` : 'the anchor does not match the chain';
+      logger.error(`AUDIT LOG INTEGRITY FAILURE: ${where}`);
+      try {
+        const notifier = dependencies.notificationService ?? {
+          notify: (event: string, data: Record<string, unknown>) =>
+            getNotificationService().notify(event as any, data).then(() => undefined),
+        };
+        await notifier.notify('AUDIT_LOG_BROKEN', { where, entries: result.entries, checkedAt: result.checkedAt });
+      } catch (notifyError) {
+        logger.warn('Could not send the audit integrity alert:', notifyError);
+      }
+    }
+    return {
+      success: result.ok,
+      taskName,
+      startedAt,
+      completedAt,
+      durationMs: completedAt.getTime() - startedAt.getTime(),
+      message: result.ok ? `Audit chain intact: ${result.entries} entries` : `Audit chain BROKEN at ${result.firstBreak ? `#${result.firstBreak.id}` : 'the anchor'}`,
+      ...(result.ok ? {} : { error: result.firstBreak ? `${result.firstBreak.reason} at entry #${result.firstBreak.id}` : 'anchor mismatch' }),
+      data: { entries: result.entries, firstBreak: result.firstBreak, anchorMatches: result.anchorMatches },
+    };
+  } catch (error) {
+    const completedAt = new Date();
+    return { success: false, taskName, startedAt, completedAt, durationMs: completedAt.getTime() - startedAt.getTime(), error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 export type TaskFunction = () => Promise<TaskResult>;
 
 export const taskRegistry: Record<string, TaskFunction> = {
@@ -1571,6 +1612,7 @@ export const taskRegistry: Record<string, TaskFunction> = {
   monitorDiskPressure,
   captureInsightSnapshot,
   checkAvailability,
+  verifyAuditLog,
 };
 
 /**
