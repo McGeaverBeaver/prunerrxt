@@ -53,6 +53,26 @@ patch, and patches need no thought at all.
 An image whose version contains a dash (`beta-1a2b3c4`, `main-1a2b3c4`) is a
 branch build and never claims to be a release.
 
+## Weekly rebuild
+
+Every Monday at 04:23 UTC, *Build and Push Docker Image* rebuilds the newest
+release tag from scratch (fresh base images, no layer cache, `apk upgrade`)
+and republishes it as `:latest`, `:X.Y.Z`, `:X.Y` and `:X`. The code and the
+version stay the same; only the Alpine and Node layers move, so security fixes
+in them reach installs without a new release. Nothing is tagged or committed.
+
+## What is in the image
+
+The runtime stage is `alpine:3.24` with only the `node` binary copied from
+`node:24-alpine3.24`, plus `libstdc++`, `libgcc`, `su-exec` and the CA bundle.
+npm, npx, corepack, yarn and apk are not in it; nothing in PrunerrXT runs them.
+The compilers that build `better-sqlite3` stay in the build stage. The health
+check is a one-line `node -e` request to `/api/health`. The container starts
+as root only so `docker-entrypoint.sh` can apply `PUID`/`PGID` and chown
+`/app/data`; Node itself runs as `PUID:PGID` with only `CAP_CHOWN` and
+`CAP_FOWNER` (for permission repair on mapped folders). The application files
+are owned by root and read-only to that user.
+
 ## Where the version is read
 
 `APP_VERSION` is a build argument of the Dockerfile and becomes an

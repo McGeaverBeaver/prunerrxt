@@ -9,6 +9,13 @@ name: Build and Push Docker Image
 # - Run workflow by hand: a tag typed into the input is published as is; left
 #   empty, the branch name is the tag (e.g. :main), with "<branch>-<sha>" as
 #   the version so the UI never claims to be a release.
+# - Every Monday (schedule) the newest release tag is rebuilt from scratch
+#   (--pull --no-cache) and republished under its own tags (:latest, :X.Y.Z,
+#   :X.Y, :X), so fixes in the Alpine and Node base images and `apk upgrade`
+#   reach users without waiting for the next release. Same code, same
+#   version; only the operating-system layer changes.
+#
+# Every build pulls its base images fresh (pull: true).
 
 on:
   workflow_call:
@@ -28,6 +35,8 @@ on:
   push:
     branches:
       - beta
+  schedule:
+    - cron: '23 4 * * 1'
   workflow_dispatch:
     inputs:
       tag:
@@ -47,7 +56,14 @@ jobs:
       version: ${{ steps.plan.outputs.version }}
       meta_tags: ${{ steps.plan.outputs.meta_tags }}
       first_tag: ${{ steps.plan.outputs.first_tag }}
+      fresh: ${{ steps.plan.outputs.fresh }}
     steps:
+      - name: Checkout tags (weekly rebuild)
+        if: github.event_name == 'schedule'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
       - name: Decide what to build
         id: plan
         env:
@@ -56,10 +72,21 @@ jobs:
           CALL_TAGS: ${{ inputs.tags }}
           DISPATCH_TAG: ${{ github.event.inputs.tag }}
         run: |
+          FRESH=false
           if [ "${{ github.event_name }}" = "workflow_call" ] || [ -n "$CALL_VERSION" ]; then
             REF="$CALL_REF"
             VERSION="$CALL_VERSION"
             TAGS="$CALL_TAGS"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            LATEST=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
+            if [ -z "$LATEST" ]; then
+              echo "No release tag to rebuild" >&2
+              exit 1
+            fi
+            VERSION="${LATEST#v}"
+            REF=$(git rev-list -n 1 "$LATEST")
+            TAGS="latest"$'\n'"${VERSION}"$'\n'"${VERSION%.*}"$'\n'"${VERSION%%.*}"
+            FRESH=true
           elif [ -n "$DISPATCH_TAG" ]; then
             REF="$GITHUB_SHA"
             VERSION="${DISPATCH_TAG#v}"
@@ -81,6 +108,7 @@ jobs:
             echo "ref=$REF"
             echo "version=$VERSION"
             echo "first_tag=$FIRST"
+            echo "fresh=$FRESH"
             echo "meta_tags<<EOF"
             printf '%s' "$META"
             echo "EOF"
@@ -142,6 +170,8 @@ jobs:
           build-args: |
             APP_VERSION=${{ needs.prepare.outputs.version }}
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          pull: true
+          no-cache: ${{ needs.prepare.outputs.fresh == 'true' }}
           cache-from: type=gha,scope=${{ env.PLATFORM_PAIR }}
           cache-to: type=gha,scope=${{ env.PLATFORM_PAIR }},mode=max
 

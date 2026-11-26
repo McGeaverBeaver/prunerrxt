@@ -3,7 +3,7 @@
 # ============================================
 
 # Stage 1: Build the client application
-FROM node:24-alpine AS client-builder
+FROM node:24-alpine3.24 AS client-builder
 
 WORKDIR /app/client
 
@@ -23,11 +23,12 @@ RUN npm run build
 
 # ============================================
 # Stage 2: Build the server application
-FROM node:24-alpine AS server-builder
+FROM node:24-alpine3.24 AS server-builder
 
 WORKDIR /app/server
 
-# Install build dependencies for better-sqlite3
+# Build dependencies for better-sqlite3's native module. They stay in this
+# stage; the production image never sees a compiler or headers.
 RUN apk add --no-cache python3 make g++
 
 # Copy server package files
@@ -48,7 +49,16 @@ RUN npm prune --omit=dev
 
 # ============================================
 # Stage 3: Production image
-FROM node:24-alpine AS production
+#
+# Plain Alpine plus the Node binary only. The official node image also ships
+# npm, npx, corepack and yarn, which nothing in PrunerrXT runs (the server has
+# no child_process calls and the entrypoint only starts `node dist/index.js`);
+# leaving them behind takes their bundled dependencies, and the CVEs that come
+# with them, out of the image. Both images are pinned to the same Alpine
+# release so the musl, libstdc++ and libgcc the binary was built for match.
+FROM node:24-alpine3.24 AS node-runtime
+
+FROM alpine:3.24 AS production
 
 # Build argument for version (passed from CI/CD)
 ARG APP_VERSION=1.0.0
@@ -61,44 +71,50 @@ LABEL org.opencontainers.image.vendor="PrunerrXT"
 LABEL org.opencontainers.image.source="https://github.com/McGeaverBeaver/prunerrxt"
 LABEL org.opencontainers.image.licenses="MIT"
 
-# su-exec switches to PUID:PGID at startup. libcap's setcap gives the Node
-# binary CAP_CHOWN and CAP_FOWNER so PrunerrXT, running unprivileged, can still
-# set the owner and mode of media files written by other users (a DVR running
-# as root, a download client as another id) when cleaning up or importing
-# unmanaged folders. Those two capabilities allow exactly that and nothing
-# else; file access checks still apply.
-RUN apk add --no-cache su-exec libcap \
-    && setcap 'cap_chown,cap_fowner+ep' "$(readlink -f "$(command -v node)")"
+COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
+
+# - apk upgrade picks up Alpine fixes newer than the base image.
+# - libstdc++ and libgcc are the only shared libraries the Node binary loads
+#   besides musl.
+# - su-exec switches to PUID:PGID at startup (docker-entrypoint.sh).
+# - ca-certificates-bundle is listed so removing apk-tools below keeps it.
+# - setcap gives the Node binary CAP_CHOWN and CAP_FOWNER so PrunerrXT, running
+#   unprivileged, can still set the owner and mode of media files written by
+#   other users (a DVR running as root, a download client as another id) when
+#   cleaning up or importing unmanaged folders. Those two capabilities allow
+#   exactly that and nothing else; file access checks still apply. The app
+#   reads its capabilities from /proc, so libcap-utils is only needed for this
+#   one command and is removed again.
+# - apk itself goes last: nothing installs packages at runtime. Its database
+#   stays, so image scanners still see every package.
+RUN apk upgrade --no-cache \
+    && apk add --no-cache libstdc++ libgcc su-exec ca-certificates-bundle \
+    && apk add --no-cache --virtual .setcap libcap-utils \
+    && setcap 'cap_chown,cap_fowner+ep' /usr/local/bin/node \
+    && apk del --no-cache .setcap \
+    && apk del --no-cache apk-tools \
+    && node --version
 
 WORKDIR /app
 
-# Create non-root user for security
+# Default user; docker-entrypoint.sh re-creates it with PUID/PGID at startup.
 RUN addgroup -g 1001 -S prunerr && \
     adduser -S prunerr -u 1001 -G prunerr
 
-# Copy production node_modules from server-builder (native modules already compiled for target arch)
+# The application stays owned by root and read-only to the user it runs as.
+# Only /app (for logs/) and /app/data are handed to PUID:PGID, by the entrypoint.
 COPY --from=server-builder /app/server/node_modules ./node_modules
-
-# Copy server package.json for runtime
 COPY server/package.json ./
-
-# Copy built server from server-builder stage
 COPY --from=server-builder /app/server/dist ./dist
-
-# Copy built client from client-builder stage to server's public directory
 COPY --from=client-builder /app/client/dist ./public
+COPY --chmod=755 docker-entrypoint.sh /docker-entrypoint.sh
 
 # Create data directory for SQLite database
-RUN mkdir -p /app/data && chown -R prunerr:prunerr /app/data
+RUN mkdir -p /app/data && chown prunerr:prunerr /app /app/data
 
-# Set ownership of the app directory
-RUN chown -R prunerr:prunerr /app
-
-# Copy entrypoint script
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-# Note: USER directive removed - entrypoint handles dynamic user switching with PUID/PGID
+# The container starts as root only so the entrypoint can re-map the prunerr
+# user to PUID/PGID and chown /app/data; it then drops to PUID:PGID with
+# su-exec before Node starts. No USER directive for that reason.
 
 # Expose the application port
 EXPOSE 3000
@@ -109,9 +125,10 @@ ENV PORT=3000
 ENV DATA_DIR=/app/data
 ENV APP_VERSION=${APP_VERSION}
 
-# Health check (10s start-period allows for Node.js startup)
+# Health check in Node itself, so the image needs no wget or curl.
+# (10s start-period allows for Node.js startup)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+    CMD ["node", "-e", "fetch('http://localhost:'+(process.env.PORT||3000)+'/api/health',{signal:AbortSignal.timeout(8000)}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
 
 # Start via entrypoint (handles PUID/PGID user switching)
 ENTRYPOINT ["/docker-entrypoint.sh"]
