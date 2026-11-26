@@ -7,6 +7,10 @@ below is written from the commits, the image is published as `:latest` and
 minor numbers are chosen by hand in `package.json`; see
 [docs/versioning.md](docs/versioning.md).
 
+## 2.0.10 (2026-11-26)
+
+- Dependencies: clear the dev-only audit findings in all three lockfiles
+
 ## 2.0.9 (2026-11-26)
 
 - Image: Node-only Alpine runtime, no package managers, weekly fresh rebuild
